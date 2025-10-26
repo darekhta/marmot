@@ -1,0 +1,254 @@
+// Metal quant scheme metadata (dispatch + canonical block traits)
+
+QUANT_SCHEME_TRAITS(legacy_zp_none) {
+    QUANT_BLOCK: { block_size: 32, group_size: 32, scale_dtype: FLOAT16, zp_dtype: NONE },
+    USES_Q8K_ACTIVATION: false,
+    USE_DIRECT_FP16_PATH: false
+}
+
+QUANT_SCHEME_TRAITS(legacy_zp_f16) EXTENDS legacy_zp_none {
+    QUANT_BLOCK: { block_size: 32, group_size: 32, scale_dtype: FLOAT16, zp_dtype: FLOAT16 }
+}
+
+QUANT_SCHEME_TRAITS(k_256_g16_f16) EXTENDS legacy_zp_none {
+    QUANT_BLOCK: { block_size: 256, group_size: 16, scale_dtype: FLOAT16, zp_dtype: NONE },
+    USE_DIRECT_FP16_PATH: true
+}
+
+QUANT_SCHEME_TRAITS(k_64_g32_f16) EXTENDS legacy_zp_none {
+    QUANT_BLOCK: { block_size: 64, group_size: 32, scale_dtype: FLOAT16, zp_dtype: NONE },
+    USE_DIRECT_FP16_PATH: true
+}
+
+QUANT_SCHEME_TRAITS(k_256_g32_f16) EXTENDS legacy_zp_none {
+    QUANT_BLOCK: { block_size: 256, group_size: 32, scale_dtype: FLOAT16, zp_dtype: NONE },
+    USE_DIRECT_FP16_PATH: true
+}
+
+QUANT_SCHEME_TRAITS(k_256_g16_f32) EXTENDS legacy_zp_none {
+    QUANT_BLOCK: { block_size: 256, group_size: 16, scale_dtype: FLOAT32, zp_dtype: NONE },
+    USE_DIRECT_FP16_PATH: true
+}
+
+// -----------------------------------------------------------------------------
+// Legacy formats (Q4/Q5/Q8)
+// -----------------------------------------------------------------------------
+
+QUANT_SCHEME(Q4_0) EXTENDS legacy_zp_none {
+    IMPL_NAME: "metal:quant:q4_0",
+    KERNEL_FP32: "matmul_q4_0_q8_0",
+    QKV_KERNEL_FP32: "matmul_qkv_q4_0_q8_0_f32",
+    QKV_KERNEL_FP32_OUT16: "matmul_qkv_q4_0_q8_0_f16",
+    QKV_KERNEL_FP16_OUT32: "matmul_qkv_q4_0_q8_0_f32",
+    QKV_KERNEL_FP16_OUT16: "matmul_qkv_q4_0_q8_0_f16",
+    HAS_MV: true,
+    HAS_MM: true,
+    HAS_MM16: true,
+    HAS_SMALL: true,
+    HAS_MV_EXT: false,
+    HAS_OPT: false,
+    HAS_OPT_NR2: false
+}
+
+QUANT_SCHEME(Q4_1) EXTENDS legacy_zp_f16 {
+    IMPL_NAME: "metal:quant:q4_1",
+    KERNEL_FP32: "matmul_q4_1_q8_0",
+    QKV_KERNEL_FP32: "matmul_qkv_q4_1_q8_0_f32",
+    QKV_KERNEL_FP32_OUT16: "matmul_qkv_q4_1_q8_0_f16",
+    QKV_KERNEL_FP16_OUT32: "matmul_qkv_q4_1_q8_0_f32",
+    QKV_KERNEL_FP16_OUT16: "matmul_qkv_q4_1_q8_0_f16",
+    HAS_MV: true,
+    HAS_MM: true,
+    HAS_MM16: true,
+    HAS_SMALL: true,
+    HAS_MV_EXT: false,
+    HAS_OPT: false,
+    HAS_OPT_NR2: false
+}
+
+QUANT_SCHEME(Q5_0) EXTENDS legacy_zp_none {
+    IMPL_NAME: "metal:quant:q5_0",
+    KERNEL_FP32: "matmul_q5_0_q8_0",
+    QKV_KERNEL_FP32: "matmul_qkv_q5_0_q8_0_f32",
+    QKV_KERNEL_FP32_OUT16: "matmul_qkv_q5_0_q8_0_f16",
+    QKV_KERNEL_FP16_OUT32: "matmul_qkv_q5_0_q8_0_f32",
+    QKV_KERNEL_FP16_OUT16: "matmul_qkv_q5_0_q8_0_f16",
+    HAS_MV: true,
+    HAS_MM: true,
+    HAS_MM16: true,
+    HAS_SMALL: true,
+    HAS_MV_EXT: true,
+    HAS_OPT: false,
+    HAS_OPT_NR2: false
+}
+
+QUANT_SCHEME(Q5_1) EXTENDS legacy_zp_f16 {
+    IMPL_NAME: "metal:quant:q5_1",
+    KERNEL_FP32: "matmul_q5_1_q8_0",
+    QKV_KERNEL_FP32: "matmul_qkv_q5_1_q8_0_f32",
+    QKV_KERNEL_FP32_OUT16: "matmul_qkv_q5_1_q8_0_f16",
+    QKV_KERNEL_FP16_OUT32: "matmul_qkv_q5_1_q8_0_f32",
+    QKV_KERNEL_FP16_OUT16: "matmul_qkv_q5_1_q8_0_f16",
+    HAS_MV: true,
+    HAS_MM: true,
+    HAS_MM16: true,
+    HAS_SMALL: true,
+    HAS_MV_EXT: true,
+    HAS_OPT: false,
+    HAS_OPT_NR2: false
+}
+
+QUANT_SCHEME(Q8_0) EXTENDS legacy_zp_none {
+    IMPL_NAME: "metal:quant:q8_0",
+    KERNEL_FP32: "matmul_q8_0_q8_0",
+    QKV_KERNEL_FP32: "matmul_qkv_q8_0_q8_0_f32",
+    QKV_KERNEL_FP32_OUT16: "matmul_qkv_q8_0_q8_0_f16",
+    QKV_KERNEL_FP16_OUT32: "matmul_qkv_q8_0_q8_0_f32",
+    QKV_KERNEL_FP16_OUT16: "matmul_qkv_q8_0_q8_0_f16",
+    HAS_MV: true,
+    HAS_MM: true,
+    HAS_MM16: true,
+    HAS_SMALL: true,
+    HAS_MV_EXT: false,
+    HAS_OPT: false,
+    HAS_OPT_NR2: false
+}
+
+// Q8_1 uses special direct kernels, not the standard MV/MM path.
+QUANT_SCHEME(Q8_1) EXTENDS legacy_zp_f16 {
+    IMPL_NAME: "metal:quant:q8_1",
+    KERNEL_FP32: "matmul_q8_1_q8_0",
+    KERNEL_FP16_OUT32: "matmul_q8_1_f16_f32",
+    KERNEL_FP16_OUT16: "matmul_q8_1_f16_f16",
+    QKV_KERNEL_FP32: "matmul_qkv_q8_1_q8_0_f32",
+    QKV_KERNEL_FP32_OUT16: "matmul_qkv_q8_1_q8_0_f16",
+    QKV_KERNEL_FP16_OUT32: "matmul_qkv_q8_1_q8_0_f32",
+    QKV_KERNEL_FP16_OUT16: "matmul_qkv_q8_1_q8_0_f16",
+    HAS_MV: false,
+    HAS_MM: false,
+    HAS_MM16: false,
+    HAS_SMALL: false,
+    HAS_MV_EXT: false,
+    HAS_OPT: false,
+    HAS_OPT_NR2: false
+}
+
+// -----------------------------------------------------------------------------
+// K-quant formats (Q2_K..Q8_K)
+// -----------------------------------------------------------------------------
+
+// Q2_K uses opt kernels (no simdgroup_matrix MM).
+QUANT_SCHEME(Q2_K) EXTENDS k_256_g16_f16 {
+    IMPL_NAME: "metal:quant:q2_k",
+    KERNEL_FP32: "matmul_q2_k_f32_f32",
+    KERNEL_FP32_OUT16: "matmul_q2_k_f32_f16",
+    KERNEL_FP16_OUT32: "matmul_q2_k_f16_f32",
+    KERNEL_FP16_OUT16: "matmul_q2_k_f16_f16",
+    QKV_KERNEL_FP32: "matmul_qkv_q2_k_f32_f32",
+    QKV_KERNEL_FP32_OUT16: "matmul_qkv_q2_k_f32_f16",
+    QKV_KERNEL_FP16_OUT32: "matmul_qkv_q2_k_f16_f32",
+    QKV_KERNEL_FP16_OUT16: "matmul_qkv_q2_k_f16_f16",
+    HAS_MV: false,
+    HAS_MM: false,
+    HAS_MM16: false,
+    HAS_SMALL: true,
+    HAS_MV_EXT: false,
+    HAS_OPT: true,
+    HAS_OPT_NR2: true
+}
+
+QUANT_SCHEME(Q3_K) EXTENDS k_256_g16_f16 {
+    IMPL_NAME: "metal:quant:q3_k",
+    KERNEL_FP32: "matmul_q3_k_f32_f32",
+    KERNEL_FP32_OUT16: "matmul_q3_k_f32_f16",
+    KERNEL_FP16_OUT32: "matmul_q3_k_f16_f32",
+    KERNEL_FP16_OUT16: "matmul_q3_k_f16_f16",
+    QKV_KERNEL_FP32: "matmul_qkv_q3_k_f32_f32",
+    QKV_KERNEL_FP32_OUT16: "matmul_qkv_q3_k_f32_f16",
+    QKV_KERNEL_FP16_OUT32: "matmul_qkv_q3_k_f16_f32",
+    QKV_KERNEL_FP16_OUT16: "matmul_qkv_q3_k_f16_f16",
+    HAS_MV: false,
+    HAS_MM: false,
+    HAS_MM16: false,
+    HAS_SMALL: true,
+    HAS_MV_EXT: false,
+    HAS_OPT: true,
+    HAS_OPT_NR2: true
+}
+
+QUANT_SCHEME(Q4_K) EXTENDS k_64_g32_f16 {
+    IMPL_NAME: "metal:quant:q4_k",
+    KERNEL_FP32: "matmul_q4_k_f32_f32",
+    KERNEL_FP32_OUT16: "matmul_q4_k_f32_f16",
+    KERNEL_FP16_OUT32: "matmul_q4_k_f16_f32",
+    KERNEL_FP16_OUT16: "matmul_q4_k_f16_f16",
+    QKV_KERNEL_FP32: "matmul_qkv_q4_k_f32_f32",
+    QKV_KERNEL_FP32_OUT16: "matmul_qkv_q4_k_f32_f16",
+    QKV_KERNEL_FP16_OUT32: "matmul_qkv_q4_k_f16_f32",
+    QKV_KERNEL_FP16_OUT16: "matmul_qkv_q4_k_f16_f16",
+    HAS_MV: true,
+    HAS_MM: true,
+    HAS_MM16: true,
+    HAS_SMALL: true,
+    HAS_MV_EXT: true,
+    HAS_OPT: false,
+    HAS_OPT_NR2: false
+}
+
+QUANT_SCHEME(Q5_K) EXTENDS k_256_g32_f16 {
+    IMPL_NAME: "metal:quant:q5_k",
+    KERNEL_FP32: "matmul_q5_k_f32_f32",
+    KERNEL_FP32_OUT16: "matmul_q5_k_f32_f16",
+    KERNEL_FP16_OUT32: "matmul_q5_k_f16_f32",
+    KERNEL_FP16_OUT16: "matmul_q5_k_f16_f16",
+    QKV_KERNEL_FP32: "matmul_qkv_q5_k_f32_f32",
+    QKV_KERNEL_FP32_OUT16: "matmul_qkv_q5_k_f32_f16",
+    QKV_KERNEL_FP16_OUT32: "matmul_qkv_q5_k_f16_f32",
+    QKV_KERNEL_FP16_OUT16: "matmul_qkv_q5_k_f16_f16",
+    HAS_MV: true,
+    HAS_MM: true,
+    HAS_MM16: true,
+    HAS_SMALL: true,
+    HAS_MV_EXT: true,
+    HAS_OPT: false,
+    HAS_OPT_NR2: false
+}
+
+QUANT_SCHEME(Q6_K) EXTENDS k_256_g16_f16 {
+    IMPL_NAME: "metal:quant:q6_k",
+    KERNEL_FP32: "matmul_q6_k_f32_f32",
+    KERNEL_FP32_OUT16: "matmul_q6_k_f32_f16",
+    KERNEL_FP16_OUT32: "matmul_q6_k_f16_f32",
+    KERNEL_FP16_OUT16: "matmul_q6_k_f16_f16",
+    QKV_KERNEL_FP32: "matmul_qkv_q6_k_f32_f32",
+    QKV_KERNEL_FP32_OUT16: "matmul_qkv_q6_k_f32_f16",
+    QKV_KERNEL_FP16_OUT32: "matmul_qkv_q6_k_f16_f32",
+    QKV_KERNEL_FP16_OUT16: "matmul_qkv_q6_k_f16_f16",
+    HAS_MV: false,
+    HAS_MM: false,
+    HAS_MM16: false,
+    HAS_SMALL: true,
+    HAS_MV_EXT: false,
+    HAS_OPT: true,
+    HAS_OPT_NR2: true
+}
+
+QUANT_SCHEME(Q8_K) EXTENDS k_256_g16_f32 {
+    IMPL_NAME: "metal:quant:q8_k",
+    KERNEL_FP32: "matmul_q8_k_f32_f32",
+    KERNEL_FP32_OUT16: "matmul_q8_k_f32_f16",
+    KERNEL_FP16_OUT32: "matmul_q8_k_f16_f32",
+    KERNEL_FP16_OUT16: "matmul_q8_k_f16_f16",
+    QKV_KERNEL_FP32: "matmul_qkv_q8_k_f32_f32",
+    QKV_KERNEL_FP32_OUT16: "matmul_qkv_q8_k_f32_f16",
+    QKV_KERNEL_FP16_OUT32: "matmul_qkv_q8_k_f16_f32",
+    QKV_KERNEL_FP16_OUT16: "matmul_qkv_q8_k_f16_f16",
+    HAS_MV: false,
+    HAS_MM: false,
+    HAS_MM16: false,
+    HAS_SMALL: true,
+    HAS_MV_EXT: false,
+    HAS_OPT: true,
+    HAS_OPT_NR2: true
+}
+

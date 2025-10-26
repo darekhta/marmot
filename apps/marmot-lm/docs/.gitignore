@@ -1,0 +1,3 @@
+# LM Studio SDK - clone fresh when needed:
+# git clone --depth 1 https://github.com/lmstudio-ai/lmstudio.js.git docs/lmstudio-sdk
+lmstudio-sdk/

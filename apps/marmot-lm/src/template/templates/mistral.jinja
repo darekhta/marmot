@@ -1,0 +1,10 @@
+{{- bos_token }}
+{%- for message in messages %}
+{%- if message['role'] == 'user' %}
+{{- '[INST] ' + message['content'] | trim + ' [/INST]' }}
+{%- elif message['role'] == 'assistant' %}
+{{- ' ' + message['content'] | trim + eos_token }}
+{%- elif message['role'] == 'system' %}
+{{- '<<SYS>>\n' + message['content'] | trim + '\n<</SYS>>\n\n' }}
+{%- endif %}
+{%- endfor %}

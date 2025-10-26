@@ -1,0 +1,30 @@
+// CPU RoPE (Rotary Position Embedding) kernels.
+
+KERNEL_FAMILY(rope_scalar) {
+    AXIS(dtype): @float_all,
+    NAME_PATTERN: "rope_{dtype:short}_scalar",
+    OP: rope,
+    PROFILE: SCALAR,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, *: FLOAT32 }),
+    STRIDE_MODE: ROW_STRIDED,
+}
+
+KERNEL_FAMILY(rope_simd) {
+    AXIS(dtype): [FLOAT16, FLOAT32, BFLOAT16, FLOAT64],
+    AXIS(profile): select($dtype, {
+        FLOAT16: [NEON, ACCELERATE],
+        FLOAT32: [NEON, AVX2, ACCELERATE],
+        BFLOAT16: [ACCELERATE],
+        FLOAT64: [NEON, AVX2, ACCELERATE],
+        *: [NEON, AVX2, ACCELERATE]
+    }),
+    NAME_PATTERN: "rope_{dtype:short}_{profile:lower}",
+    OP: rope,
+    PROFILE: $profile,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, *: FLOAT32 }),
+    STRIDE_MODE: CONTIGUOUS,
+}

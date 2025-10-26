@@ -1,0 +1,59 @@
+// Metal activations and unary kernels.
+
+SET(unary_float_ops) { relu, gelu, gelu_tanh, silu, sigmoid, tanh, sqrt, exp, log, mish, elu, selu, leaky_relu, prelu }
+
+KERNEL_FAMILY(unary_float) {
+    AXIS(op): @unary_float_ops,
+    AXIS(dtype): @float_types,
+    NAME_PATTERN: select($op, { tanh: "tanh_act_{dtype:short}", *: "{op}_{dtype:short}" }),
+    OP: $op,
+    PROFILE: NONE,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+}
+
+KERNEL_FAMILY(unary_abs) {
+    AXIS(dtype): @numeric_elementwise,
+    NAME_PATTERN: "abs_{dtype:short}",
+    OP: abs,
+    PROFILE: NONE,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { @float_types: FLOAT32, *: $dtype }),
+    STRIDE_MODE: CONTIGUOUS,
+}
+
+KERNEL_FAMILY(unary_sign) {
+    AXIS(dtype): @numeric_elementwise,
+    NAME_PATTERN: "sign_{dtype:short}",
+    OP: sign,
+    PROFILE: NONE,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { @float_types: FLOAT32, *: $dtype }),
+    STRIDE_MODE: CONTIGUOUS,
+}
+
+KERNEL_FAMILY(unary_neg) {
+    AXIS(dtype): [@float_types, @int_types_elementwise],
+    NAME_PATTERN: "neg_{dtype:short}",
+    OP: neg,
+    PROFILE: NONE,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { @float_types: FLOAT32, *: $dtype }),
+    STRIDE_MODE: CONTIGUOUS,
+}
+
+KERNEL_FAMILY(unary_bitwise_not) {
+    AXIS(dtype): [@int_types_elementwise, @uint_types],
+    NAME_PATTERN: "bitwise_not_{dtype:short}",
+    OP: bitwise_not,
+    PROFILE: NONE,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: $dtype,
+    STRIDE_MODE: CONTIGUOUS,
+}

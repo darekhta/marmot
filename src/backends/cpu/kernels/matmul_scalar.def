@@ -1,0 +1,22 @@
+// CPU scalar matmul kernels.
+
+KERNEL_FAMILY(matmul_scalar) {
+    AXIS(layout): @matmul_layouts,
+    AXIS(dtype): @matmul_types_scalar,
+    NAME_PATTERN: "matmul_{dtype:short}_scalar_{layout:lower}",
+    OP: matmul,
+    PROFILE: SCALAR,
+    MATMUL_LAYOUT: $layout,
+    PLATFORM: SCALAR,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: $dtype,
+    OUTPUT_DTYPE: select($dtype, { @fp8_types: FLOAT32, *: $dtype }),
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, *: FLOAT32 }),
+    STRIDE_MODE: CONTIGUOUS,
+    EPILOGUE: [BIAS],
+    IMPL_FUNCTION: select($layout, {
+        NT: "cpu_matmul_{dtype:short}_scalar",
+        NN: "cpu_matmul_{dtype:short}_scalar_nn",
+        *: "cpu_matmul_{dtype:short}_scalar"
+    }),
+}

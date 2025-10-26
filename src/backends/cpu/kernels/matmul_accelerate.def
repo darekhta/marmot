@@ -1,0 +1,22 @@
+// CPU Accelerate matmul kernels.
+
+KERNEL_FAMILY(matmul_accelerate) {
+    AXIS(layout): @matmul_layouts,
+    AXIS(dtype): @matmul_types_accelerate,
+    NAME_PATTERN: "matmul_{dtype:short}_accelerate_{layout:lower}",
+    OP: matmul,
+    PROFILE: ACCELERATE,
+    MATMUL_LAYOUT: $layout,
+    PLATFORM: ACCELERATE,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: $dtype,
+    OUTPUT_DTYPE: select($dtype, { @fp8_types: FLOAT32, *: $dtype }),
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, *: FLOAT32 }),
+    STRIDE_MODE: CONTIGUOUS,
+    EPILOGUE: [BIAS],
+    IMPL_FUNCTION: select($layout, {
+        NT: "cpu_matmul_{dtype:short}_accelerate",
+        NN: "cpu_matmul_{dtype:short}_accelerate_nn",
+        *: "cpu_matmul_{dtype:short}_accelerate"
+    }),
+}

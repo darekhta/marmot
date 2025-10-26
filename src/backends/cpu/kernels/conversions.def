@@ -1,0 +1,23 @@
+// CPU dtype conversion kernels (generic, resolved at runtime).
+
+DTYPE_SET(convert_types_no_fp8) { FLOAT16, FLOAT32, FLOAT64, BFLOAT16, @int_types, @uint_types }
+
+KERNEL_FAMILY(convert_generic) {
+    NAME_PATTERN: "convert_generic",
+    OP: convert,
+    PROFILE: NONE,
+    INPUT_DTYPE: @convert_types_no_fp8,
+    OUTPUT_DTYPE: @convert_types_no_fp8,
+    ACCUM_DTYPE: ANY,
+    STRIDE_MODE: CONTIGUOUS,
+}
+
+KERNEL_FAMILY(convert_fp8_generic) {
+    NAME_PATTERN: "convert_fp8_generic",
+    OP: convert,
+    PROFILE: NONE,
+    INPUT_DTYPE: @numeric_all,
+    OUTPUT_DTYPE: @numeric_all,
+    ACCUM_DTYPE: ANY,
+    STRIDE_MODE: CONTIGUOUS,
+}

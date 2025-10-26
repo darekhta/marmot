@@ -1,0 +1,62 @@
+# Build directories
+build/
+build-*/
+*.o
+*.a
+*.so
+*.dylib
+
+# Rust/Cargo
+target/
+Cargo.lock
+**/*.rs.bk
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Meson
+.ninja_deps
+.ninja_log
+compile_commands.json
+meson-private/
+meson-logs/
+
+# Compiled binaries
+test_cpu
+examples/simple_matmul
+
+# Temporary files
+*.tmp
+*.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+src/marmot.egg-info/
+*.egg-info/
+dist/
+build-python/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Large local artifacts
+*.gguf
+
+# Build stamps
+*.stamp
+
+# Cloudflare Wrangler
+.wrangler/
+
+# Claude Code local settings
+.claude/settings.local.json

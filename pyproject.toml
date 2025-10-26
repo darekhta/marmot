@@ -1,0 +1,11 @@
+[project]
+name = "marmot"
+version = "0.0.0"
+requires-python = ">=3.10"
+dependencies = [
+    "jinja2>=3.1"
+]
+
+[build-system]
+requires = ["setuptools"]
+build-backend = "setuptools.build_meta"

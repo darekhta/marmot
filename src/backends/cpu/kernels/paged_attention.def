@@ -1,0 +1,22 @@
+// CPU paged attention kernels.
+
+DTYPE_SET(paged_attention_types) { FLOAT16, FLOAT32, BFLOAT16 }
+DTYPE_SET(paged_attention_kv_types) { FLOAT16, FLOAT32, BFLOAT16, FLOAT8_E4M3 }
+
+KERNEL_FAMILY(paged_attention_scalar) {
+    AXIS(dtype): @paged_attention_types,
+    AXIS(kv_dtype): @paged_attention_kv_types,
+    NAME_PATTERN: "paged_attention_{dtype:short}_kv_{kv_dtype:short}",
+    OP: paged_attention,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: $kv_dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: STRIDED,
+    PROFILES: {
+        ACCELERATE: "cpu_paged_attention_impl",
+        NEON: "cpu_paged_attention_impl",
+        AVX2: "cpu_paged_attention_impl",
+        SCALAR: "cpu_paged_attention_impl"
+    },
+}

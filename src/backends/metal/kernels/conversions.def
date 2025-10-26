@@ -1,0 +1,32 @@
+// Metal dtype conversion kernels.
+
+KERNEL_FAMILY(convert_float_inputs) {
+    AXIS(input): [FLOAT32, FLOAT16, BFLOAT16],
+    AXIS(kind): select($input, { FLOAT32: [to_half, to_fp8], *: [to_other, to_fp8] }),
+    NAME_PATTERN: "convert_{input:short}_{kind}",
+    OP: convert,
+    PROFILE: NONE,
+    INPUT_DTYPE: $input,
+    OUTPUT_DTYPE: select($kind, {
+        to_fp8: @fp8_types,
+        *: select($input, {
+            FLOAT32: [FLOAT16, BFLOAT16],
+            FLOAT16: [FLOAT32, BFLOAT16],
+            BFLOAT16: [FLOAT32, FLOAT16],
+            *: [FLOAT32, FLOAT16]
+        })
+    }),
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+}
+
+KERNEL_FAMILY(convert_fp8_inputs) {
+    AXIS(input): @fp8_types,
+    NAME_PATTERN: "convert_{input:short}_to_other",
+    OP: convert,
+    PROFILE: NONE,
+    INPUT_DTYPE: $input,
+    OUTPUT_DTYPE: [FLOAT32, FLOAT16, BFLOAT16],
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+}

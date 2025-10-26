@@ -1,0 +1,22 @@
+// Metal RoPE (Rotary Position Embedding) kernels.
+
+KERNEL_FAMILY(rope_standard) {
+    AXIS(dtype): [FLOAT16, BFLOAT16, FLOAT32],
+    NAME_PATTERN: "rope_{dtype:short}",
+    OP: rope,
+    PROFILE: NONE,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: ROW_STRIDED,
+}
+
+KERNEL_FAMILY(rope_fp8) {
+    NAME_PATTERN: "rope_fp8",
+    OP: rope,
+    PROFILE: NONE,
+    INPUT_DTYPE: @fp8_types,
+    OUTPUT_DTYPE: @fp8_types,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: ROW_STRIDED,
+}

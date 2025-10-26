@@ -1,0 +1,19 @@
+// CPU scalar quantized matmul kernels.
+
+KERNEL_FAMILY(matmul_quantized_scalar) {
+    AXIS(scheme): @all_quant_schemes,
+    NAME_PATTERN: "matmul_{scheme:lower}_scalar_nt",
+    OP: matmul,
+    PROFILE: SCALAR,
+    MATMUL_LAYOUT: NT,
+    PLATFORM: SCALAR,
+    INPUT_DTYPE: [FLOAT16, FLOAT32],
+    OUTPUT_DTYPE: [FLOAT16, FLOAT32],
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    WEIGHT_QUANT: $scheme,
+    QUANT_BLOCK: QUANT_SCHEME($scheme).QUANT_BLOCK,
+    WEIGHT_LAYOUT: SEPARATE,
+    EPILOGUE: [BIAS],
+    IMPL_FUNCTION: "cpu_matmul_quantized_{scheme:lower}",
+}

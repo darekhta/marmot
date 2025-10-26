@@ -1,0 +1,43 @@
+// Quant scheme metadata for CPU kernel definitions.
+// Canonical block traits live here; individual kernels may override QUANT_BLOCK when needed.
+
+QUANT_SCHEME_TRAITS(legacy_zp_none) {
+    QUANT_BLOCK: { block_size: 32, group_size: 32, scale_dtype: FLOAT16, zp_dtype: NONE }
+}
+
+QUANT_SCHEME_TRAITS(legacy_zp_f16) EXTENDS legacy_zp_none {
+    QUANT_BLOCK: { block_size: 32, group_size: 32, scale_dtype: FLOAT16, zp_dtype: FLOAT16 }
+}
+
+QUANT_SCHEME_TRAITS(k_256_g16_f16) {
+    QUANT_BLOCK: { block_size: 256, group_size: 16, scale_dtype: FLOAT16, zp_dtype: NONE }
+}
+
+QUANT_SCHEME_TRAITS(k_64_g32_f16) {
+    QUANT_BLOCK: { block_size: 64, group_size: 32, scale_dtype: FLOAT16, zp_dtype: NONE }
+}
+
+QUANT_SCHEME_TRAITS(k_256_g32_f16) {
+    QUANT_BLOCK: { block_size: 256, group_size: 32, scale_dtype: FLOAT16, zp_dtype: NONE }
+}
+
+QUANT_SCHEME_TRAITS(k_256_g16_f32) {
+    QUANT_BLOCK: { block_size: 256, group_size: 16, scale_dtype: FLOAT32, zp_dtype: NONE }
+}
+
+// Legacy formats (32-value blocks)
+QUANT_SCHEME(Q4_0) EXTENDS legacy_zp_none { }
+QUANT_SCHEME(Q4_1) EXTENDS legacy_zp_f16 { }
+QUANT_SCHEME(Q5_0) EXTENDS legacy_zp_none { }
+QUANT_SCHEME(Q5_1) EXTENDS legacy_zp_f16 { }
+QUANT_SCHEME(Q8_0) EXTENDS legacy_zp_none { }
+QUANT_SCHEME(Q8_1) EXTENDS legacy_zp_f16 { }
+
+// K-quant formats (super-blocks)
+QUANT_SCHEME(Q2_K) EXTENDS k_256_g16_f16 { }
+QUANT_SCHEME(Q3_K) EXTENDS k_256_g16_f16 { }
+QUANT_SCHEME(Q4_K) EXTENDS k_64_g32_f16 { }
+QUANT_SCHEME(Q5_K) EXTENDS k_256_g32_f16 { }
+QUANT_SCHEME(Q6_K) EXTENDS k_256_g16_f16 { }
+QUANT_SCHEME(Q8_K) EXTENDS k_256_g16_f32 { }
+

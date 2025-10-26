@@ -1,0 +1,28 @@
+// CPU ternary kernels - FMA and WHERE operations.
+// Uses AXIS(dtype) to generate per-dtype kernel descriptors with kernel_func.
+
+// FMA: a*b+c, all same dtype (float types only)
+KERNEL_FAMILY(fma) {
+    AXIS(dtype): @float_all,
+    NAME_PATTERN: "fma_{dtype:short}",
+    OP: fma,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, *: FLOAT32 }),
+    STRIDE_MODE: CONTIGUOUS,
+    PROFILES: { SCALAR: "cpu_fma_{dtype:short}_scalar" },
+}
+
+// WHERE: mask ? a : b, mask is UINT8, rest same dtype (float types only for now)
+KERNEL_FAMILY(where) {
+    AXIS(dtype): @float_all,
+    NAME_PATTERN: "where_{dtype:short}",
+    OP: where,
+    INPUT_DTYPE: UINT8,
+    WEIGHT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: $dtype,
+    STRIDE_MODE: CONTIGUOUS,
+    PROFILES: { SCALAR: "cpu_where_{dtype:short}_scalar" },
+}

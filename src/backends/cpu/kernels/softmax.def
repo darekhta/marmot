@@ -1,0 +1,13 @@
+// CPU softmax kernels.
+
+KERNEL_FAMILY(softmax_scalar) {
+    AXIS(dtype): @float_all,
+    NAME_PATTERN: "softmax_{dtype:short}_scalar",
+    OP: softmax,
+    PROFILE: SCALAR,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, *: FLOAT32 }),
+    STRIDE_MODE: CONTIGUOUS,
+    IMPL_FUNCTION: cpu_softmax_impl
+}

@@ -1,0 +1,17 @@
+// CPU AVX2 matmul kernels.
+
+KERNEL_FAMILY(matmul_avx2) {
+    AXIS(dtype): @matmul_types_avx2,
+    NAME_PATTERN: "matmul_{dtype:short}_avx2_nt",
+    OP: matmul,
+    PROFILE: AVX2,
+    MATMUL_LAYOUT: NT,
+    PLATFORM: AVX2,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    EPILOGUE: [BIAS],
+    IMPL_FUNCTION: select($dtype, { FLOAT16: cpu_matmul_f16_avx2, BFLOAT16: cpu_matmul_bf16_avx2, *: cpu_matmul_f16_avx2 }),
+}

@@ -1,0 +1,3 @@
+llama.cpp/
+gen_golden_from_llama
+*.o

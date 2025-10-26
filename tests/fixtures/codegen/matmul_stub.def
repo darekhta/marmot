@@ -1,0 +1,13 @@
+KERNEL_FAMILY(cpu_matmul_f16_nt) {
+    NAME_PATTERN: "cpu_matmul_f16_nt",
+    OP: matmul,
+    PROFILE: SCALAR,
+    MATMUL_LAYOUT: NT,
+    INPUT_DTYPE: FLOAT16,
+    WEIGHT_DTYPE: FLOAT16,
+    OUTPUT_DTYPE: FLOAT16,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    EPILOGUE: BIAS,
+    COST_MODEL: cost_cpu_matmul_default
+}

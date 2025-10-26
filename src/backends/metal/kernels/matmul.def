@@ -1,0 +1,37 @@
+// Metal dense matmul kernels.
+
+KERNEL_FAMILY(matmul_dense) {
+    AXIS(dtype): @matmul_types,
+    AXIS(layout): @matmul_layouts,
+    AXIS(epi): select($dtype, {
+        FLOAT16: @matmul_dense_epi_f16,
+        FLOAT32: @matmul_dense_epi_f32,
+        BFLOAT16: @matmul_dense_epi_bf16,
+        @fp8_types: @matmul_dense_epi_fp8,
+        *: @matmul_dense_epi_f32
+    }),
+    NAME_PATTERN: "matmul_{dtype:short}{epi:opt(_)}_{layout:lower}",
+    WITH: select($epi, {
+        "": epilogue_bias,
+        "bias_relu": epilogue_bias_relu,
+        "bias_gelu": epilogue_bias_gelu,
+        "bias_silu": epilogue_bias_silu,
+        "bias_residual": epilogue_bias_residual,
+        "bias_relu_residual": epilogue_bias_relu_residual,
+        "bias_gelu_residual": epilogue_bias_gelu_residual,
+        *: epilogue_bias
+    }),
+    OP: select($epi, {
+        "bias_relu": matmul_bias_relu,
+        "bias_gelu": matmul_bias_gelu,
+        "bias_silu": matmul_bias_silu,
+        "": select($dtype, { @fp8_types: matmul, *: matmul_bias }),
+        *: matmul
+    }),
+    MATMUL_LAYOUT: $layout,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+}

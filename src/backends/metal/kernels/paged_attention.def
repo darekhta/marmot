@@ -1,0 +1,15 @@
+// Metal paged attention kernels (stub).
+
+KERNEL_FAMILY(paged_attention_standard) {
+    AXIS(dtype): [FLOAT16, BFLOAT16, FLOAT32],
+    AXIS(kv_dtype): [FLOAT16, BFLOAT16, FLOAT32],
+    NAME_PATTERN: "paged_attention_{dtype:short}_kv_{kv_dtype:short}",
+    OP: paged_attention,
+    PROFILE: NONE,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: $kv_dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: STRIDED,
+    IMPL_FUNCTION: metal_paged_attention_impl
+}

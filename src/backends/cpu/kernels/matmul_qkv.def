@@ -1,0 +1,71 @@
+// CPU QKV projection matmul kernels.
+
+KERNEL_FAMILY(qkv_rope_dense) {
+    AXIS(dtype): [FLOAT16, FLOAT32, BFLOAT16],
+    NAME_PATTERN: "qkv_rope_{dtype:short}",
+    OP: qkv_shared_input,
+    PROFILE: SCALAR,
+    MATMUL_LAYOUT: NT,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    WEIGHT_LAYOUT: SEPARATE,
+    EPILOGUE: [BIAS, ROPE],
+}
+
+KERNEL_FAMILY(qkv_rope_quantized) {
+    AXIS(scheme): @cpu_qkv_quant_schemes,
+    NAME_PATTERN: "qkv_rope_{scheme:lower}_f16",
+    OP: qkv_shared_input,
+    PROFILE: SCALAR,
+    MATMUL_LAYOUT: NT,
+    INPUT_DTYPE: FLOAT16,
+    OUTPUT_DTYPE: FLOAT16,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    WEIGHT_QUANT: $scheme,
+    QUANT_BLOCK: select($scheme, {
+        Q5_K: { block_size: 64, group_size: 32, scale_dtype: FLOAT16, zp_dtype: NONE },
+        Q6_K: { block_size: 64, group_size: 32, scale_dtype: FLOAT16, zp_dtype: NONE },
+        *: QUANT_SCHEME($scheme).QUANT_BLOCK
+    }),
+    WEIGHT_LAYOUT: SEPARATE,
+    EPILOGUE: [BIAS, ROPE],
+}
+
+KERNEL_FAMILY(qkv_projection_dense) {
+    AXIS(dtype): [FLOAT16, FLOAT32, BFLOAT16],
+    NAME_PATTERN: "qkv_projection_{dtype:short}",
+    OP: qkv_projection,
+    PROFILE: SCALAR,
+    MATMUL_LAYOUT: NT,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    WEIGHT_LAYOUT: SEPARATE,
+    EPILOGUE: [BIAS, ROPE],
+}
+
+KERNEL_FAMILY(qkv_projection_quantized) {
+    AXIS(scheme): @cpu_qkv_quant_schemes,
+    NAME_PATTERN: "qkv_projection_{scheme:lower}_f16",
+    OP: qkv_projection,
+    PROFILE: SCALAR,
+    MATMUL_LAYOUT: NT,
+    INPUT_DTYPE: FLOAT16,
+    OUTPUT_DTYPE: FLOAT16,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    WEIGHT_QUANT: $scheme,
+    QUANT_BLOCK: select($scheme, {
+        Q5_K: { block_size: 64, group_size: 32, scale_dtype: FLOAT16, zp_dtype: NONE },
+        Q6_K: { block_size: 64, group_size: 32, scale_dtype: FLOAT16, zp_dtype: NONE },
+        *: QUANT_SCHEME($scheme).QUANT_BLOCK
+    }),
+    WEIGHT_LAYOUT: SEPARATE,
+    EPILOGUE: [BIAS, ROPE],
+}

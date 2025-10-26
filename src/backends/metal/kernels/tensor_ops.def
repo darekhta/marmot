@@ -1,0 +1,21 @@
+// Metal tensor layout manipulation kernels.
+
+KERNEL_FAMILY(tensor_ops) {
+    AXIS(op): [contiguous, reshape, transpose, concat, slice, view, gather_rows, scatter_u64_to_i32],
+    AXIS(kind): [generic, fp8],
+    NAME_PATTERN: "tensor_{op}_{kind}",
+    OP: $op,
+    PROFILE: NONE,
+    INPUT_DTYPE: select($kind, { fp8: @fp8_types, *: @standard_types }),
+    OUTPUT_DTYPE: select($kind, { fp8: @fp8_types, *: @standard_types }),
+    ACCUM_DTYPE: ANY,
+    STRIDE_MODE: select($op, {
+        contiguous: STRIDED,
+        reshape: STRIDED,
+        slice: STRIDED,
+        view: STRIDED,
+        gather_rows: STRIDED,
+        scatter_u64_to_i32: STRIDED,
+        *: CONTIGUOUS
+    }),
+}

@@ -1,0 +1,18 @@
+// CPU NEON matmul kernels.
+
+KERNEL_FAMILY(matmul_neon) {
+    AXIS(layout): @matmul_layouts,
+    AXIS(dtype): @matmul_types_neon,
+    NAME_PATTERN: "matmul_{dtype:short}_neon_{layout:lower}",
+    OP: matmul,
+    PROFILE: NEON,
+    MATMUL_LAYOUT: $layout,
+    PLATFORM: NEON,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, *: FLOAT32 }),
+    STRIDE_MODE: CONTIGUOUS,
+    EPILOGUE: [BIAS],
+    IMPL_FUNCTION: "cpu_matmul_{dtype:short}_neon_blocked_{layout:lower}",
+}

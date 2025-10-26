@@ -1,0 +1,61 @@
+[package]
+name = "marmot-lm"
+version = "0.1.0"
+edition = "2021"
+authors = ["Marmot Contributors"]
+description = "LLM inference server and CLI powered by marmot"
+license = "MIT"
+repository = "https://github.com/darekhta/marmot"
+
+[dependencies]
+# Async runtime
+tokio = { version = "1.48", features = ["full"] }
+tokio-util = "0.7.17"
+
+# WebSocket
+tokio-tungstenite = "0.28"
+
+# HTTP server (for /lmstudio-greeting)
+axum = { version = "0.8", features = ["ws"] }
+
+# CLI
+clap = { version = "4.5", features = ["derive"] }
+
+# Serialization
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"
+
+# Jinja2 template engine
+minijinja = { version = "2.14", features = ["builtins", "loader"] }
+
+# Logging
+tracing = "0.1.44"
+tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
+
+# Utilities
+uuid = { version = "1.19", features = ["v4"] }
+dashmap = "6.1"
+thiserror = "2.0"
+anyhow = "1.0"
+futures-util = "0.3.31"
+parking_lot = "0.12.5"
+
+# HuggingFace model downloads
+hf-hub = "0.4"
+
+# XDG directories
+dirs = "6"
+
+# Progress bars
+indicatif = "0.18"
+
+# HTTP client (for server discovery and HEAD requests)
+reqwest = { version = "0.12", features = ["json", "blocking"] }
+
+[build-dependencies]
+# For finding libmarmot
+pkg-config = "0.3.32"
+
+[[bin]]
+name = "marmot-lm"
+path = "src/main.rs"

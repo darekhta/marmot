@@ -1,0 +1,25 @@
+// Metal quantized matmul kernels.
+
+KERNEL_FAMILY(matmul_quantized) {
+    AXIS(scheme): @all_quant_schemes,
+    AXIS(input): [FLOAT32, FLOAT16],
+    AXIS(epi): @matmul_quant_epi,
+    NAME_PATTERN: "matmul_{scheme:lower}_{input:short}{epi:opt(_)}_nt",
+    WITH: select($epi, {
+        "": epilogue_bias,
+        "bias_relu": epilogue_bias_relu,
+        "bias_gelu": epilogue_bias_gelu,
+        "bias_silu": epilogue_bias_silu,
+        *: epilogue_bias
+    }),
+    OP: matmul,
+    PROFILE: NONE,
+    MATMUL_LAYOUT: NT,
+    INPUT_DTYPE: $input,
+    OUTPUT_DTYPE: select($input, { FLOAT16: [FLOAT32, FLOAT16], *: $input }),
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    WEIGHT_QUANT: $scheme,
+    QUANT_BLOCK: QUANT_SCHEME($scheme).QUANT_BLOCK,
+    WEIGHT_LAYOUT: SEPARATE,
+}

@@ -1,0 +1,54 @@
+// Metal normalization kernels (LayerNorm, RMSNorm).
+
+KERNEL_FAMILY(layernorm) {
+    AXIS(dtype): @float_types,
+    NAME_PATTERN: "layernorm_{dtype:short}",
+    OP: layernorm,
+    PROFILE: NONE,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: select($dtype, { FLOAT16: [FLOAT16, FLOAT32], BFLOAT16: [BFLOAT16, FLOAT32], *: $dtype }),
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    IMPL_FUNCTION: metal_layernorm_impl,
+}
+
+KERNEL_FAMILY(layernorm_residual) {
+    AXIS(dtype): @float_types,
+    NAME_PATTERN: "layernorm_{dtype:short}_residual",
+    OP: layernorm,
+    PROFILE: NONE,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: select($dtype, { FLOAT16: [FLOAT16, FLOAT32], BFLOAT16: [BFLOAT16, FLOAT32], *: $dtype }),
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    FUSION: RESIDUAL_ADD,
+    IMPL_FUNCTION: metal_layernorm_impl,
+}
+
+KERNEL_FAMILY(rms_norm) {
+    AXIS(dtype): @float_types,
+    NAME_PATTERN: "rms_norm_{dtype:short}",
+    OP: rms_norm,
+    PROFILE: NONE,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: select($dtype, { FLOAT16: [FLOAT16, FLOAT32], BFLOAT16: [BFLOAT16, FLOAT32], *: $dtype }),
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    IMPL_FUNCTION: metal_rmsnorm_impl,
+}
+
+KERNEL_FAMILY(rms_norm_gemma) {
+    AXIS(dtype): @float_types,
+    NAME_PATTERN: "rms_norm_gemma_{dtype:short}",
+    OP: rms_norm_gemma,
+    PROFILE: NONE,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: select($dtype, { FLOAT16: [FLOAT16, FLOAT32], BFLOAT16: [BFLOAT16, FLOAT32], *: $dtype }),
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    IMPL_FUNCTION: metal_rmsnorm_gemma_impl,
+}

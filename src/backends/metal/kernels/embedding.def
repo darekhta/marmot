@@ -1,0 +1,31 @@
+// Metal embedding gather kernels.
+
+SET(embedding_index_types) { INT32, INT16, INT64, UINT32, UINT16, UINT64 }
+SET(embedding_quant_schemes_legacy) { Q4_0, Q4_1, Q5_0, Q5_1, Q8_0 }
+SET(embedding_quant_schemes) { @embedding_quant_schemes_legacy, @quant_schemes_k }
+
+KERNEL_FAMILY(embedding_float) {
+    NAME_PATTERN: "embedding_float",
+    OP: embedding,
+    PROFILE: NONE,
+    INPUT_DTYPE: @embedding_index_types,
+    WEIGHT_DTYPE: [FLOAT32, FLOAT16, BFLOAT16],
+    OUTPUT_DTYPE: [FLOAT32, FLOAT16, BFLOAT16],
+    ACCUM_DTYPE: ANY,
+    STRIDE_MODE: CONTIGUOUS,
+    WEIGHT_LAYOUT: SEPARATE,
+}
+
+KERNEL_FAMILY(embedding_quantized) {
+    AXIS(scheme): @embedding_quant_schemes,
+    NAME_PATTERN: "embedding_{scheme:lower}",
+    OP: embedding,
+    PROFILE: NONE,
+    INPUT_DTYPE: @embedding_index_types,
+    OUTPUT_DTYPE: [FLOAT32, FLOAT16, BFLOAT16],
+    ACCUM_DTYPE: ANY,
+    STRIDE_MODE: CONTIGUOUS,
+    WEIGHT_QUANT: $scheme,
+    QUANT_BLOCK: QUANT_SCHEME($scheme).QUANT_BLOCK,
+    WEIGHT_LAYOUT: SEPARATE,
+}

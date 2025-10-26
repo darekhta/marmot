@@ -1,0 +1,96 @@
+{% import "_macros.j2" as m %}
+{{ m.file_header() }}
+
+#ifndef MARMOT_METAL_UNARY_TABLES_GEN_H
+#define MARMOT_METAL_UNARY_TABLES_GEN_H
+
+#include "marmot/ops_types.h"
+#include "marmot/types.h"
+
+#include <stdbool.h>
+
+#ifdef __cplusplus
+#include <array>
+#endif
+
+#ifdef __cplusplus
+using metal_unary_kernel_table_t =
+    std::array<std::array<const char *, MARMOT_DEVICE_UNARY_COUNT>, MARMOT_DTYPE_COUNT>;
+static const metal_unary_kernel_table_t k_metal_unary_kernel_name = []() {
+    metal_unary_kernel_table_t table{};
+{% for group in unary_groups %}
+{{ m.platform_guard_start(group.kernel) }}
+{% for entry in group.entries %}
+    table[{{ group.dtype_enum }}][{{ entry.op_enum }}] = "{{ entry.kernel_name }}";
+{% endfor %}
+{{ m.platform_guard_end(group.kernel) }}
+{% endfor %}
+    return table;
+}();
+
+using metal_unary_vec4_kernel_table_t =
+    std::array<std::array<const char *, MARMOT_DEVICE_UNARY_COUNT>, MARMOT_DTYPE_COUNT>;
+static const metal_unary_vec4_kernel_table_t k_metal_unary_vec4_kernel_name = []() {
+    metal_unary_vec4_kernel_table_t table{};
+{% for group in vec4_groups %}
+{% for entry in group.entries %}
+    table[{{ group.dtype_enum }}][{{ entry.op_enum }}] = "{{ entry.kernel_name }}";
+{% endfor %}
+{% endfor %}
+    return table;
+}();
+
+using metal_unary_fused_bias_table_t = std::array<const char *, MARMOT_DTYPE_COUNT>;
+static const metal_unary_fused_bias_table_t k_metal_unary_fused_bias_kernel_name = []() {
+    metal_unary_fused_bias_table_t table{};
+{% for entry in fused_bias_entries %}
+    table[{{ entry.dtype_enum }}] = "{{ entry.kernel_name }}";
+{% endfor %}
+    return table;
+}();
+
+using metal_unary_needs_params_table_t = std::array<bool, MARMOT_DEVICE_UNARY_COUNT>;
+static const metal_unary_needs_params_table_t k_metal_unary_needs_params = []() {
+    metal_unary_needs_params_table_t table{};
+{% for entry in needs_params_entries %}
+    table[{{ entry.op_enum }}] = true;
+{% endfor %}
+    return table;
+}();
+#else
+static const char *k_metal_unary_kernel_name[MARMOT_DTYPE_COUNT][MARMOT_DEVICE_UNARY_COUNT] = {
+{% for group in unary_groups %}
+{{ m.platform_guard_start(group.kernel) }}
+    [{{ group.dtype_enum }}] = {
+{% for entry in group.entries %}
+        [{{ entry.op_enum }}] = "{{ entry.kernel_name }}",
+{% endfor %}
+    },
+{{ m.platform_guard_end(group.kernel) }}
+{% endfor %}
+};
+
+static const char *k_metal_unary_vec4_kernel_name[MARMOT_DTYPE_COUNT][MARMOT_DEVICE_UNARY_COUNT] = {
+{% for group in vec4_groups %}
+    [{{ group.dtype_enum }}] = {
+{% for entry in group.entries %}
+        [{{ entry.op_enum }}] = "{{ entry.kernel_name }}",
+{% endfor %}
+    },
+{% endfor %}
+};
+
+static const char *k_metal_unary_fused_bias_kernel_name[MARMOT_DTYPE_COUNT] = {
+{% for entry in fused_bias_entries %}
+    [{{ entry.dtype_enum }}] = "{{ entry.kernel_name }}",
+{% endfor %}
+};
+
+static const bool k_metal_unary_needs_params[MARMOT_DEVICE_UNARY_COUNT] = {
+{% for entry in needs_params_entries %}
+    [{{ entry.op_enum }}] = true,
+{% endfor %}
+};
+#endif
+
+#endif // MARMOT_METAL_UNARY_TABLES_GEN_H

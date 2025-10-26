@@ -1,0 +1,97 @@
+// Metal QKV projection matmul kernels (dense + quantized).
+
+KERNEL_FAMILY(qkv_rope_separate) {
+    AXIS(dtype): @qkv_types,
+    NAME_PATTERN: "qkv_rope_{dtype:short}",
+    OP: qkv_shared_input,
+    MATMUL_LAYOUT: NT,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    WEIGHT_LAYOUT: SEPARATE,
+    EPILOGUE: [BIAS, ROPE],
+    IMPL_FUNCTION: "metal_matmul_qkv_separate_{dtype:short}_nt"
+}
+
+KERNEL_FAMILY(qkv_rope_packed) {
+    AXIS(dtype): @qkv_types,
+    NAME_PATTERN: "qkv_rope_{dtype:short}_packed",
+    OP: qkv_shared_input,
+    MATMUL_LAYOUT: NT,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    WEIGHT_LAYOUT: PACKED_3MK,
+    EPILOGUE: [BIAS, ROPE],
+    BIAS: PACKED_3M,
+    IMPL_FUNCTION: "metal_matmul_qkv_dense_{dtype:short}_nt"
+}
+
+KERNEL_FAMILY(qkv_rope_quantized) {
+    AXIS(scheme): @all_quant_schemes,
+    AXIS(input): [FLOAT32, FLOAT16],
+    NAME_PATTERN: "qkv_rope_{scheme:lower}_{input:short}",
+    OP: qkv_shared_input,
+    MATMUL_LAYOUT: NT,
+    INPUT_DTYPE: $input,
+    OUTPUT_DTYPE: [FLOAT32, FLOAT16],
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    WEIGHT_QUANT: $scheme,
+    QUANT_BLOCK: QUANT_SCHEME($scheme).QUANT_BLOCK,
+    WEIGHT_LAYOUT: SEPARATE,
+    EPILOGUE: [BIAS, ROPE],
+    IMPL_FUNCTION: "metal_matmul_qkv_{scheme:lower}_{input:short}"
+}
+
+KERNEL_FAMILY(qkv_projection_separate) {
+    AXIS(dtype): @qkv_types,
+    NAME_PATTERN: "qkv_projection_{dtype:short}",
+    OP: qkv_projection,
+    MATMUL_LAYOUT: NT,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    WEIGHT_LAYOUT: SEPARATE,
+    EPILOGUE: [BIAS, ROPE],
+    IMPL_FUNCTION: "metal_matmul_qkv_separate_{dtype:short}_nt"
+}
+
+KERNEL_FAMILY(qkv_projection_packed) {
+    AXIS(dtype): @qkv_types,
+    NAME_PATTERN: "qkv_projection_{dtype:short}_packed",
+    OP: qkv_projection,
+    MATMUL_LAYOUT: NT,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    WEIGHT_LAYOUT: PACKED_3MK,
+    EPILOGUE: [BIAS, ROPE],
+    BIAS: PACKED_3M,
+    IMPL_FUNCTION: "metal_matmul_qkv_dense_{dtype:short}_nt"
+}
+
+KERNEL_FAMILY(qkv_projection_quantized) {
+    AXIS(scheme): @all_quant_schemes,
+    AXIS(input): [FLOAT32, FLOAT16],
+    NAME_PATTERN: "qkv_projection_{scheme:lower}_{input:short}",
+    OP: qkv_projection,
+    MATMUL_LAYOUT: NT,
+    INPUT_DTYPE: $input,
+    OUTPUT_DTYPE: [FLOAT32, FLOAT16],
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    WEIGHT_QUANT: $scheme,
+    QUANT_BLOCK: QUANT_SCHEME($scheme).QUANT_BLOCK,
+    WEIGHT_LAYOUT: SEPARATE,
+    EPILOGUE: [BIAS, ROPE],
+    IMPL_FUNCTION: "metal_matmul_qkv_{scheme:lower}_{input:short}"
+}

@@ -1,0 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Shared metadata for ops.def (dtype sets, shared constants).
+
+DTYPE_SET(float_types) { FLOAT16, FLOAT32, BFLOAT16 }
+DTYPE_SET(float_all) { @float_types, FLOAT8_E4M3, FLOAT8_E5M2 }

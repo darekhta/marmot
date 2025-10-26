@@ -1,0 +1,195 @@
+// CPU elementwise kernels (scalar + SIMD variants).
+
+SET(elementwise_binary_ops) {
+    add,
+    mul,
+    sub,
+    div,
+    min,
+    max,
+    pow,
+    mod,
+    bitwise_and,
+    bitwise_or,
+    bitwise_xor,
+    bitwise_shl,
+    bitwise_shr,
+    bitwise_shr_logical,
+    compare_eq,
+    compare_ne,
+    compare_lt,
+    compare_le,
+    compare_gt,
+    compare_ge
+}
+
+SET(elementwise_arith_ops) { add, mul, sub, div, min, max, pow, mod }
+
+SET(glu_ops) { swiglu, geglu }
+
+SET(elementwise_bitwise_ops) {
+    bitwise_and,
+    bitwise_or,
+    bitwise_xor,
+    bitwise_shl,
+    bitwise_shr,
+    bitwise_shr_logical
+}
+
+SET(compare_ops) { compare_eq, compare_ne, compare_lt, compare_le, compare_gt, compare_ge }
+
+SET(elementwise_float_simd_ops) { add, mul, sub, div, min, max }
+SET(elementwise_float_accelerate_ops) { @elementwise_float_simd_ops, pow, mod }
+
+SET(elementwise_int_simd_ops) {
+    add,
+    sub,
+    min,
+    max,
+    bitwise_and,
+    bitwise_or,
+    bitwise_xor,
+    bitwise_shl,
+    bitwise_shr,
+    bitwise_shr_logical,
+    compare_eq,
+    compare_ne,
+    compare_lt,
+    compare_le,
+    compare_gt,
+    compare_ge
+}
+
+KERNEL_FAMILY(elementwise_binary_scalar) {
+    AXIS(op): @elementwise_binary_ops,
+    AXIS(dtype): select($op, { @elementwise_bitwise_ops: [@int_types, @uint_types], *: @numeric_all }),
+    NAME_PATTERN: "{op}_{dtype:short}",
+    OP: $op,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: $dtype,
+    OUTPUT_DTYPE: select($op, { @compare_ops: UINT8, *: $dtype }),
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, @float_types: FLOAT32, *: $dtype }),
+    STRIDE_MODE: CONTIGUOUS,
+    PROFILES: select($dtype, {
+        FLOAT16: select($op, {
+            @elementwise_float_accelerate_ops: {
+                ACCELERATE: "cpu_{op}_{dtype:short}_accelerate",
+                SCALAR: "cpu_{op}_{dtype:short}_scalar"
+            },
+            *: { SCALAR: "cpu_{op}_{dtype:short}_scalar" }
+        }),
+        BFLOAT16: select($op, {
+            @elementwise_float_accelerate_ops: {
+                ACCELERATE: "cpu_{op}_{dtype:short}_accelerate",
+                SCALAR: "cpu_{op}_{dtype:short}_scalar"
+            },
+            *: { SCALAR: "cpu_{op}_{dtype:short}_scalar" }
+        }),
+        FLOAT32: select($op, {
+            @elementwise_float_simd_ops: {
+                ACCELERATE: "cpu_{op}_{dtype:short}_accelerate",
+                NEON: "cpu_{op}_{dtype:short}_neon",
+                AVX2: "cpu_{op}_{dtype:short}_avx2",
+                SCALAR: "cpu_{op}_{dtype:short}_scalar"
+            },
+            pow: {
+                ACCELERATE: "cpu_{op}_{dtype:short}_accelerate",
+                SCALAR: "cpu_{op}_{dtype:short}_scalar"
+            },
+            mod: {
+                ACCELERATE: "cpu_{op}_{dtype:short}_accelerate",
+                SCALAR: "cpu_{op}_{dtype:short}_scalar"
+            },
+            *: { SCALAR: "cpu_{op}_{dtype:short}_scalar" }
+        }),
+        FLOAT64: select($op, {
+            @elementwise_float_simd_ops: {
+                ACCELERATE: "cpu_{op}_{dtype:short}_accelerate",
+                NEON: "cpu_{op}_{dtype:short}_neon",
+                AVX2: "cpu_{op}_{dtype:short}_avx2",
+                SCALAR: "cpu_{op}_{dtype:short}_scalar"
+            },
+            pow: {
+                ACCELERATE: "cpu_{op}_{dtype:short}_accelerate",
+                SCALAR: "cpu_{op}_{dtype:short}_scalar"
+            },
+            mod: {
+                ACCELERATE: "cpu_{op}_{dtype:short}_accelerate",
+                SCALAR: "cpu_{op}_{dtype:short}_scalar"
+            },
+            *: { SCALAR: "cpu_{op}_{dtype:short}_scalar" }
+        }),
+        INT32: select($op, {
+            @elementwise_int_simd_ops: {
+                NEON: "cpu_{op}_{dtype:short}_neon",
+                AVX2: "cpu_{op}_{dtype:short}_avx2",
+                SCALAR: "cpu_{op}_{dtype:short}_scalar"
+            },
+            *: { SCALAR: "cpu_{op}_{dtype:short}_scalar" }
+        }),
+        INT64: select($op, {
+            @elementwise_int_simd_ops: {
+                NEON: "cpu_{op}_{dtype:short}_neon",
+                AVX2: "cpu_{op}_{dtype:short}_avx2",
+                SCALAR: "cpu_{op}_{dtype:short}_scalar"
+            },
+            *: { SCALAR: "cpu_{op}_{dtype:short}_scalar" }
+        }),
+        *: { SCALAR: "cpu_{op}_{dtype:short}_scalar" }
+    }),
+}
+
+KERNEL_FAMILY(elementwise_binary_row_scalar) {
+    AXIS(op): @elementwise_arith_ops,
+    AXIS(dtype): @float_all,
+    NAME_PATTERN: "{op}_{dtype:short}_row",
+    OP: $op,
+    PROFILE: SCALAR,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, *: FLOAT32 }),
+    STRIDE_MODE: ROW_STRIDED,
+    IMPL_FUNCTION: "cpu_{op}_{dtype:short}_scalar",
+}
+
+KERNEL_FAMILY(glu_scalar) {
+    AXIS(op): @glu_ops,
+    AXIS(dtype): @float_all,
+    NAME_PATTERN: "{op}_{dtype:short}_scalar",
+    OP: $op,
+    PROFILE: SCALAR,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, *: FLOAT32 }),
+    STRIDE_MODE: ROW_STRIDED,
+}
+
+KERNEL_FAMILY(silu_scalar) {
+    AXIS(dtype): @float_all,
+    NAME_PATTERN: "silu_{dtype:short}_scalar",
+    OP: silu,
+    PROFILE: SCALAR,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, *: FLOAT32 }),
+    STRIDE_MODE: CONTIGUOUS,
+}
+
+KERNEL_FAMILY(silu_simd) {
+    AXIS(dtype): @float_all,
+    AXIS(profile): select($dtype, {
+        FLOAT16: [NEON, ACCELERATE],
+        FLOAT32: [NEON, AVX2, ACCELERATE],
+        BFLOAT16: [ACCELERATE],
+        FLOAT64: [NEON, AVX2, ACCELERATE],
+        @fp8_types: [],
+        *: [NEON, AVX2, ACCELERATE]
+    }),
+    NAME_PATTERN: "silu_{dtype:short}_{profile:lower}",
+    OP: silu,
+    PROFILE: $profile,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, *: FLOAT32 }),
+    STRIDE_MODE: CONTIGUOUS,
+}

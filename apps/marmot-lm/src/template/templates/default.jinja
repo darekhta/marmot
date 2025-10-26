@@ -1,0 +1,8 @@
+{#- Minimal format for base models - just output the last user message as a completion prompt -#}
+{%- set last_user_msg = namespace(content='') %}
+{%- for message in messages %}
+{%- if message['role'] == 'user' %}
+{%- set last_user_msg.content = message['content'] | trim %}
+{%- endif %}
+{%- endfor %}
+{{- last_user_msg.content }}

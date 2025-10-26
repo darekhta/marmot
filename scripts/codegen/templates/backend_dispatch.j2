@@ -1,0 +1,617 @@
+{% import '_macros.j2' as m %}
+{{ m.file_header() }}
+{# Unified backend dispatch template - generates dispatch code for any backend #}
+
+#include <stdlib.h>
+#include <stdint.h>
+
+#include "marmot/device.h"
+#include "marmot/error.h"
+#include "marmot/ops/paged_attention.h"
+#include "marmot/tensor.h"
+
+#include "{{ cfg.internal_header }}"
+{% for inc in cfg.extra_includes %}
+#include "{{ inc }}"
+{% endfor %}
+
+{{ m.file_guard_start(cfg) }}
+{{ m.extern_c_start(cfg) }}
+{# ============================================================================
+   RoPE Dispatch Helper
+   ============================================================================ #}
+{% if has_rope_kernels %}
+static marmot_error_t {{ cfg.name }}_rope_dispatch_helper(
+    const void *device_ctx, const marmot_kernel_args_rope_t *unpacked
+) {
+    if (unpacked == nullptr || unpacked->input == nullptr ||
+        unpacked->output == nullptr || unpacked->ctx == nullptr || unpacked->rope_params == nullptr) {
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+
+    marmot_rope_params_t params = *unpacked->rope_params;
+
+    // If positions tensor is provided, use it directly
+    if (params.positions != nullptr) {
+        return {{ cfg.handlers.rope }}(device_ctx, unpacked->input, &params, unpacked->output);
+    }
+
+    // Otherwise generate positions from n_past
+    const size_t seq_len = unpacked->input->shape.ndim >= 2 ?
+        unpacked->input->shape.shape[unpacked->input->shape.ndim - 2] : 1;
+
+{% if cfg.name == 'cpu' %}
+    {{ cfg.context_type }} *ctx = ({{ cfg.context_type }} *)device_ctx;
+    int32_t *positions_data = cpu_get_rope_positions_scratch(ctx, seq_len);
+    if (positions_data == nullptr) {
+        marmot_set_error(MARMOT_ERROR_OUT_OF_MEMORY, "Failed to get positions scratch buffer for RoPE");
+        return MARMOT_ERROR_OUT_OF_MEMORY;
+    }
+{% else %}
+    int32_t *positions_data = (int32_t *)malloc(seq_len * sizeof(int32_t));
+    if (positions_data == nullptr) {
+        marmot_set_error(MARMOT_ERROR_OUT_OF_MEMORY, "Failed to allocate positions for RoPE");
+        return MARMOT_ERROR_OUT_OF_MEMORY;
+    }
+{% endif %}
+
+    for (size_t i = 0; i < seq_len; ++i) {
+        positions_data[i] = (int32_t)(unpacked->n_past + i);
+    }
+
+    size_t pos_shape[1] = {seq_len};
+    marmot_tensor_t *positions = marmot_tensor_create(unpacked->ctx, pos_shape, 1, MARMOT_DTYPE_INT32);
+    if (positions == nullptr) {
+{% if cfg.name != 'cpu' %}
+        free(positions_data);
+{% endif %}
+        marmot_set_error(MARMOT_ERROR_OUT_OF_MEMORY, "Failed to create positions tensor for RoPE");
+        return MARMOT_ERROR_OUT_OF_MEMORY;
+    }
+
+    marmot_error_t err = marmot_tensor_copy_from_host_buffer(
+        unpacked->ctx, positions, positions_data, seq_len * sizeof(int32_t)
+    );
+{% if cfg.name != 'cpu' %}
+    free(positions_data);
+{% endif %}
+    if (err != MARMOT_SUCCESS) {
+        marmot_tensor_destroy(positions);
+        return err;
+    }
+
+    params.positions = positions;
+    err = {{ cfg.handlers.rope }}(device_ctx, unpacked->input, &params, unpacked->output);
+    marmot_tensor_destroy(positions);
+    return err;
+}
+
+{% endif %}
+{# ============================================================================
+   Kernel Implementations
+   ============================================================================ #}
+{% for kernel in kernels %}
+{# ----- Binary Operations ----- #}
+{% if kernel.kind == 'binary' %}
+{% if cfg.supports_fusion and kernel.is_fused %}
+// {{ kernel.name }}: fused binary+{{ kernel.fusion }}
+{{ m.platform_guard_start(kernel) }}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_{{ kernel.args_base | default('binary') }}_t *args) {
+    (void)device_ctx;
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+{% if kernel.fusion in cfg.fusion_functions %}
+    return {{ cfg.fusion_functions[kernel.fusion] }}(args->ctx, args->input_a, args->input_b, args->output);
+{% else %}
+    marmot_set_error(MARMOT_ERROR_NOT_IMPLEMENTED, "Unknown fusion type");
+    return MARMOT_ERROR_NOT_IMPLEMENTED;
+{% endif %}
+}
+{{ m.platform_guard_end(kernel) }}
+
+{% else %}
+// {{ kernel.name }}: binary op {{ kernel.op_enum }}
+{{ m.platform_guard_start(kernel) }}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_binary_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+{% if kernel.kernel_func %}
+    return {{ kernel.kernel_func }}(device_ctx, {{ kernel.op_enum }}, args->input_a, args->input_b, args->output);
+{% else %}
+    return {{ cfg.handlers.binary }}(device_ctx, {{ kernel.op_enum }}, args->input_a, args->input_b, args->output);
+{% endif %}
+}
+{{ m.platform_guard_end(kernel) }}
+
+{% endif %}
+{# ----- Unary Operations ----- #}
+{% elif kernel.kind == 'unary' %}
+// {{ kernel.name }}: unary op {{ kernel.op_enum }}
+{{ m.platform_guard_start(kernel) }}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_unary_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+{% if kernel.kernel_func and cfg.allows_kernel_func_override %}
+    return {{ kernel.kernel_func }}(device_ctx, {{ kernel.op_enum }}, args->input, args->params, args->output);
+{% else %}
+    return {{ cfg.handlers.unary }}(device_ctx, {{ kernel.op_enum }}, args->input, args->params, args->output);
+{% endif %}
+}
+{{ m.platform_guard_end(kernel) }}
+
+{# ----- Ternary Operations ----- #}
+{% elif kernel.kind == 'ternary' %}
+// {{ kernel.name }}: ternary op {{ kernel.op_enum }}
+{{ m.platform_guard_start(kernel) }}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_ternary_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+{% if kernel.kernel_func and cfg.allows_kernel_func_override %}
+    return {{ kernel.kernel_func }}(
+        device_ctx, {{ kernel.op_enum }}, args->input_a, args->input_b, args->input_c, args->output);
+{% else %}
+    return {{ cfg.handlers.ternary }}(
+        device_ctx, {{ kernel.op_enum }}, args->input_a, args->input_b, args->input_c, args->output);
+{% endif %}
+}
+{{ m.platform_guard_end(kernel) }}
+
+{# ----- Matmul Operations ----- #}
+{% elif kernel.kind == 'matmul' %}
+// {{ kernel.name }}: matmul
+{{ m.platform_guard_start(kernel) }}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_matmul_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Matmul args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    if (args->ctx == nullptr || args->input == nullptr || args->weight == nullptr || args->output == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Matmul args missing tensors");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+{% if kernel.is_quantized %}
+    return {{ cfg.handlers.matmul_quantized }}(device_ctx, args->input, args->weight, args->epilogue, args->output);
+{% elif kernel.kernel_func %}
+{% if cfg.matmul_needs_dimension_extraction %}
+    const size_t N = args->input->shape.shape[0];
+    const size_t K = args->input->shape.shape[1];
+{% if kernel.layout == 'NN' %}
+    const size_t M = args->weight->shape.shape[1];
+{% else %}
+    const size_t M = args->weight->shape.shape[0];
+{% endif %}
+    marmot_error_t status = {{ kernel.kernel_func }}(device_ctx, args->input, args->weight, N, K, M, args->output);
+    if (status != MARMOT_SUCCESS) {
+        return status;
+    }
+    return cpu_matmul_apply_epilogue(device_ctx, args->output, args->epilogue);
+{% else %}
+    return {{ kernel.kernel_func }}(device_ctx, args->input, args->weight, args->epilogue, args->output);
+{% endif %}
+{% else %}
+    return {{ cfg.handlers.matmul }}(device_ctx, args->input, args->weight, args->epilogue, args->output);
+{% endif %}
+}
+{{ m.platform_guard_end(kernel) }}
+
+{# ----- QKV Operations ----- #}
+{% elif kernel.kind == 'qkv' %}
+// {{ kernel.name }}: QKV projection
+{{ m.platform_guard_start(kernel) }}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_qkv_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "QKV args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    if (args->ctx == nullptr || args->input == nullptr || args->wq == nullptr ||
+        args->wk == nullptr || args->wv == nullptr || args->out_q == nullptr ||
+        args->out_k == nullptr || args->out_v == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "QKV args missing tensors");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_matmul_qkv_desc_t desc = marmot_matmul_qkv_desc_default();
+    desc.input = args->input;
+    desc.layout = MARMOT_QKV_LAYOUT_SEPARATE;
+    desc.separate.wq = args->wq;
+    desc.separate.wk = args->wk;
+    desc.separate.wv = args->wv;
+    desc.separate.bq = args->bq;
+    desc.separate.bk = args->bk;
+    desc.separate.bv = args->bv;
+    desc.epilogue = args->epilogue;
+    desc.rope_params = args->rope_params;
+    desc.out_q = args->out_q;
+    desc.out_k = args->out_k;
+    desc.out_v = args->out_v;
+{% if kernel.kernel_func %}
+    return {{ kernel.kernel_func }}(device_ctx, &desc);
+{% elif kernel.is_quantized %}
+    return {{ cfg.handlers.qkv }}_{{ kernel.weight_quant }}(device_ctx, &desc);
+{% else %}
+    return {{ cfg.handlers.qkv }}_{{ kernel.input_dtype }}(device_ctx, &desc);
+{% endif %}
+}
+{{ m.platform_guard_end(kernel) }}
+
+{# ----- Reduction Operations ----- #}
+{% elif kernel.kind == 'reduction' %}
+// {{ kernel.name }}: reduction op {{ kernel.op_enum }}
+{{ m.platform_guard_start(kernel) }}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_reduction_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+{% if cfg.reduction_uses_generic_handler %}
+    return {{ cfg.handlers.reduction }}(
+        device_ctx, {{ kernel.op_enum }}, args->input, args->out_values, args->out_indices, args->params);
+{% else %}
+    return {{ kernel.kernel_func }}(device_ctx, args->input, args->out_values, args->out_indices, args->params);
+{% endif %}
+}
+{{ m.platform_guard_end(kernel) }}
+
+{# ----- Paged Attention Operations ----- #}
+{% elif kernel.kind == 'paged_attention' %}
+// {{ kernel.name }}: paged attention
+{{ m.platform_guard_start(kernel) }}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_paged_attention_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_paged_attention_desc_t desc = marmot_paged_attention_desc_default();
+    desc.token_count = args->token_count;
+    desc.layer_idx = args->layer_idx;
+    desc.num_q_heads = args->num_q_heads;
+    desc.num_kv_heads = args->num_kv_heads;
+    desc.head_dim = args->head_dim;
+    desc.block_size = args->block_size;
+    desc.scale = args->scale;
+    desc.token_meta = args->token_meta;
+    desc.q = args->q;
+    desc.k_new = args->k_new;
+    desc.v_new = args->v_new;
+    desc.kv_k = args->kv_k;
+    desc.kv_v = args->kv_v;
+    desc.block_table = args->block_table;
+    desc.out = args->out;
+    marmot_paged_attention_kv_scale_ext_t scale_ext = marmot_paged_attention_kv_scale_ext_default();
+    if (args->kv_k_scale != nullptr || args->kv_v_scale != nullptr) {
+        scale_ext.kv_k_scale = args->kv_k_scale;
+        scale_ext.kv_v_scale = args->kv_v_scale;
+        desc.pnext = &scale_ext;
+    }
+{% if kernel.kernel_func and cfg.allows_kernel_func_override %}
+    return {{ kernel.kernel_func }}(device_ctx, &desc);
+{% else %}
+    return {{ cfg.handlers.paged_attention }}(device_ctx, &desc);
+{% endif %}
+}
+{{ m.platform_guard_end(kernel) }}
+
+{# ----- RMS Norm Operations ----- #}
+{% elif kernel.kind == 'rms_norm' %}
+// {{ kernel.name }}: RMS normalization
+{{ m.platform_guard_start(kernel) }}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_rms_norm_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_rmsnorm_desc_t desc = {
+        .x = args->input,
+        .residual = args->residual,
+        .weight = args->weight,
+        .out = args->output,
+        .eps = args->eps,
+    };
+{% if kernel.kernel_func and cfg.allows_kernel_func_override %}
+    return {{ kernel.kernel_func }}(device_ctx, &desc);
+{% else %}
+    return {{ cfg.handlers.rms_norm }}(device_ctx, &desc);
+{% endif %}
+}
+{{ m.platform_guard_end(kernel) }}
+
+{# ----- LayerNorm Operations ----- #}
+{% elif kernel.kind == 'layernorm' %}
+// {{ kernel.name }}: layer normalization
+{{ m.platform_guard_start(kernel) }}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_layernorm_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_layernorm_desc_t desc = {
+        .x = args->input,
+        .residual = args->residual,
+        .weight = args->weight,
+        .bias = args->bias,
+        .out = args->output,
+        .eps = args->eps,
+    };
+{% if kernel.kernel_func and cfg.allows_kernel_func_override %}
+    return {{ kernel.kernel_func }}(device_ctx, &desc);
+{% else %}
+    return {{ cfg.handlers.layernorm }}(device_ctx, &desc);
+{% endif %}
+}
+{{ m.platform_guard_end(kernel) }}
+
+{# ----- Softmax Operations ----- #}
+{% elif kernel.kind == 'softmax' %}
+// {{ kernel.name }}: softmax
+{{ m.platform_guard_start(kernel) }}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_softmax_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_softmax_desc_t desc = {
+        .x = args->input,
+        .out = args->output,
+        .axis = args->axis,
+    };
+{% if kernel.kernel_func and cfg.allows_kernel_func_override %}
+    return {{ kernel.kernel_func }}(device_ctx, &desc);
+{% else %}
+    return {{ cfg.handlers.softmax }}(device_ctx, &desc);
+{% endif %}
+}
+{{ m.platform_guard_end(kernel) }}
+
+{# ----- RoPE Operations ----- #}
+{% elif kernel.kind == 'rope' %}
+// {{ kernel.name }}: rotary position embedding
+{{ m.platform_guard_start(kernel) }}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_rope_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    return {{ cfg.name }}_rope_dispatch_helper(device_ctx, args);
+}
+{{ m.platform_guard_end(kernel) }}
+
+{# ----- Vec Dot Operations ----- #}
+{% elif kernel.kind == 'vec_dot' %}
+// {{ kernel.name }}: vector dot product
+{{ m.platform_guard_start(kernel) }}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_vec_dot_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    return {{ cfg.handlers.vec_dot }}(device_ctx, args->desc, args->result);
+}
+{{ m.platform_guard_end(kernel) }}
+
+{# ----- Embedding Operations ----- #}
+{% elif kernel.kind == 'embedding' %}
+// {{ kernel.name }}: embedding gather
+{{ m.platform_guard_start(kernel) }}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_embedding_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_embedding_gather_desc_t desc = {
+        .weights = args->weights,
+        .token_ids = args->token_ids,
+        .out = args->out,
+        .dtype_out = args->dtype_out,
+        .scale = args->scale,
+        .padding_id = args->padding_id,
+        .bounds_check = args->bounds_check,
+        .prefer_gpu_private = args->prefer_gpu_private ? MARMOT_PREFERENCE_ENABLE : MARMOT_PREFERENCE_DISABLE,
+        .allow_quant_decode_on_the_fly =
+            args->allow_quant_decode_on_the_fly ? MARMOT_PREFERENCE_ENABLE : MARMOT_PREFERENCE_DISABLE,
+    };
+    return {{ cfg.handlers.embedding }}(device_ctx, &desc);
+}
+{{ m.platform_guard_end(kernel) }}
+
+{# ----- Conversion Operations ----- #}
+{% elif kernel.kind == 'conversion' %}
+// {{ kernel.name }}: dtype conversion
+{{ m.platform_guard_start(kernel) }}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_convert_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    return {{ cfg.handlers.convert }}(
+        device_ctx, args->dst_dtype, args->dst, args->src_dtype, args->src, args->n
+    );
+}
+{{ m.platform_guard_end(kernel) }}
+
+{# ----- Quantization Operations ----- #}
+{% elif kernel.kind == 'quantization' %}
+// {{ kernel.name }}: quantization op {{ kernel.op }}
+{{ m.platform_guard_start(kernel) }}
+{% if kernel.op == 'quantize' %}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_quantize_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+{% if cfg.quantize_uses_unified_dispatcher %}
+    const marmot_quant_kind_traits_t *traits = marmot_get_quant_kind_traits(args->kind);
+    marmot_quant_layout_t layout = traits != nullptr ? args->layout : MARMOT_QUANT_LAYOUT_GENERIC;
+    return {{ cfg.handlers.quantize }}(device_ctx, args->kind, layout, args->input, args->quant_params, args->output);
+{% else %}
+    const marmot_quant_kind_traits_t *traits = marmot_get_quant_kind_traits(args->kind);
+    marmot_quant_layout_t layout = traits != nullptr ? args->layout : MARMOT_QUANT_LAYOUT_GENERIC;
+    if (args->kind == MARMOT_QUANT_KIND_GENERIC) {
+        return {{ cfg.handlers.quantize }}(device_ctx, args->input, args->quant_params, args->output);
+    }
+    return {{ cfg.handlers.quantize_with_kind }}(device_ctx, args->kind, layout, args->input, args->output);
+{% endif %}
+}
+{% elif kernel.op == 'dequantize' %}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_dequantize_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+{% if cfg.quantize_uses_unified_dispatcher %}
+    const marmot_quant_kind_traits_t *traits = marmot_get_quant_kind_traits(args->kind);
+    marmot_quant_layout_t layout = traits != nullptr ? args->layout : MARMOT_QUANT_LAYOUT_GENERIC;
+    return {{ cfg.handlers.dequantize }}(device_ctx, args->kind, layout, args->input, args->output);
+{% else %}
+    const marmot_quant_kind_traits_t *traits = marmot_get_quant_kind_traits(args->kind);
+    marmot_quant_layout_t layout = traits != nullptr ? args->layout : MARMOT_QUANT_LAYOUT_GENERIC;
+    if (args->kind == MARMOT_QUANT_KIND_GENERIC) {
+        return {{ cfg.handlers.dequantize }}(device_ctx, args->input, args->output);
+    }
+    return {{ cfg.handlers.dequantize_with_kind }}(device_ctx, args->kind, layout, args->input, args->output);
+{% endif %}
+}
+{% elif kernel.op == 'compute_quant_params' %}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_compute_qparams_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    return {{ cfg.handlers.compute_quant_params }}(device_ctx, args->tensor, args->target_dtype, args->block_size, args->out_params);
+}
+{% else %}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(const void *device_ctx, const void *args) {
+    (void)device_ctx;
+    (void)args;
+    marmot_set_error(MARMOT_ERROR_NOT_IMPLEMENTED, "Unknown quantization op");
+    return MARMOT_ERROR_NOT_IMPLEMENTED;
+}
+{% endif %}
+{{ m.platform_guard_end(kernel) }}
+
+{# ----- Tensor Layout Operations ----- #}
+{% elif kernel.kind == 'tensor_ops' %}
+// {{ kernel.name }}: tensor layout op {{ kernel.op }}
+{{ m.platform_guard_start(kernel) }}
+{% if kernel.op == 'reshape' %}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_reshape_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    return {{ cfg.handlers.reshape }}(device_ctx, args->input, args->output, args->new_shape, args->new_ndim);
+}
+{% elif kernel.op == 'view' %}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_view_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    return {{ cfg.handlers.view }}(device_ctx, args->input, args->output, args->byte_offset);
+}
+{% elif kernel.op == 'contiguous' %}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_contiguous_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    return {{ cfg.handlers.contiguous }}(device_ctx, args->input, args->output);
+}
+{% elif kernel.op == 'transpose' %}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_transpose_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    return {{ cfg.handlers.transpose }}(device_ctx, args->input, args->output, args->perm);
+}
+{% elif kernel.op == 'concat' %}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_concat_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    return {{ cfg.handlers.concat }}(device_ctx, args->inputs, args->num_inputs, args->output, args->axis);
+}
+{% elif kernel.op == 'slice' or (kernel.op == 'split' and cfg.split_and_slice_unified) %}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_slice_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    return {{ cfg.handlers.slice }}(device_ctx, args->input, args->output, args->starts, args->sizes);
+}
+{% elif kernel.op == 'gather_rows' %}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_gather_rows_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    return {{ cfg.handlers.gather_rows }}(device_ctx, args->input, args->indices, args->output);
+}
+{% elif kernel.op == 'scatter_u64_to_i32' %}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_gather_rows_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    return {{ cfg.handlers.scatter_u64_to_i32 }}(device_ctx, args->input, args->indices, args->output);
+}
+{% else %}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(const void *device_ctx, const void *args) {
+    (void)device_ctx;
+    (void)args;
+    marmot_set_error(MARMOT_ERROR_NOT_IMPLEMENTED, "Tensor op {{ kernel.op }} not implemented for {{ cfg.name | upper }}");
+    return MARMOT_ERROR_NOT_IMPLEMENTED;
+}
+{% endif %}
+{{ m.platform_guard_end(kernel) }}
+
+{# ----- Unknown Operations ----- #}
+{% else %}
+// {{ kernel.name }}: kind={{ kernel.kind }} - not implemented
+{{ m.platform_guard_start(kernel) }}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(const void *device_ctx, const void *args) {
+    (void)device_ctx;
+    (void)args;
+    marmot_set_error(MARMOT_ERROR_NOT_IMPLEMENTED, "Unknown kernel implementation for {{ kernel.kind }}");
+    return MARMOT_ERROR_NOT_IMPLEMENTED;
+}
+{{ m.platform_guard_end(kernel) }}
+
+{% endif %}
+{% endfor %}
+{{ m.extern_c_end(cfg) }}
+{{ m.file_guard_end(cfg) }}

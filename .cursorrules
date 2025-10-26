@@ -1,0 +1,39 @@
+# Marmot Project Rules for AI Assistants
+
+## Code Style
+- C23 (c2x) standard required
+- No unnecessary comments
+- Use nullptr, static_assert, thread_local
+- Clean, minimal code
+- Format with clang-format: `make format`
+- Pointer alignment: `void *ptr` (not `void* ptr`)
+
+## Build Commands
+- `make build` - debug build
+- `make test` - run all tests
+- `make build-asan` - build with address sanitizer
+- `make clean-all` - clean everything
+
+## File Locations
+- C headers: `include/marmot/`
+- C implementations: `src/core/` or `src/backends/`
+- Go code: `pkg/marmot/`
+- Tests: `tests/` (C) or `pkg/marmot/*_test.go` (Go)
+- Scripts: `scripts/` (build.sh, test.sh)
+
+## When Modifying
+1. Update `meson.build` for new C files
+2. Format code: `make format`
+3. Run `make build && make test` before committing
+4. Use sanitizers for memory-sensitive code: `make build-asan && make test-asan`
+
+## Architecture
+- C core for performance (BLAS/Metal/MPS)
+- Go wrapper for usability (cgo bindings)
+- Vtable-based backends (CPU, Metal, future: CUDA)
+- Coarse-grained cgo calls (minimize overhead)
+
+## Read First
+- `.ai/DEVELOPMENT.md` - Full development guide
+- `docs/BUILD_SYSTEM.md` - Build system details
+- `ARCHITECTURE.md` - System architecture

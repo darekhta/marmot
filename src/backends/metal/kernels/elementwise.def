@@ -1,0 +1,78 @@
+// Metal elementwise binary kernels.
+
+SET(arithmetic_ops) { add, mul, sub, div, min, max, pow, mod }
+SET(compare_ops) { compare_eq, compare_ne, compare_lt, compare_le, compare_gt, compare_ge }
+SET(bitwise_ops) { bitwise_and, bitwise_or, bitwise_xor, bitwise_shl, bitwise_shr, bitwise_shr_logical }
+SET(glu_ops) { swiglu, geglu }
+
+KERNEL_FAMILY(arithmetic_binary_float) {
+    AXIS(op): @arithmetic_ops,
+    AXIS(dtype): @float_types,
+    NAME_PATTERN: "{op}_{dtype:short}",
+    OP: $op,
+    PROFILE: NONE,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: ROW_STRIDED,
+}
+
+KERNEL_FAMILY(arithmetic_binary_int) {
+    AXIS(op): @arithmetic_ops,
+    AXIS(dtype): [@int_types_elementwise, @uint_types],
+    NAME_PATTERN: "{op}_{dtype:short}",
+    OP: $op,
+    PROFILE: NONE,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: $dtype,
+    STRIDE_MODE: CONTIGUOUS,
+}
+
+KERNEL_FAMILY(glu_binary) {
+    AXIS(op): @glu_ops,
+    AXIS(dtype): @float_types,
+    NAME_PATTERN: "{op}_{dtype:short}",
+    OP: $op,
+    PROFILE: NONE,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { @float_types: FLOAT32, *: $dtype }),
+    STRIDE_MODE: ROW_STRIDED,
+}
+
+KERNEL_FAMILY(arithmetic_add_fused) {
+    AXIS(activation): [RELU, GELU, SILU],
+    AXIS(dtype): [FLOAT32, FLOAT16],
+    NAME_PATTERN: "add_{activation:lower}_fused_{dtype:short}",
+    OP: select($activation, { RELU: add_relu, GELU: add_gelu, SILU: add_silu, *: add }),
+    PROFILE: NONE,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { FLOAT16: FLOAT32, *: $dtype }),
+    STRIDE_MODE: CONTIGUOUS,
+}
+
+KERNEL_FAMILY(bitwise_binary) {
+    AXIS(op): @bitwise_ops,
+    AXIS(dtype): [@int_types_elementwise, @uint_types],
+    NAME_PATTERN: "{op}_{dtype:short}",
+    OP: $op,
+    PROFILE: NONE,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: $dtype,
+    STRIDE_MODE: CONTIGUOUS,
+}
+
+KERNEL_FAMILY(compare_binary) {
+    AXIS(op): @compare_ops,
+    AXIS(dtype): @numeric_elementwise,
+    NAME_PATTERN: "{op}_{dtype:short}",
+    OP: $op,
+    PROFILE: NONE,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: UINT8,
+    ACCUM_DTYPE: select($dtype, { @float_types: FLOAT32, *: $dtype }),
+    STRIDE_MODE: CONTIGUOUS,
+}

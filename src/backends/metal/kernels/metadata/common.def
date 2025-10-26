@@ -1,0 +1,74 @@
+// Shared declarations for Metal kernel definitions.
+
+// -----------------------------------------------------------------------------
+// Dtype sets
+// -----------------------------------------------------------------------------
+
+DTYPE_SET(fp8_types) { FLOAT8_E4M3, FLOAT8_E5M2 }
+
+DTYPE_SET(float_types) { FLOAT32, FLOAT16, BFLOAT16, @fp8_types }
+DTYPE_SET(float_types_no_fp8) { FLOAT32, FLOAT16, BFLOAT16 }
+
+DTYPE_SET(int_types_elementwise) { INT32, INT16, INT8 }
+DTYPE_SET(int_types_all) { INT64, INT32, INT16, INT8 }
+DTYPE_SET(uint_types) { UINT8, UINT16, UINT32, UINT64 }
+
+DTYPE_SET(numeric_elementwise) { @float_types, @int_types_elementwise, @uint_types }
+DTYPE_SET(standard_types) { FLOAT32, FLOAT16, BFLOAT16, INT64, INT32, INT16, INT8, UINT8, UINT16, UINT32, UINT64 }
+
+DTYPE_SET(matmul_types) { FLOAT16, FLOAT32, BFLOAT16, FLOAT8_E4M3, FLOAT8_E5M2 }
+DTYPE_SET(qkv_types) { FLOAT16, FLOAT32, BFLOAT16 }
+
+// -----------------------------------------------------------------------------
+// Common sets
+// -----------------------------------------------------------------------------
+
+SET(matmul_layouts) { NT, NN }
+
+SET(quant_schemes_legacy) { Q4_0, Q4_1, Q5_0, Q5_1, Q8_0, Q8_1 }
+SET(quant_schemes_k) { Q2_K, Q3_K, Q4_K, Q5_K, Q6_K, Q8_K }
+SET(all_quant_schemes) { @quant_schemes_legacy, @quant_schemes_k }
+
+SET(matmul_dense_epi_f16) { "", "bias_relu", "bias_residual", "bias_relu_residual" }
+SET(matmul_dense_epi_f32) { "", "bias_relu", "bias_gelu", "bias_residual", "bias_relu_residual", "bias_gelu_residual" }
+SET(matmul_dense_epi_bf16) { "", "bias_gelu", "bias_residual", "bias_gelu_residual" }
+SET(matmul_dense_epi_fp8) { "" }
+
+SET(matmul_quant_epi) { "", "bias_relu", "bias_gelu", "bias_silu" }
+
+// -----------------------------------------------------------------------------
+// Fragments
+// -----------------------------------------------------------------------------
+
+FRAGMENT(epilogue_bias) {
+    EPILOGUE: BIAS
+}
+
+FRAGMENT(epilogue_bias_relu) {
+    EPILOGUE: [BIAS, ACTIVATION],
+    ACTIVATION: RELU
+}
+
+FRAGMENT(epilogue_bias_gelu) {
+    EPILOGUE: [BIAS, ACTIVATION],
+    ACTIVATION: GELU
+}
+
+FRAGMENT(epilogue_bias_silu) {
+    EPILOGUE: [BIAS, ACTIVATION],
+    ACTIVATION: SILU
+}
+
+FRAGMENT(epilogue_bias_residual) {
+    EPILOGUE: [BIAS, RESIDUAL]
+}
+
+FRAGMENT(epilogue_bias_relu_residual) {
+    EPILOGUE: [BIAS, ACTIVATION, RESIDUAL],
+    ACTIVATION: RELU
+}
+
+FRAGMENT(epilogue_bias_gelu_residual) {
+    EPILOGUE: [BIAS, ACTIVATION, RESIDUAL],
+    ACTIVATION: GELU
+}

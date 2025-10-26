@@ -1,0 +1,24 @@
+// Metal ternary kernels.
+
+KERNEL_FAMILY(fma) {
+    AXIS(kind): [metal, fp8_metal],
+    NAME_PATTERN: "fma_{kind}",
+    OP: fma,
+    PROFILE: NONE,
+    INPUT_DTYPE: select($kind, { fp8_metal: @fp8_types, *: [FLOAT16, FLOAT32, BFLOAT16] }),
+    OUTPUT_DTYPE: select($kind, { fp8_metal: @fp8_types, *: [FLOAT16, FLOAT32, BFLOAT16] }),
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+}
+
+KERNEL_FAMILY(where) {
+    AXIS(kind): [metal, fp8_metal],
+    NAME_PATTERN: "where_{kind}",
+    OP: where,
+    PROFILE: NONE,
+    INPUT_DTYPE: UINT8,
+    WEIGHT_DTYPE: select($kind, { fp8_metal: @fp8_types, *: [FLOAT16, FLOAT32, BFLOAT16] }),
+    OUTPUT_DTYPE: select($kind, { fp8_metal: @fp8_types, *: [FLOAT16, FLOAT32, BFLOAT16] }),
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+}

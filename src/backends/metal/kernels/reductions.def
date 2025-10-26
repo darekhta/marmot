@@ -1,0 +1,41 @@
+// Metal reduction kernels.
+
+KERNEL_FAMILY(reductions) {
+    AXIS(op): [
+        reduction_sum,
+        reduction_mean,
+        reduction_max,
+        reduction_min,
+        reduction_variance,
+        reduction_std,
+        reduction_norm_l1,
+        reduction_norm_l2,
+        reduction_prod,
+        reduction_argmax,
+        reduction_argmin,
+        reduction_any,
+        reduction_all
+    ],
+    NAME_PATTERN: "{op}",
+    OP: $op,
+    PROFILE: NONE,
+    INPUT_DTYPE: select($op, {
+        reduction_mean: @float_types_no_fp8,
+        reduction_variance: @float_types_no_fp8,
+        reduction_std: @float_types_no_fp8,
+        reduction_norm_l1: @float_types_no_fp8,
+        reduction_norm_l2: @float_types_no_fp8,
+        *: @standard_types
+    }),
+    OUTPUT_DTYPE: select($op, {
+        reduction_mean: @float_types_no_fp8,
+        reduction_variance: @float_types_no_fp8,
+        reduction_std: @float_types_no_fp8,
+        reduction_norm_l1: @float_types_no_fp8,
+        reduction_norm_l2: @float_types_no_fp8,
+        *: @standard_types
+    }),
+    ACCUM_DTYPE: ANY,
+    STRIDE_MODE: STRIDED,
+    IMPL_FUNCTION: "metal_{op}_impl"
+}

@@ -1,0 +1,1139 @@
+// SPDX-License-Identifier: MIT
+// User-facing operation definitions for API code generation.
+
+INCLUDE "ops_metadata.def"
+
+// ============================================================================
+// REDUCTIONS
+// ============================================================================
+
+OPERATION(reduce_sum) {
+    CATEGORY: reduction,
+    API_FUNCTION: marmot_reduce_sum,
+    API_SIGNATURE: reduction_desc,
+    DESC_TYPE: marmot_reduction_desc_t,
+    OP_ENUM: MARMOT_DEVICE_REDUCTION_SUM,
+    OP_ID: MARMOT_OP_REDUCTION_SUM,
+    LABEL: "sum",
+    HAS_INDICES: false,
+}
+
+OPERATION(reduce_mean) {
+    CATEGORY: reduction,
+    API_FUNCTION: marmot_reduce_mean,
+    API_SIGNATURE: reduction_desc,
+    DESC_TYPE: marmot_reduction_desc_t,
+    OP_ENUM: MARMOT_DEVICE_REDUCTION_MEAN,
+    OP_ID: MARMOT_OP_REDUCTION_MEAN,
+    LABEL: "mean",
+    HAS_INDICES: false,
+}
+
+OPERATION(reduce_prod) {
+    CATEGORY: reduction,
+    API_FUNCTION: marmot_reduce_prod,
+    API_SIGNATURE: reduction_desc,
+    DESC_TYPE: marmot_reduction_desc_t,
+    OP_ENUM: MARMOT_DEVICE_REDUCTION_PROD,
+    OP_ID: MARMOT_OP_REDUCTION_PROD,
+    LABEL: "prod",
+    HAS_INDICES: false,
+}
+
+OPERATION(reduce_max) {
+    CATEGORY: reduction,
+    API_FUNCTION: marmot_reduce_max,
+    API_SIGNATURE: reduction_desc,
+    DESC_TYPE: marmot_reduction_desc_t,
+    OP_ENUM: MARMOT_DEVICE_REDUCTION_MAX,
+    OP_ID: MARMOT_OP_REDUCTION_MAX,
+    LABEL: "max",
+    HAS_INDICES: false,
+}
+
+OPERATION(reduce_min) {
+    CATEGORY: reduction,
+    API_FUNCTION: marmot_reduce_min,
+    API_SIGNATURE: reduction_desc,
+    DESC_TYPE: marmot_reduction_desc_t,
+    OP_ENUM: MARMOT_DEVICE_REDUCTION_MIN,
+    OP_ID: MARMOT_OP_REDUCTION_MIN,
+    LABEL: "min",
+    HAS_INDICES: false,
+}
+
+OPERATION(reduce_argmax) {
+    CATEGORY: reduction,
+    API_FUNCTION: marmot_reduce_argmax,
+    API_SIGNATURE: reduction_desc,
+    DESC_TYPE: marmot_reduction_desc_t,
+    OP_ENUM: MARMOT_DEVICE_REDUCTION_ARGMAX,
+    OP_ID: MARMOT_OP_REDUCTION_ARGMAX,
+    LABEL: "argmax",
+    HAS_INDICES: true,
+}
+
+OPERATION(reduce_argmin) {
+    CATEGORY: reduction,
+    API_FUNCTION: marmot_reduce_argmin,
+    API_SIGNATURE: reduction_desc,
+    DESC_TYPE: marmot_reduction_desc_t,
+    OP_ENUM: MARMOT_DEVICE_REDUCTION_ARGMIN,
+    OP_ID: MARMOT_OP_REDUCTION_ARGMIN,
+    LABEL: "argmin",
+    HAS_INDICES: true,
+}
+
+OPERATION(reduce_any) {
+    CATEGORY: reduction,
+    API_FUNCTION: marmot_reduce_any,
+    API_SIGNATURE: reduction_desc,
+    DESC_TYPE: marmot_reduction_desc_t,
+    OP_ENUM: MARMOT_DEVICE_REDUCTION_ANY,
+    OP_ID: MARMOT_OP_REDUCTION_ANY,
+    LABEL: "any",
+    HAS_INDICES: false,
+}
+
+OPERATION(reduce_all) {
+    CATEGORY: reduction,
+    API_FUNCTION: marmot_reduce_all,
+    API_SIGNATURE: reduction_desc,
+    DESC_TYPE: marmot_reduction_desc_t,
+    OP_ENUM: MARMOT_DEVICE_REDUCTION_ALL,
+    OP_ID: MARMOT_OP_REDUCTION_ALL,
+    LABEL: "all",
+    HAS_INDICES: false,
+}
+
+OPERATION(reduce_variance) {
+    CATEGORY: reduction,
+    API_FUNCTION: marmot_reduce_variance,
+    API_SIGNATURE: reduction_desc,
+    DESC_TYPE: marmot_reduction_desc_t,
+    OP_ENUM: MARMOT_DEVICE_REDUCTION_VARIANCE,
+    OP_ID: MARMOT_OP_REDUCTION_VARIANCE,
+    LABEL: "variance",
+    HAS_INDICES: false,
+}
+
+OPERATION(reduce_std) {
+    CATEGORY: reduction,
+    API_FUNCTION: marmot_reduce_std,
+    API_SIGNATURE: reduction_desc,
+    DESC_TYPE: marmot_reduction_desc_t,
+    OP_ENUM: MARMOT_DEVICE_REDUCTION_STD,
+    OP_ID: MARMOT_OP_REDUCTION_STD,
+    LABEL: "std",
+    HAS_INDICES: false,
+}
+
+OPERATION(reduce_norm_l1) {
+    CATEGORY: reduction,
+    API_FUNCTION: marmot_reduce_norm_l1,
+    API_SIGNATURE: reduction_desc,
+    DESC_TYPE: marmot_reduction_desc_t,
+    OP_ENUM: MARMOT_DEVICE_REDUCTION_NORM_L1,
+    OP_ID: MARMOT_OP_REDUCTION_NORM_L1,
+    LABEL: "norm L1",
+    HAS_INDICES: false,
+}
+
+OPERATION(reduce_norm_l2) {
+    CATEGORY: reduction,
+    API_FUNCTION: marmot_reduce_norm_l2,
+    API_SIGNATURE: reduction_desc,
+    DESC_TYPE: marmot_reduction_desc_t,
+    OP_ENUM: MARMOT_DEVICE_REDUCTION_NORM_L2,
+    OP_ID: MARMOT_OP_REDUCTION_NORM_L2,
+    LABEL: "norm L2",
+    HAS_INDICES: false,
+}
+
+// ============================================================================
+// UNARY
+// ============================================================================
+
+OPERATION(abs) {
+    CATEGORY: unary,
+    API_FUNCTION: marmot_abs,
+    API_SIGNATURE: unary_basic,
+    OP_ENUM: MARMOT_DEVICE_UNARY_ABS,
+    OP_ID: MARMOT_OP_ABS,
+    LABEL: "Abs",
+    SUPPORTS_BIAS: false,
+}
+
+OPERATION(neg) {
+    CATEGORY: unary,
+    API_FUNCTION: marmot_neg,
+    API_SIGNATURE: unary_basic,
+    OP_ENUM: MARMOT_DEVICE_UNARY_NEG,
+    OP_ID: MARMOT_OP_NEG,
+    LABEL: "Neg",
+    SUPPORTS_BIAS: false,
+}
+
+OPERATION(sign) {
+    CATEGORY: unary,
+    API_FUNCTION: marmot_sign,
+    API_SIGNATURE: unary_basic,
+    OP_ENUM: MARMOT_DEVICE_UNARY_SIGN,
+    OP_ID: MARMOT_OP_SIGN,
+    LABEL: "Sign",
+    SUPPORTS_BIAS: false,
+}
+
+OPERATION(sqrt) {
+    CATEGORY: unary,
+    API_FUNCTION: marmot_sqrt,
+    API_SIGNATURE: unary_basic,
+    OP_ENUM: MARMOT_DEVICE_UNARY_SQRT,
+    OP_ID: MARMOT_OP_SQRT,
+    LABEL: "Sqrt",
+    SUPPORTS_BIAS: false,
+}
+
+OPERATION(exp) {
+    CATEGORY: unary,
+    API_FUNCTION: marmot_exp,
+    API_SIGNATURE: unary_basic,
+    OP_ENUM: MARMOT_DEVICE_UNARY_EXP,
+    OP_ID: MARMOT_OP_EXP,
+    LABEL: "Exp",
+    SUPPORTS_BIAS: false,
+}
+
+OPERATION(log) {
+    CATEGORY: unary,
+    API_FUNCTION: marmot_log,
+    API_SIGNATURE: unary_basic,
+    OP_ENUM: MARMOT_DEVICE_UNARY_LOG,
+    OP_ID: MARMOT_OP_LOG,
+    LABEL: "Log",
+    SUPPORTS_BIAS: false,
+}
+
+OPERATION(bitwise_not) {
+    CATEGORY: unary,
+    API_FUNCTION: marmot_bitwise_not,
+    API_SIGNATURE: unary_basic,
+    OP_ENUM: MARMOT_DEVICE_UNARY_BITWISE_NOT,
+    OP_ID: MARMOT_OP_BITWISE_NOT,
+    LABEL: "Bitwise NOT",
+    SUPPORTS_BIAS: false,
+}
+
+OPERATION(relu) {
+    CATEGORY: unary,
+    API_FUNCTION: marmot_relu,
+    API_SIGNATURE: unary_basic,
+    OP_ENUM: MARMOT_DEVICE_UNARY_RELU,
+    OP_ID: MARMOT_OP_RELU,
+    LABEL: "ReLU",
+    SUPPORTS_BIAS: true,
+}
+
+OPERATION(gelu) {
+    CATEGORY: unary,
+    API_FUNCTION: marmot_gelu,
+    API_SIGNATURE: unary_basic,
+    OP_ENUM: MARMOT_DEVICE_UNARY_GELU,
+    OP_ID: MARMOT_OP_GELU,
+    LABEL: "GELU",
+    SUPPORTS_BIAS: true,
+}
+
+OPERATION(gelu_tanh) {
+    CATEGORY: unary,
+    API_FUNCTION: marmot_gelu_tanh,
+    API_SIGNATURE: unary_basic,
+    OP_ENUM: MARMOT_DEVICE_UNARY_GELU_TANH,
+    OP_ID: MARMOT_OP_GELU_TANH,
+    LABEL: "GELU tanh",
+    SUPPORTS_BIAS: true,
+}
+
+OPERATION(silu) {
+    CATEGORY: unary,
+    API_FUNCTION: marmot_silu,
+    API_SIGNATURE: unary_basic,
+    OP_ENUM: MARMOT_DEVICE_UNARY_SILU,
+    OP_ID: MARMOT_OP_SILU,
+    LABEL: "SiLU",
+    SUPPORTS_BIAS: true,
+}
+
+OPERATION(swish) {
+    CATEGORY: unary,
+    API_FUNCTION: marmot_swish,
+    API_SIGNATURE: unary_basic,
+    ALIAS_OF: silu,
+    LABEL: "Swish",
+    SUPPORTS_BIAS: true,
+}
+
+OPERATION(sigmoid) {
+    CATEGORY: unary,
+    API_FUNCTION: marmot_sigmoid,
+    API_SIGNATURE: unary_basic,
+    OP_ENUM: MARMOT_DEVICE_UNARY_SIGMOID,
+    OP_ID: MARMOT_OP_SIGMOID,
+    LABEL: "Sigmoid",
+    SUPPORTS_BIAS: true,
+}
+
+OPERATION(tanh) {
+    CATEGORY: unary,
+    API_FUNCTION: marmot_tanh,
+    API_SIGNATURE: unary_basic,
+    OP_ENUM: MARMOT_DEVICE_UNARY_TANH,
+    OP_ID: MARMOT_OP_TANH,
+    LABEL: "Tanh",
+    SUPPORTS_BIAS: true,
+}
+
+OPERATION(mish) {
+    CATEGORY: unary,
+    API_FUNCTION: marmot_mish,
+    API_SIGNATURE: unary_basic,
+    OP_ENUM: MARMOT_DEVICE_UNARY_MISH,
+    OP_ID: MARMOT_OP_MISH,
+    LABEL: "Mish",
+    SUPPORTS_BIAS: true,
+}
+
+OPERATION(elu) {
+    CATEGORY: unary,
+    API_FUNCTION: marmot_elu,
+    API_SIGNATURE: unary_alpha,
+    OP_ENUM: MARMOT_DEVICE_UNARY_ELU,
+    OP_ID: MARMOT_OP_ELU,
+    LABEL: "ELU",
+    PARAMS: { alpha: alpha },
+    DEFAULT_ALPHA: 1.0,
+    SUPPORTS_BIAS: true,
+}
+
+OPERATION(selu) {
+    CATEGORY: unary,
+    API_FUNCTION: marmot_selu,
+    API_SIGNATURE: unary_alpha_beta,
+    OP_ENUM: MARMOT_DEVICE_UNARY_SELU,
+    OP_ID: MARMOT_OP_SELU,
+    LABEL: "SELU",
+    PARAMS: { alpha: alpha, beta: lambda },
+    DEFAULT_ALPHA: 1.6732632423543772,
+    DEFAULT_BETA: 1.0507009873554804,
+    DEFAULT_ALPHA_IF_ZERO: true,
+    DEFAULT_BETA_IF_ZERO: true,
+    SUPPORTS_BIAS: true,
+}
+
+OPERATION(leaky_relu) {
+    CATEGORY: unary,
+    API_FUNCTION: marmot_leaky_relu,
+    API_SIGNATURE: unary_alpha,
+    OP_ENUM: MARMOT_DEVICE_UNARY_LEAKY_RELU,
+    OP_ID: MARMOT_OP_LEAKY_RELU,
+    LABEL: "Leaky ReLU",
+    PARAMS: { alpha: negative_slope },
+    DEFAULT_ALPHA: 0.01,
+    DEFAULT_ALPHA_IF_ZERO: true,
+    SUPPORTS_BIAS: true,
+}
+
+OPERATION(prelu) {
+    CATEGORY: unary,
+    API_FUNCTION: marmot_prelu,
+    API_SIGNATURE: unary_alpha,
+    OP_ENUM: MARMOT_DEVICE_UNARY_PRELU,
+    OP_ID: MARMOT_OP_PRELU,
+    LABEL: "PReLU",
+    PARAMS: { alpha: slope },
+    PARAMS_REQUIRED: true,
+    ALLOW_PARAM_TENSOR: false,
+    SUPPORTS_BIAS: true,
+}
+
+// ============================================================================
+// BINARY ELEMENTWISE
+// ============================================================================
+
+OPERATION(add) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_add,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_ADD,
+    OP_ID: MARMOT_OP_ADD,
+    KERNEL_OP: add,
+    LABEL: "Add",
+    ALLOW_BOOL_OUT: false,
+    STRIDE_POLICY: elementwise_stride_mode_2d,
+}
+
+OPERATION(add_relu) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_add_relu,
+    API_SIGNATURE: binary_basic,
+    OP_ID: MARMOT_OP_ADD_RELU,
+    KERNEL_OP: add,
+    LABEL: "AddReLU",
+    ALLOW_BOOL_OUT: false,
+    STRIDE_POLICY: elementwise_stride_mode_2d,
+}
+
+OPERATION(add_gelu) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_add_gelu,
+    API_SIGNATURE: binary_basic,
+    OP_ID: MARMOT_OP_ADD_GELU,
+    KERNEL_OP: add,
+    LABEL: "AddGELU",
+    ALLOW_BOOL_OUT: false,
+    STRIDE_POLICY: elementwise_stride_mode_2d,
+}
+
+OPERATION(add_silu) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_add_silu,
+    API_SIGNATURE: binary_basic,
+    OP_ID: MARMOT_OP_ADD_SILU,
+    KERNEL_OP: add,
+    LABEL: "AddSiLU",
+    ALLOW_BOOL_OUT: false,
+    STRIDE_POLICY: elementwise_stride_mode_2d,
+}
+
+OPERATION(mul) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_mul,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_MUL,
+    OP_ID: MARMOT_OP_MUL,
+    KERNEL_OP: mul,
+    LABEL: "Mul",
+    ALLOW_BOOL_OUT: false,
+    STRIDE_POLICY: elementwise_stride_mode_2d,
+}
+
+OPERATION(swiglu) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_swiglu,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_SWIGLU,
+    OP_ID: MARMOT_OP_SWIGLU,
+    KERNEL_OP: swiglu,
+    LABEL: "SwiGLU",
+    ALLOW_BOOL_OUT: false,
+    STRIDE_POLICY: elementwise_stride_mode_2d,
+}
+
+OPERATION(geglu) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_geglu,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_GEGLU,
+    OP_ID: MARMOT_OP_GEGLU,
+    KERNEL_OP: geglu,
+    LABEL: "GeGLU",
+    ALLOW_BOOL_OUT: false,
+    STRIDE_POLICY: elementwise_stride_mode_2d,
+}
+
+OPERATION(sub) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_sub,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_SUB,
+    OP_ID: MARMOT_OP_SUB,
+    KERNEL_OP: sub,
+    LABEL: "Sub",
+    ALLOW_BOOL_OUT: false,
+    STRIDE_POLICY: elementwise_stride_mode_2d,
+}
+
+OPERATION(div) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_div,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_DIV,
+    OP_ID: MARMOT_OP_DIV,
+    KERNEL_OP: div,
+    LABEL: "Div",
+    ALLOW_BOOL_OUT: false,
+    STRIDE_POLICY: elementwise_stride_mode_2d,
+}
+
+OPERATION(min) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_min,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_MIN,
+    OP_ID: MARMOT_OP_MIN,
+    KERNEL_OP: min,
+    LABEL: "Min",
+    ALLOW_BOOL_OUT: false,
+    STRIDE_POLICY: elementwise_stride_mode_2d,
+}
+
+OPERATION(max) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_max,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_MAX,
+    OP_ID: MARMOT_OP_MAX,
+    KERNEL_OP: max,
+    LABEL: "Max",
+    ALLOW_BOOL_OUT: false,
+    STRIDE_POLICY: elementwise_stride_mode_2d,
+}
+
+OPERATION(pow) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_pow,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_POW,
+    OP_ID: MARMOT_OP_POW,
+    KERNEL_OP: pow,
+    LABEL: "Pow",
+    ALLOW_BOOL_OUT: false,
+    STRIDE_POLICY: elementwise_stride_mode_2d,
+}
+
+OPERATION(mod) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_mod,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_MOD,
+    OP_ID: MARMOT_OP_MOD,
+    KERNEL_OP: mod,
+    LABEL: "Mod",
+    ALLOW_BOOL_OUT: false,
+    STRIDE_POLICY: elementwise_stride_mode_2d,
+}
+
+OPERATION(bitwise_and) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_bitwise_and,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_BITWISE_AND,
+    OP_ID: MARMOT_OP_BITWISE_AND,
+    KERNEL_OP: bitwise_and,
+    LABEL: "Bitwise AND",
+    ALLOW_BOOL_OUT: false,
+    STRIDE_POLICY: MARMOT_STRIDE_MODE_ANY,
+}
+
+OPERATION(bitwise_or) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_bitwise_or,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_BITWISE_OR,
+    OP_ID: MARMOT_OP_BITWISE_OR,
+    KERNEL_OP: bitwise_or,
+    LABEL: "Bitwise OR",
+    ALLOW_BOOL_OUT: false,
+    STRIDE_POLICY: MARMOT_STRIDE_MODE_ANY,
+}
+
+OPERATION(bitwise_xor) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_bitwise_xor,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_BITWISE_XOR,
+    OP_ID: MARMOT_OP_BITWISE_XOR,
+    KERNEL_OP: bitwise_xor,
+    LABEL: "Bitwise XOR",
+    ALLOW_BOOL_OUT: false,
+    STRIDE_POLICY: MARMOT_STRIDE_MODE_ANY,
+}
+
+OPERATION(bitwise_shift_left) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_bitwise_shift_left,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_BITWISE_SHIFT_LEFT,
+    OP_ID: MARMOT_OP_BITWISE_SHL,
+    KERNEL_OP: bitwise_shl,
+    LABEL: "Bitwise shift-left",
+    ALLOW_BOOL_OUT: false,
+    STRIDE_POLICY: MARMOT_STRIDE_MODE_ANY,
+}
+
+OPERATION(bitwise_shift_right) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_bitwise_shift_right,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_BITWISE_SHIFT_RIGHT,
+    OP_ID: MARMOT_OP_BITWISE_SHR,
+    KERNEL_OP: bitwise_shr,
+    LABEL: "Bitwise shift-right",
+    ALLOW_BOOL_OUT: false,
+    STRIDE_POLICY: MARMOT_STRIDE_MODE_ANY,
+}
+
+OPERATION(bitwise_shift_right_logical) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_bitwise_shift_right_logical,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_BITWISE_SHIFT_RIGHT_LOGICAL,
+    OP_ID: MARMOT_OP_BITWISE_SHR_LOGICAL,
+    KERNEL_OP: bitwise_shr_logical,
+    LABEL: "Bitwise logical shift-right",
+    ALLOW_BOOL_OUT: false,
+    STRIDE_POLICY: MARMOT_STRIDE_MODE_ANY,
+}
+
+OPERATION(compare_eq) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_compare_eq,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_COMPARE_EQ,
+    OP_ID: MARMOT_OP_COMPARE_EQ,
+    KERNEL_OP: compare_eq,
+    LABEL: "Compare EQ",
+    ALLOW_BOOL_OUT: true,
+    STRIDE_POLICY: MARMOT_STRIDE_MODE_ANY,
+}
+
+OPERATION(compare_ne) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_compare_ne,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_COMPARE_NE,
+    OP_ID: MARMOT_OP_COMPARE_NE,
+    KERNEL_OP: compare_ne,
+    LABEL: "Compare NE",
+    ALLOW_BOOL_OUT: true,
+    STRIDE_POLICY: MARMOT_STRIDE_MODE_ANY,
+}
+
+OPERATION(compare_lt) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_compare_lt,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_COMPARE_LT,
+    OP_ID: MARMOT_OP_COMPARE_LT,
+    KERNEL_OP: compare_lt,
+    LABEL: "Compare LT",
+    ALLOW_BOOL_OUT: true,
+    STRIDE_POLICY: MARMOT_STRIDE_MODE_ANY,
+}
+
+OPERATION(compare_le) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_compare_le,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_COMPARE_LE,
+    OP_ID: MARMOT_OP_COMPARE_LE,
+    KERNEL_OP: compare_le,
+    LABEL: "Compare LE",
+    ALLOW_BOOL_OUT: true,
+    STRIDE_POLICY: MARMOT_STRIDE_MODE_ANY,
+}
+
+OPERATION(compare_gt) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_compare_gt,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_COMPARE_GT,
+    OP_ID: MARMOT_OP_COMPARE_GT,
+    KERNEL_OP: compare_gt,
+    LABEL: "Compare GT",
+    ALLOW_BOOL_OUT: true,
+    STRIDE_POLICY: MARMOT_STRIDE_MODE_ANY,
+}
+
+OPERATION(compare_ge) {
+    CATEGORY: binary,
+    API_FUNCTION: marmot_compare_ge,
+    API_SIGNATURE: binary_basic,
+    OP_ENUM: MARMOT_DEVICE_BINARY_COMPARE_GE,
+    OP_ID: MARMOT_OP_COMPARE_GE,
+    KERNEL_OP: compare_ge,
+    LABEL: "Compare GE",
+    ALLOW_BOOL_OUT: true,
+    STRIDE_POLICY: MARMOT_STRIDE_MODE_ANY,
+}
+
+// ============================================================================
+// TERNARY ELEMENTWISE
+// ============================================================================
+
+OPERATION(fma) {
+    CATEGORY: ternary,
+    API_FUNCTION: marmot_fma,
+    API_SIGNATURE: ternary_fma,
+    OP_ENUM: MARMOT_DEVICE_TERNARY_FMA,
+    OP_ID: MARMOT_OP_FMA,
+    LABEL: "FMA",
+    LOOKUP_DTYPE: a,
+}
+
+OPERATION(where) {
+    CATEGORY: ternary,
+    API_FUNCTION: marmot_where,
+    API_SIGNATURE: ternary_where,
+    OP_ENUM: MARMOT_DEVICE_TERNARY_WHERE,
+    OP_ID: MARMOT_OP_WHERE,
+    LABEL: "Where",
+    LOOKUP_DTYPE: out,
+}
+
+// ============================================================================
+// CONVERSIONS
+// ============================================================================
+
+OPERATION(convert_generic) {
+    CATEGORY: convert,
+    API_FUNCTION: marmot_convert,
+    API_SIGNATURE: convert_generic,
+    OP_ID: MARMOT_OP_CONVERT,
+    LABEL: "Convert",
+}
+
+OPERATION(convert_f32_to_f16) {
+    CATEGORY: convert,
+    API_FUNCTION: marmot_convert_f32_to_f16,
+    API_SIGNATURE: convert_typed,
+    SRC_DTYPE: MARMOT_DTYPE_FLOAT32,
+    DST_DTYPE: MARMOT_DTYPE_FLOAT16,
+}
+
+OPERATION(convert_f16_to_f32) {
+    CATEGORY: convert,
+    API_FUNCTION: marmot_convert_f16_to_f32,
+    API_SIGNATURE: convert_typed,
+    SRC_DTYPE: MARMOT_DTYPE_FLOAT16,
+    DST_DTYPE: MARMOT_DTYPE_FLOAT32,
+}
+
+OPERATION(convert_f32_to_bf16) {
+    CATEGORY: convert,
+    API_FUNCTION: marmot_convert_f32_to_bf16,
+    API_SIGNATURE: convert_typed,
+    SRC_DTYPE: MARMOT_DTYPE_FLOAT32,
+    DST_DTYPE: MARMOT_DTYPE_BFLOAT16,
+}
+
+OPERATION(convert_bf16_to_f32) {
+    CATEGORY: convert,
+    API_FUNCTION: marmot_convert_bf16_to_f32,
+    API_SIGNATURE: convert_typed,
+    SRC_DTYPE: MARMOT_DTYPE_BFLOAT16,
+    DST_DTYPE: MARMOT_DTYPE_FLOAT32,
+}
+
+OPERATION(convert_f16_to_bf16) {
+    CATEGORY: convert,
+    API_FUNCTION: marmot_convert_f16_to_bf16,
+    API_SIGNATURE: convert_typed,
+    SRC_DTYPE: MARMOT_DTYPE_FLOAT16,
+    DST_DTYPE: MARMOT_DTYPE_BFLOAT16,
+}
+
+OPERATION(convert_bf16_to_f16) {
+    CATEGORY: convert,
+    API_FUNCTION: marmot_convert_bf16_to_f16,
+    API_SIGNATURE: convert_typed,
+    SRC_DTYPE: MARMOT_DTYPE_BFLOAT16,
+    DST_DTYPE: MARMOT_DTYPE_FLOAT16,
+}
+
+// ============================================================================
+// QUANTIZATION
+// ============================================================================
+
+OPERATION(compute_quant_params) {
+    CATEGORY: quantize,
+    API_FUNCTION: marmot_compute_quant_params,
+    API_SIGNATURE: compute_quant_params,
+    OP_ID: MARMOT_OP_COMPUTE_QUANT_PARAMS,
+}
+
+OPERATION(quantize_generic) {
+    CATEGORY: quantize,
+    API_FUNCTION: marmot_quantize,
+    API_SIGNATURE: quantize_generic,
+    QUANT_KIND: MARMOT_QUANT_KIND_GENERIC,
+}
+
+OPERATION(quantize_q4_0) {
+    CATEGORY: quantize,
+    API_FUNCTION: marmot_quantize_q4_0,
+    API_SIGNATURE: quantize_fixed_kind,
+    QUANT_KIND: MARMOT_QUANT_KIND_Q4_0,
+}
+
+OPERATION(quantize_q4_1) {
+    CATEGORY: quantize,
+    API_FUNCTION: marmot_quantize_q4_1,
+    API_SIGNATURE: quantize_fixed_kind,
+    QUANT_KIND: MARMOT_QUANT_KIND_Q4_1,
+}
+
+OPERATION(quantize_q5_0) {
+    CATEGORY: quantize,
+    API_FUNCTION: marmot_quantize_q5_0,
+    API_SIGNATURE: quantize_fixed_kind,
+    QUANT_KIND: MARMOT_QUANT_KIND_Q5_0,
+}
+
+OPERATION(quantize_q5_1) {
+    CATEGORY: quantize,
+    API_FUNCTION: marmot_quantize_q5_1,
+    API_SIGNATURE: quantize_fixed_kind,
+    QUANT_KIND: MARMOT_QUANT_KIND_Q5_1,
+}
+
+OPERATION(quantize_q8_0) {
+    CATEGORY: quantize,
+    API_FUNCTION: marmot_quantize_q8_0,
+    API_SIGNATURE: quantize_fixed_kind,
+    QUANT_KIND: MARMOT_QUANT_KIND_Q8_0,
+}
+
+OPERATION(quantize_q8_1) {
+    CATEGORY: quantize,
+    API_FUNCTION: marmot_quantize_q8_1,
+    API_SIGNATURE: quantize_fixed_kind,
+    QUANT_KIND: MARMOT_QUANT_KIND_Q8_1,
+}
+
+OPERATION(quantize_q2_k) {
+    CATEGORY: quantize,
+    API_FUNCTION: marmot_quantize_q2_k,
+    API_SIGNATURE: quantize_fixed_kind,
+    QUANT_KIND: MARMOT_QUANT_KIND_Q2_K,
+}
+
+OPERATION(quantize_q3_k) {
+    CATEGORY: quantize,
+    API_FUNCTION: marmot_quantize_q3_k,
+    API_SIGNATURE: quantize_fixed_kind,
+    QUANT_KIND: MARMOT_QUANT_KIND_Q3_K,
+}
+
+OPERATION(quantize_q4_k) {
+    CATEGORY: quantize,
+    API_FUNCTION: marmot_quantize_q4_k,
+    API_SIGNATURE: quantize_fixed_kind,
+    QUANT_KIND: MARMOT_QUANT_KIND_Q4_K,
+}
+
+OPERATION(quantize_q5_k) {
+    CATEGORY: quantize,
+    API_FUNCTION: marmot_quantize_q5_k,
+    API_SIGNATURE: quantize_fixed_kind,
+    QUANT_KIND: MARMOT_QUANT_KIND_Q5_K,
+}
+
+OPERATION(quantize_q6_k) {
+    CATEGORY: quantize,
+    API_FUNCTION: marmot_quantize_q6_k,
+    API_SIGNATURE: quantize_fixed_kind,
+    QUANT_KIND: MARMOT_QUANT_KIND_Q6_K,
+}
+
+OPERATION(quantize_q8_k) {
+    CATEGORY: quantize,
+    API_FUNCTION: marmot_quantize_q8_k,
+    API_SIGNATURE: quantize_fixed_kind,
+    QUANT_KIND: MARMOT_QUANT_KIND_Q8_K,
+}
+
+// ============================================================================
+// NORMALIZATION
+// ============================================================================
+
+OPERATION(layernorm) {
+    CATEGORY: normalization,
+    API_FUNCTION: marmot_layernorm,
+    API_SIGNATURE: layernorm_desc,
+    DESC_TYPE: marmot_layernorm_desc_t,
+    OP_ID: MARMOT_OP_LAYERNORM,
+    LABEL: "Layernorm",
+    KERNEL_OP: layernorm,
+}
+
+OPERATION(rmsnorm) {
+    CATEGORY: normalization,
+    API_FUNCTION: marmot_rmsnorm,
+    API_SIGNATURE: rmsnorm_desc,
+    DESC_TYPE: marmot_rmsnorm_desc_t,
+    OP_ID: MARMOT_OP_RMS_NORM,
+    LABEL: "RMSNorm",
+    KERNEL_OP: rms_norm,
+}
+
+OPERATION(rmsnorm_gemma) EXTENDS rmsnorm {
+    API_FUNCTION: marmot_rmsnorm_gemma,
+    OP_ID: MARMOT_OP_RMS_NORM_GEMMA,
+    LABEL: "RMSNormGemma",
+}
+
+OPERATION(softmax) {
+    CATEGORY: normalization,
+    API_FUNCTION: marmot_softmax,
+    API_SIGNATURE: softmax_desc,
+    DESC_TYPE: marmot_softmax_desc_t,
+    OP_ID: MARMOT_OP_SOFTMAX,
+    LABEL: "Softmax",
+    KERNEL_OP: softmax,
+}
+
+// ============================================================================
+// EMBEDDING
+// ============================================================================
+
+OPERATION(embedding_lookup) {
+    CATEGORY: embedding,
+    API_FUNCTION: marmot_embedding_lookup,
+    API_SIGNATURE: forward_desc_impl,
+    DESC_TYPE: marmot_embedding_desc_t,
+    IMPL_FUNCTION: marmot_embedding_lookup_impl,
+    LABEL: "embedding_lookup",
+}
+
+OPERATION(embedding_gather) {
+    CATEGORY: embedding,
+    API_FUNCTION: marmot_embedding_gather,
+    API_SIGNATURE: embedding_gather_desc,
+    DESC_TYPE: marmot_embedding_gather_desc_t,
+    BUILD_FN: marmot_embedding_gather_build,
+    OP_ID: MARMOT_OP_EMBEDDING,
+    LABEL: "embedding_gather",
+    KERNEL_OP: embedding,
+    KERNEL_ENUM_PREFIX: EMBED,
+}
+
+// ============================================================================
+// TENSOR MANIPULATION
+// ============================================================================
+
+OPERATION(reshape) {
+    CATEGORY: manipulation,
+    API_FUNCTION: marmot_reshape,
+    API_SIGNATURE: tensor_reshape,
+    OP_ID: MARMOT_OP_RESHAPE,
+    LABEL: "Reshape",
+    KERNEL_OP: reshape,
+    BUILD_FN: marmot_reshape_build,
+}
+
+OPERATION(view) {
+    CATEGORY: manipulation,
+    API_FUNCTION: marmot_view,
+    API_SIGNATURE: tensor_view,
+    OP_ID: MARMOT_OP_VIEW,
+    LABEL: "View",
+    KERNEL_OP: view,
+    BUILD_FN: marmot_view_build,
+}
+
+OPERATION(contiguous) {
+    CATEGORY: manipulation,
+    API_FUNCTION: marmot_contiguous,
+    API_SIGNATURE: tensor_contiguous,
+    OP_ID: MARMOT_OP_CONTIGUOUS,
+    LABEL: "Contiguous",
+    KERNEL_OP: contiguous,
+    BUILD_FN: marmot_contiguous_build,
+}
+
+OPERATION(transpose) {
+    CATEGORY: manipulation,
+    API_FUNCTION: marmot_transpose,
+    API_SIGNATURE: tensor_transpose,
+    OP_ID: MARMOT_OP_TRANSPOSE,
+    LABEL: "Transpose",
+    KERNEL_OP: transpose,
+    BUILD_FN: marmot_transpose_build,
+}
+
+OPERATION(concat) {
+    CATEGORY: manipulation,
+    API_FUNCTION: marmot_concat,
+    API_SIGNATURE: tensor_concat,
+    OP_ID: MARMOT_OP_CONCAT,
+    LABEL: "Concat",
+    KERNEL_OP: concat,
+    BUILD_FN: marmot_concat_build,
+}
+
+OPERATION(slice) {
+    CATEGORY: manipulation,
+    API_FUNCTION: marmot_slice,
+    API_SIGNATURE: tensor_slice,
+    OP_ID: MARMOT_OP_SLICE,
+    LABEL: "Slice",
+    KERNEL_OP: slice,
+    BUILD_FN: marmot_slice_build,
+}
+
+OPERATION(gather_rows) {
+    CATEGORY: manipulation,
+    API_FUNCTION: marmot_gather_rows,
+    API_SIGNATURE: tensor_gather_rows,
+    OP_ID: MARMOT_OP_GATHER_ROWS,
+    LABEL: "GatherRows",
+    KERNEL_OP: gather_rows,
+    BUILD_FN: marmot_gather_rows_build,
+}
+
+OPERATION(scatter_u64_to_i32) {
+    CATEGORY: manipulation,
+    API_FUNCTION: marmot_scatter_u64_to_i32,
+    API_SIGNATURE: tensor_gather_rows,
+    OP_ID: MARMOT_OP_SCATTER_U64_TO_I32,
+    LABEL: "ScatterU64ToI32",
+    KERNEL_OP: scatter_u64_to_i32,
+    KERNEL_ENUM_PREFIX: GATHER_ROWS,
+    BUILD_FN: marmot_scatter_u64_to_i32_build,
+}
+
+// ============================================================================
+// ROPE
+// ============================================================================
+
+OPERATION(rope) {
+    CATEGORY: rope,
+    API_FUNCTION: marmot_rope,
+    API_SIGNATURE: rope_args,
+    OP_ID: MARMOT_OP_ROPE,
+    LABEL: "RoPE",
+    KERNEL_OP: rope,
+}
+
+// ============================================================================
+// MATMUL
+// ============================================================================
+
+OPERATION(linear) {
+    CATEGORY: matmul,
+    API_FUNCTION: marmot_linear,
+    API_SIGNATURE: forward_matmul_impl,
+    IMPL_FUNCTION: marmot_linear_impl,
+    OP_ID: MARMOT_OP_MATMUL,
+    LABEL: "Matmul",
+    KERNEL_OP: matmul,
+    MATMUL_PROFILE: NT,
+}
+
+OPERATION(matmul) EXTENDS linear {
+    API_FUNCTION: marmot_matmul,
+    IMPL_FUNCTION: marmot_matmul_impl,
+    MATMUL_PROFILE: NN,
+}
+
+OPERATION(matmul_bias) {
+    CATEGORY: matmul,
+    API_FUNCTION: marmot_matmul_bias,
+    API_SIGNATURE: forward_matmul_impl,
+    IMPL_FUNCTION: marmot_matmul_bias_impl,
+    OP_ID: MARMOT_OP_MATMUL_BIAS,
+    LABEL: "Matmul Bias",
+    KERNEL_OP: matmul,
+}
+
+OPERATION(matmul_bias_relu) {
+    CATEGORY: matmul,
+    API_FUNCTION: marmot_matmul_bias_relu,
+    API_SIGNATURE: forward_matmul_impl,
+    IMPL_FUNCTION: marmot_matmul_bias_relu_impl,
+    OP_ID: MARMOT_OP_MATMUL_BIAS_RELU,
+    LABEL: "Matmul Bias ReLU",
+    KERNEL_OP: matmul,
+}
+
+OPERATION(matmul_bias_gelu) {
+    CATEGORY: matmul,
+    API_FUNCTION: marmot_matmul_bias_gelu,
+    API_SIGNATURE: forward_matmul_impl,
+    IMPL_FUNCTION: marmot_matmul_bias_gelu_impl,
+    OP_ID: MARMOT_OP_MATMUL_BIAS_GELU,
+    LABEL: "Matmul Bias GELU",
+    KERNEL_OP: matmul,
+}
+
+OPERATION(matmul_bias_silu) {
+    CATEGORY: matmul,
+    API_FUNCTION: marmot_matmul_bias_silu,
+    API_SIGNATURE: forward_matmul_impl,
+    IMPL_FUNCTION: marmot_matmul_bias_silu_impl,
+    OP_ID: MARMOT_OP_MATMUL_BIAS_SILU,
+    LABEL: "Matmul Bias SiLU",
+    KERNEL_OP: matmul,
+}
+
+OPERATION(matmul_qkv) {
+    CATEGORY: matmul,
+    API_FUNCTION: marmot_matmul_qkv,
+    API_SIGNATURE: forward_desc_impl,
+    DESC_TYPE: marmot_matmul_qkv_desc_t,
+    IMPL_FUNCTION: marmot_matmul_qkv_impl,
+    OP_ID: MARMOT_OP_QKV_ROPE,
+    LABEL: "Matmul QKV",
+    KERNEL_OP: qkv,
+}
+
+OPERATION(matmul_qkv_shared_input) {
+    CATEGORY: matmul,
+    API_FUNCTION: marmot_matmul_qkv_shared_input,
+    API_SIGNATURE: forward_desc_impl,
+    DESC_TYPE: marmot_matmul_qkv_desc_t,
+    IMPL_FUNCTION: marmot_matmul_qkv_shared_input_impl,
+    OP_ID: MARMOT_OP_QKV_SHARED_INPUT,
+    LABEL: "Matmul QKV Shared Input",
+    KERNEL_OP: qkv,
+}
+
+OPERATION(matmul_qkv_projection) {
+    CATEGORY: matmul,
+    API_FUNCTION: marmot_matmul_qkv_projection,
+    API_SIGNATURE: forward_desc_impl,
+    DESC_TYPE: marmot_matmul_qkv_desc_t,
+    IMPL_FUNCTION: marmot_matmul_qkv_projection_impl,
+    OP_ID: MARMOT_OP_QKV_PROJECTION,
+    LABEL: "Matmul QKV Projection",
+    KERNEL_OP: qkv,
+}
+
+OPERATION(matmul_prepack_quant_weight) {
+    CATEGORY: matmul,
+    API_FUNCTION: marmot_matmul_prepack_quant_weight,
+    API_SIGNATURE: forward_ctx_tensor_impl,
+    IMPL_FUNCTION: marmot_matmul_prepack_quant_weight_impl,
+    LABEL: "matmul_prepack_quant_weight",
+}
+
+// ============================================================================
+// ATTENTION
+// ============================================================================
+
+OPERATION(paged_attention) {
+    CATEGORY: attention,
+    API_FUNCTION: marmot_paged_attention,
+    API_SIGNATURE: forward_desc_impl,
+    DESC_TYPE: marmot_paged_attention_desc_t,
+    IMPL_FUNCTION: marmot_paged_attention_impl,
+    OP_ID: MARMOT_OP_PAGED_ATTENTION,
+    LABEL: "paged_attention",
+    KERNEL_OP: paged_attention,
+}
+
+// ============================================================================
+// VEC DOT
+// ============================================================================
+
+OPERATION(vec_dot) {
+    CATEGORY: quantize,
+    API_FUNCTION: marmot_vec_dot,
+    API_SIGNATURE: vec_dot_desc,
+    DESC_TYPE: marmot_vec_dot_descriptor_t,
+    OP_ID: MARMOT_OP_VEC_DOT,
+    LABEL: "vec_dot",
+    KERNEL_OP: vec_dot,
+    BUILD_FN: marmot_vec_dot_build,
+}

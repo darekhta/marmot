@@ -1,0 +1,3 @@
+option('enable_apple_accelerate', type: 'boolean', value: false, description: 'Enable Apple Accelerate (BLAS + vDSP/vForce) on macOS')
+option('enable_simd', type: 'boolean', value: true, description: 'Enable SIMD acceleration (NEON on ARM, AVX2 on x86)')
+option('enable_metal', type: 'boolean', value: true, description: 'Enable Metal backend on macOS')

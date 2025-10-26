@@ -1,0 +1,38 @@
+// Shared declarations for CPU kernel definitions.
+
+// -----------------------------------------------------------------------------
+// Dtype sets
+// -----------------------------------------------------------------------------
+
+DTYPE_SET(fp8_types) { FLOAT8_E4M3, FLOAT8_E5M2 }
+
+DTYPE_SET(float_types) { FLOAT16, FLOAT32, BFLOAT16, @fp8_types }
+DTYPE_SET(float_all) { @float_types, FLOAT64 }
+
+DTYPE_SET(int_types) { INT8, INT16, INT32, INT64 }
+DTYPE_SET(uint_types) { UINT8, UINT16, UINT32, UINT64 }
+
+DTYPE_SET(numeric_all) { @float_all, @int_types, @uint_types }
+
+// Elementwise SIMD availability differs by profile.
+DTYPE_SET(elementwise_types_scalar) { @numeric_all }
+DTYPE_SET(elementwise_types_neon) { FLOAT16, FLOAT32, FLOAT64, @int_types, @uint_types }
+DTYPE_SET(elementwise_types_avx2) { FLOAT32, FLOAT64, @int_types, @uint_types }
+DTYPE_SET(elementwise_types_accelerate) { FLOAT16, FLOAT32, BFLOAT16, FLOAT64, @int_types, @uint_types }
+
+DTYPE_SET(matmul_types_scalar) { FLOAT16, FLOAT32, FLOAT64, BFLOAT16, @fp8_types }
+DTYPE_SET(matmul_types_neon) { FLOAT16, FLOAT32, FLOAT64, BFLOAT16 }
+DTYPE_SET(matmul_types_avx2) { FLOAT16, BFLOAT16 }
+DTYPE_SET(matmul_types_accelerate) { FLOAT16, FLOAT32, FLOAT64, BFLOAT16, @fp8_types }
+
+// -----------------------------------------------------------------------------
+// Common sets
+// -----------------------------------------------------------------------------
+
+SET(matmul_layouts) { NT, NN }
+
+SET(quant_schemes_legacy) { Q4_0, Q4_1, Q5_0, Q5_1, Q8_0, Q8_1 }
+SET(quant_schemes_k) { Q2_K, Q3_K, Q4_K, Q5_K, Q6_K, Q8_K }
+SET(all_quant_schemes) { @quant_schemes_legacy, @quant_schemes_k }
+
+SET(cpu_qkv_quant_schemes) { Q4_K, Q2_K, Q3_K, Q5_K, Q6_K, Q8_0, Q8_K }

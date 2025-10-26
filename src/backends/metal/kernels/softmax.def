@@ -1,0 +1,13 @@
+// Metal softmax kernels.
+
+KERNEL_FAMILY(softmax) {
+    AXIS(dtype): @float_types,
+    NAME_PATTERN: "softmax_{dtype:short}",
+    OP: softmax,
+    PROFILE: NONE,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    IMPL_FUNCTION: metal_softmax_impl
+}

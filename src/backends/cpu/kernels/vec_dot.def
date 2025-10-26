@@ -1,0 +1,15 @@
+// CPU vector dot-product kernels for quantized weights.
+
+KERNEL_FAMILY(vec_dot) {
+    AXIS(scheme): @all_quant_schemes,
+    AXIS(act): select($scheme, { @quant_schemes_legacy: q8_0, @quant_schemes_k: q8_k, *: q8_0 }),
+    NAME_PATTERN: "vec_dot_{scheme:lower}_{act}",
+    OP: vec_dot,
+    PROFILE: NONE,
+    INPUT_DTYPE: FLOAT32,
+    OUTPUT_DTYPE: FLOAT32,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: CONTIGUOUS,
+    WEIGHT_QUANT: $scheme,
+    QUANT_BLOCK: QUANT_SCHEME($scheme).QUANT_BLOCK,
+}

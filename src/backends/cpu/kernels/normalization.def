@@ -1,0 +1,70 @@
+// CPU normalization kernels (LayerNorm, RMSNorm).
+
+KERNEL_FAMILY(layernorm_scalar) {
+    AXIS(dtype): @float_all,
+    NAME_PATTERN: "layernorm_{dtype:short}",
+    OP: layernorm,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: select($dtype, { FLOAT16: [FLOAT16, FLOAT32], BFLOAT16: [BFLOAT16, FLOAT32], *: $dtype }),
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, *: FLOAT32 }),
+    STRIDE_MODE: CONTIGUOUS,
+    PROFILES: {
+        ACCELERATE: "cpu_layernorm_impl",
+        NEON: "cpu_layernorm_impl",
+        AVX2: "cpu_layernorm_impl",
+        SCALAR: "cpu_layernorm_impl"
+    },
+}
+
+KERNEL_FAMILY(layernorm_scalar_residual) {
+    AXIS(dtype): @float_all,
+    NAME_PATTERN: "layernorm_{dtype:short}_residual",
+    OP: layernorm,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: select($dtype, { FLOAT16: [FLOAT16, FLOAT32], BFLOAT16: [BFLOAT16, FLOAT32], *: $dtype }),
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, *: FLOAT32 }),
+    STRIDE_MODE: CONTIGUOUS,
+    FUSION: RESIDUAL_ADD,
+    PROFILES: {
+        ACCELERATE: "cpu_layernorm_impl",
+        NEON: "cpu_layernorm_impl",
+        AVX2: "cpu_layernorm_impl",
+        SCALAR: "cpu_layernorm_impl"
+    },
+}
+
+KERNEL_FAMILY(rms_norm_scalar) {
+    AXIS(dtype): @float_all,
+    NAME_PATTERN: "rms_norm_{dtype:short}",
+    OP: rms_norm,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: select($dtype, { FLOAT16: [FLOAT16, FLOAT32], BFLOAT16: [BFLOAT16, FLOAT32], *: $dtype }),
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, *: FLOAT32 }),
+    STRIDE_MODE: CONTIGUOUS,
+    PROFILES: {
+        ACCELERATE: "cpu_rmsnorm_impl",
+        NEON: "cpu_rmsnorm_impl",
+        AVX2: "cpu_rmsnorm_impl",
+        SCALAR: "cpu_rmsnorm_impl"
+    },
+}
+
+KERNEL_FAMILY(rms_norm_gemma_scalar) {
+    AXIS(dtype): @float_all,
+    NAME_PATTERN: "rms_norm_gemma_{dtype:short}",
+    OP: rms_norm_gemma,
+    INPUT_DTYPE: $dtype,
+    WEIGHT_DTYPE: select($dtype, { FLOAT16: [FLOAT16, FLOAT32], BFLOAT16: [BFLOAT16, FLOAT32], *: $dtype }),
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, *: FLOAT32 }),
+    STRIDE_MODE: CONTIGUOUS,
+    PROFILES: {
+        ACCELERATE: "cpu_rmsnorm_gemma_impl",
+        NEON: "cpu_rmsnorm_gemma_impl",
+        AVX2: "cpu_rmsnorm_gemma_impl",
+        SCALAR: "cpu_rmsnorm_gemma_impl"
+    },
+}

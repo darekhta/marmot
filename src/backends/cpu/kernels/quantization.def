@@ -1,0 +1,55 @@
+// CPU quantization kernels.
+
+KERNEL_FAMILY(quantize_generic_scalar) {
+    NAME_PATTERN: "quantize_generic_scalar",
+    OP: quantize,
+    PROFILE: SCALAR,
+    INPUT_DTYPE: FLOAT32,
+    OUTPUT_DTYPE: [INT8, UINT8],
+    ACCUM_DTYPE: ANY,
+    STRIDE_MODE: CONTIGUOUS,
+}
+
+KERNEL_FAMILY(dequantize_generic_scalar) {
+    NAME_PATTERN: "dequantize_generic_scalar",
+    OP: dequantize,
+    PROFILE: SCALAR,
+    INPUT_DTYPE: [INT8, UINT8],
+    OUTPUT_DTYPE: FLOAT32,
+    ACCUM_DTYPE: ANY,
+    STRIDE_MODE: CONTIGUOUS,
+}
+
+KERNEL_FAMILY(compute_quant_params_scalar) {
+    NAME_PATTERN: "compute_quant_params_scalar",
+    OP: compute_quant_params,
+    PROFILE: SCALAR,
+    INPUT_DTYPE: FLOAT32,
+    OUTPUT_DTYPE: [INT8, UINT8],
+    ACCUM_DTYPE: ANY,
+    STRIDE_MODE: CONTIGUOUS,
+}
+
+KERNEL_FAMILY(quantize_block_scalar) {
+    NAME_PATTERN: "quantize_block_scalar",
+    OP: quantize,
+    PROFILE: SCALAR,
+    INPUT_DTYPE: FLOAT32,
+    OUTPUT_DTYPE: [INT8, UINT8],
+    ACCUM_DTYPE: ANY,
+    STRIDE_MODE: CONTIGUOUS,
+    WEIGHT_QUANT: @all_quant_schemes,
+    QUANT_BLOCK: { block_size: 32, group_size: 32, scale_dtype: FLOAT16, zp_dtype: NONE },
+}
+
+KERNEL_FAMILY(dequantize_block_scalar) {
+    NAME_PATTERN: "dequantize_block_scalar",
+    OP: dequantize,
+    PROFILE: SCALAR,
+    INPUT_DTYPE: [INT8, UINT8],
+    OUTPUT_DTYPE: FLOAT32,
+    ACCUM_DTYPE: ANY,
+    STRIDE_MODE: CONTIGUOUS,
+    WEIGHT_QUANT: @all_quant_schemes,
+    QUANT_BLOCK: { block_size: 32, group_size: 32, scale_dtype: FLOAT16, zp_dtype: NONE },
+}

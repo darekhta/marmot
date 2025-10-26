@@ -1,0 +1,84 @@
+// CPU unary kernels.
+
+SET(unary_float_ops) { relu, gelu, gelu_tanh, sigmoid, tanh, sqrt, exp, log, mish, elu, selu, leaky_relu, prelu }
+
+KERNEL_FAMILY(unary_float) {
+    AXIS(op): @unary_float_ops,
+    AXIS(dtype): @float_all,
+    NAME_PATTERN: "{op}_{dtype:short}",
+    OP: $op,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, *: FLOAT32 }),
+    STRIDE_MODE: STRIDED,
+    PROFILES: {
+        ACCELERATE: "cpu_unary_apply",
+        NEON: "cpu_unary_apply",
+        AVX2: "cpu_unary_apply",
+        SCALAR: "cpu_unary_apply"
+    },
+}
+
+KERNEL_FAMILY(unary_abs) {
+    AXIS(dtype): @numeric_all,
+    NAME_PATTERN: "abs_{dtype:short}",
+    OP: abs,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, @float_types: FLOAT32, *: $dtype }),
+    STRIDE_MODE: STRIDED,
+    PROFILES: {
+        ACCELERATE: "cpu_unary_apply",
+        NEON: "cpu_unary_apply",
+        AVX2: "cpu_unary_apply",
+        SCALAR: "cpu_unary_apply"
+    },
+}
+
+KERNEL_FAMILY(unary_neg) {
+    AXIS(dtype): [@float_all, @int_types],
+    NAME_PATTERN: "neg_{dtype:short}",
+    OP: neg,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, @float_types: FLOAT32, *: $dtype }),
+    STRIDE_MODE: STRIDED,
+    PROFILES: {
+        ACCELERATE: "cpu_unary_apply",
+        NEON: "cpu_unary_apply",
+        AVX2: "cpu_unary_apply",
+        SCALAR: "cpu_unary_apply"
+    },
+}
+
+KERNEL_FAMILY(unary_sign) {
+    AXIS(dtype): @numeric_all,
+    NAME_PATTERN: "sign_{dtype:short}",
+    OP: sign,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: select($dtype, { FLOAT64: FLOAT64, @float_types: FLOAT32, *: $dtype }),
+    STRIDE_MODE: STRIDED,
+    PROFILES: {
+        ACCELERATE: "cpu_unary_apply",
+        NEON: "cpu_unary_apply",
+        AVX2: "cpu_unary_apply",
+        SCALAR: "cpu_unary_apply"
+    },
+}
+
+KERNEL_FAMILY(unary_bitwise_not) {
+    AXIS(dtype): [@int_types, @uint_types],
+    NAME_PATTERN: "bitwise_not_{dtype:short}",
+    OP: bitwise_not,
+    INPUT_DTYPE: $dtype,
+    OUTPUT_DTYPE: $dtype,
+    ACCUM_DTYPE: $dtype,
+    STRIDE_MODE: STRIDED,
+    PROFILES: {
+        ACCELERATE: "cpu_unary_apply",
+        NEON: "cpu_unary_apply",
+        AVX2: "cpu_unary_apply",
+        SCALAR: "cpu_unary_apply"
+    },
+}

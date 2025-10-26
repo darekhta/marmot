@@ -1,0 +1,48 @@
+// CPU reduction kernels.
+
+DTYPE_SET(reduction_types_float) { FLOAT32, FLOAT64, FLOAT16, BFLOAT16 }
+DTYPE_SET(reduction_types_all) { @reduction_types_float, @int_types, @uint_types }
+
+KERNEL_FAMILY(reductions) {
+    AXIS(op): [
+        reduction_sum,
+        reduction_mean,
+        reduction_max,
+        reduction_min,
+        reduction_variance,
+        reduction_std,
+        reduction_norm_l1,
+        reduction_norm_l2,
+        reduction_prod,
+        reduction_argmax,
+        reduction_argmin,
+        reduction_any,
+        reduction_all
+    ],
+    NAME_PATTERN: "{op}",
+    OP: $op,
+    INPUT_DTYPE: select($op, {
+        reduction_mean: @reduction_types_float,
+        reduction_variance: @reduction_types_float,
+        reduction_std: @reduction_types_float,
+        reduction_norm_l1: @reduction_types_float,
+        reduction_norm_l2: @reduction_types_float,
+        *: @reduction_types_all
+    }),
+    OUTPUT_DTYPE: select($op, {
+        reduction_mean: @reduction_types_float,
+        reduction_variance: @reduction_types_float,
+        reduction_std: @reduction_types_float,
+        reduction_norm_l1: @reduction_types_float,
+        reduction_norm_l2: @reduction_types_float,
+        *: @reduction_types_all
+    }),
+    ACCUM_DTYPE: ANY,
+    STRIDE_MODE: STRIDED,
+    PROFILES: {
+        ACCELERATE: "cpu_{op}_impl",
+        NEON: "cpu_{op}_impl",
+        AVX2: "cpu_{op}_impl",
+        SCALAR: "cpu_{op}_impl"
+    },
+}
