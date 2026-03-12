@@ -16,6 +16,9 @@ namespace marmot::graph {
 
 class Executor;
 class ExecutionSession;
+class FastPlanCompiler;
+class FastExecutor;
+class FastExec;
 
 class Graph {
   public:
@@ -63,10 +66,25 @@ class Graph {
     void set_last_node_view_byte_offset(size_t byte_offset);
     void set_last_node_slice_starts(const size_t *starts, size_t ndim);
     void set_last_node_paged_attention_layer(uint32_t layer_idx);
+    [[nodiscard]] marmot_error_t set_last_node_fast_hint_checked(
+        marmot_fast_stage_hint_t stage_hint, marmot_fast_node_role_t role, uint32_t block_id
+    );
+    [[nodiscard]] marmot_error_t set_last_node_moe_params_checked(
+        marmot_ffn_type_t ffn_type, float weights_scale, marmot_router_weight_policy_t router_weight_policy
+    );
+    [[nodiscard]] marmot_error_t set_last_node_moe_params_checked(marmot_ffn_type_t ffn_type, float weights_scale);
+    void set_last_node_fast_hint(marmot_fast_stage_hint_t stage_hint, marmot_fast_node_role_t role, uint32_t block_id);
+    void set_last_node_moe_params(
+        marmot_ffn_type_t ffn_type, float weights_scale, marmot_router_weight_policy_t router_weight_policy
+    );
+    void set_last_node_moe_params(marmot_ffn_type_t ffn_type, float weights_scale);
 
   private:
     friend class Executor;
     friend class ExecutionSession;
+    friend class FastPlanCompiler;
+    friend class FastExecutor;
+    friend class FastExec;
     struct Impl;
     [[nodiscard]] static float estimated_total_us(const Impl &impl);
     [[nodiscard]] static marmot_error_t finalize_impl(Impl &impl, marmot_backend_type_t backend, bool emit_errors);

@@ -1,6 +1,7 @@
 #include "graph_api_impl.hpp"
 
 #include <algorithm>
+#include <cmath>
 #include <memory>
 #include <span>
 
@@ -73,6 +74,17 @@ marmot_error_t GraphApiFacade::add_op(
     std::copy(result->begin(), result->end(), out_value_ids);
 
     return MARMOT_SUCCESS;
+}
+
+marmot_error_t
+GraphApiFacade::set_last_node_moe_params(marmot_graph_t *graph, marmot_ffn_type_t ffn_type, float weights_scale) {
+    if (graph == nullptr) {
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    if (!std::isfinite(weights_scale)) {
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    return graph->inner.set_last_node_moe_params_checked(ffn_type, weights_scale);
 }
 
 marmot_error_t GraphApiFacade::finalize(marmot_graph_t *graph, marmot_backend_type_t backend) {

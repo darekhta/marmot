@@ -25,6 +25,8 @@ class GraphApiFacade {
         const marmot_value_id_t *input_ids, size_t num_inputs, const marmot_graph_tensor_desc_t *output_descs,
         size_t num_outputs, marmot_value_id_t *out_value_ids
     );
+    [[nodiscard]] static marmot_error_t
+    set_last_node_moe_params(marmot_graph_t *graph, marmot_ffn_type_t ffn_type, float weights_scale);
 
     [[nodiscard]] static marmot_error_t finalize(marmot_graph_t *graph, marmot_backend_type_t backend);
     [[nodiscard]] static marmot_error_t finalize_auto(marmot_graph_t *graph, marmot_backend_type_t *out_backend);

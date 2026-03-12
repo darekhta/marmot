@@ -274,6 +274,7 @@ typedef enum {
     MARMOT_ARCH_PHI3 = 4,
     MARMOT_ARCH_GEMMA = 5,
     MARMOT_ARCH_QWEN3 = 6,
+    MARMOT_ARCH_QWEN3MOE = 7,
     MARMOT_ARCH_COUNT,
 } marmot_architecture_t;
 
@@ -283,6 +284,62 @@ typedef enum {
     MARMOT_FFN_GEGLU = 2,
     MARMOT_FFN_COUNT,
 } marmot_ffn_type_t;
+
+typedef enum {
+    MARMOT_ROUTER_WEIGHT_POLICY_SOFTMAX_SELECTED = 0,
+    MARMOT_ROUTER_WEIGHT_POLICY_SOFTMAX_SELECTED_SCALED = 1,
+    MARMOT_ROUTER_WEIGHT_POLICY_RENORMALIZE_SELECTED = 2,
+    MARMOT_ROUTER_WEIGHT_POLICY_COUNT,
+} marmot_router_weight_policy_t;
+
+typedef enum {
+    MARMOT_FAST_STAGE_HINT_NONE = 0,
+    MARMOT_FAST_STAGE_HINT_ATTENTION = 1,
+    MARMOT_FAST_STAGE_HINT_DENSE_FFN = 2,
+    MARMOT_FAST_STAGE_HINT_MOE_FFN = 3,
+    MARMOT_FAST_STAGE_HINT_LOGITS_TAIL = 4,
+    MARMOT_FAST_STAGE_HINT_COUNT,
+} marmot_fast_stage_hint_t;
+
+typedef enum {
+    MARMOT_FAST_NODE_ROLE_NONE = 0,
+    MARMOT_FAST_NODE_ROLE_ATTN_NORM = 1,
+    MARMOT_FAST_NODE_ROLE_ATTN_Q_PROJ = 2,
+    MARMOT_FAST_NODE_ROLE_ATTN_K_PROJ = 3,
+    MARMOT_FAST_NODE_ROLE_ATTN_V_PROJ = 4,
+    MARMOT_FAST_NODE_ROLE_ATTN_Q_NORM_RESHAPE = 5,
+    MARMOT_FAST_NODE_ROLE_ATTN_Q_NORM = 6,
+    MARMOT_FAST_NODE_ROLE_ATTN_K_NORM_RESHAPE = 7,
+    MARMOT_FAST_NODE_ROLE_ATTN_K_NORM = 8,
+    MARMOT_FAST_NODE_ROLE_ATTN_Q_HEADS = 9,
+    MARMOT_FAST_NODE_ROLE_ATTN_K_HEADS = 10,
+    MARMOT_FAST_NODE_ROLE_ATTN_V_HEADS = 11,
+    MARMOT_FAST_NODE_ROLE_ATTN_Q_ROPE = 12,
+    MARMOT_FAST_NODE_ROLE_ATTN_K_ROPE = 13,
+    MARMOT_FAST_NODE_ROLE_ATTN_Q_TOKENS = 14,
+    MARMOT_FAST_NODE_ROLE_ATTN_K_TOKENS = 15,
+    MARMOT_FAST_NODE_ROLE_ATTN_V_TOKENS = 16,
+    MARMOT_FAST_NODE_ROLE_ATTN_PAGED = 17,
+    MARMOT_FAST_NODE_ROLE_ATTN_OUT_RESHAPE = 18,
+    MARMOT_FAST_NODE_ROLE_ATTN_OUT_PROJ = 19,
+    MARMOT_FAST_NODE_ROLE_ATTN_RESIDUAL = 20,
+    MARMOT_FAST_NODE_ROLE_FFN_NORM = 21,
+    MARMOT_FAST_NODE_ROLE_FFN_GATE_PROJ = 22,
+    MARMOT_FAST_NODE_ROLE_FFN_UP_PROJ = 23,
+    MARMOT_FAST_NODE_ROLE_FFN_GELU = 24,
+    MARMOT_FAST_NODE_ROLE_FFN_GLU = 25,
+    MARMOT_FAST_NODE_ROLE_FFN_DOWN_PROJ = 26,
+    MARMOT_FAST_NODE_ROLE_FFN_ROUTER = 27,
+    MARMOT_FAST_NODE_ROLE_FFN_ROUTER_PROBS = 28,
+    MARMOT_FAST_NODE_ROLE_FFN_TOPK = 29,
+    MARMOT_FAST_NODE_ROLE_FFN_ROUTER_WEIGHTS = 30,
+    MARMOT_FAST_NODE_ROLE_FFN_MOE_EXPERTS = 31,
+    MARMOT_FAST_NODE_ROLE_FFN_RESIDUAL = 32,
+    MARMOT_FAST_NODE_ROLE_LOGITS_NORM = 33,
+    MARMOT_FAST_NODE_ROLE_LOGITS_GATHER = 34,
+    MARMOT_FAST_NODE_ROLE_LOGITS_PROJECTION = 35,
+    MARMOT_FAST_NODE_ROLE_COUNT,
+} marmot_fast_node_role_t;
 
 typedef enum {
     MARMOT_DTYPE_FLOAT32 = 0,
@@ -396,6 +453,8 @@ typedef struct marmot_embedding_gather_desc marmot_embedding_gather_desc_t;
 typedef struct marmot_layernorm_desc marmot_layernorm_desc_t;
 typedef struct marmot_rmsnorm_desc marmot_rmsnorm_desc_t;
 typedef struct marmot_softmax_desc marmot_softmax_desc_t;
+typedef struct marmot_topk_desc marmot_topk_desc_t;
+typedef struct marmot_moe_experts_desc marmot_moe_experts_desc_t;
 typedef struct marmot_reduction_desc marmot_reduction_desc_t;
 
 //==============================================================================

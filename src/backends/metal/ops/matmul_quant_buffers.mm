@@ -29,27 +29,25 @@ marmot_error_t metal_matmul_quant_buffers_acquire(
         return MARMOT_ERROR_INVALID_ARGUMENT;
     }
 
-    buffers->weight = metal_residency_acquire_existing(ctx, weight, weight->dtype);
-    if (buffers->weight == nil) {
-        buffers->weight = metal_residency_acquire_compute(ctx, weight, weight->dtype, nullptr);
-    }
-    if (buffers->weight == nil) {
-        size_t weight_bytes = marmot_tensor_size_bytes(weight);
-        buffers->weight = metal_buffer_acquire(ctx, weight->data, weight_bytes);
-    }
+    buffers->weight_offset = 0;
+    buffers->input_offset = 0;
+    buffers->out_offset = 0;
+    buffers->out_private = false;
+
+    const size_t weight_bytes = marmot_tensor_quant_storage_bytes(weight);
+    const size_t weight_span = weight_bytes != 0 ? weight_bytes : marmot_tensor_size_bytes(weight);
+    metal_tensor_buffer_t weight_view = metal_buffer_acquire_view(ctx, weight, weight->dtype, weight_span);
+    buffers->weight = weight_view.buffer;
+    buffers->weight_offset = weight_view.offset;
     if (buffers->weight == nil) {
         return MARMOT_ERROR_DEVICE_NOT_AVAILABLE;
     }
 
     if (input != nullptr) {
-        buffers->input = metal_residency_acquire_existing(ctx, input, input->dtype);
-        if (buffers->input == nil) {
-            buffers->input = metal_residency_acquire_compute(ctx, input, input->dtype, nullptr);
-        }
-        if (buffers->input == nil) {
-            size_t input_bytes = marmot_tensor_size_bytes(input);
-            buffers->input = metal_buffer_acquire(ctx, input->data, input_bytes);
-        }
+        const size_t input_bytes = marmot_tensor_size_bytes(input);
+        metal_tensor_buffer_t input_view = metal_buffer_acquire_view(ctx, input, input->dtype, input_bytes);
+        buffers->input = input_view.buffer;
+        buffers->input_offset = input_view.offset;
         if (buffers->input == nil) {
             metal_matmul_quant_buffers_release(buffers);
             return MARMOT_ERROR_DEVICE_NOT_AVAILABLE;
@@ -58,12 +56,11 @@ marmot_error_t metal_matmul_quant_buffers_acquire(
         buffers->input = nil;
     }
 
-    bool out_is_staging = false;
-    buffers->out = metal_residency_acquire_compute(ctx, out, out->dtype, &out_is_staging);
-    if (buffers->out == nil) {
-        size_t out_bytes = marmot_tensor_size_bytes(out);
-        buffers->out = metal_buffer_acquire(ctx, out->data, out_bytes);
-    }
+    const size_t out_bytes = marmot_tensor_size_bytes(out);
+    metal_tensor_buffer_t out_view = metal_buffer_acquire_view(ctx, out, out->dtype, out_bytes);
+    buffers->out = out_view.buffer;
+    buffers->out_offset = out_view.offset;
+    buffers->out_private = out_view.is_private;
     if (buffers->out == nil) {
         metal_matmul_quant_buffers_release(buffers);
         return MARMOT_ERROR_DEVICE_NOT_AVAILABLE;

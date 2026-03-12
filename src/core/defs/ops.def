@@ -1123,6 +1123,28 @@ OPERATION(paged_attention) {
     KERNEL_OP: paged_attention,
 }
 
+OPERATION(topk) {
+    CATEGORY: attention,
+    API_FUNCTION: marmot_topk,
+    API_SIGNATURE: forward_desc_impl,
+    DESC_TYPE: marmot_topk_desc_t,
+    IMPL_FUNCTION: marmot_topk_impl,
+    OP_ID: MARMOT_OP_TOPK,
+    LABEL: "topk",
+    KERNEL_OP: topk,
+}
+
+OPERATION(moe_experts) {
+    CATEGORY: attention,
+    API_FUNCTION: marmot_moe_experts,
+    API_SIGNATURE: forward_desc_impl,
+    DESC_TYPE: marmot_moe_experts_desc_t,
+    IMPL_FUNCTION: marmot_moe_experts_impl,
+    OP_ID: MARMOT_OP_MOE_EXPERTS,
+    LABEL: "moe_experts",
+    KERNEL_OP: moe_experts,
+}
+
 // ============================================================================
 // VEC DOT
 // ============================================================================

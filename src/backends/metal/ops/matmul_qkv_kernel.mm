@@ -343,16 +343,16 @@ marmot_error_t metal_matmul_qkv_run_kernel(
     if (!ep_inline && ep_to_apply != nullptr) {
         size_t total_elements = dims->N * dims->M;
         ep_status = metal_matmul_apply_epilogue(
-            ctx, desc->out_q, bufferQ, total_elements, ep_feature_dim, ep_bias_scalar, ep_to_apply
+            ctx, desc->out_q, bufferQ, 0, total_elements, ep_feature_dim, ep_bias_scalar, ep_to_apply
         );
         if (ep_status == MARMOT_SUCCESS) {
             ep_status = metal_matmul_apply_epilogue(
-                ctx, desc->out_k, bufferK, total_elements, ep_feature_dim, ep_bias_scalar, ep_to_apply
+                ctx, desc->out_k, bufferK, 0, total_elements, ep_feature_dim, ep_bias_scalar, ep_to_apply
             );
         }
         if (ep_status == MARMOT_SUCCESS) {
             ep_status = metal_matmul_apply_epilogue(
-                ctx, desc->out_v, bufferV, total_elements, ep_feature_dim, ep_bias_scalar, ep_to_apply
+                ctx, desc->out_v, bufferV, 0, total_elements, ep_feature_dim, ep_bias_scalar, ep_to_apply
             );
         }
         if (ep_status != MARMOT_SUCCESS) {

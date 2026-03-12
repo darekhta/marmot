@@ -6,6 +6,7 @@
 
 #include <pthread.h>
 
+#include "backends/cpu/cpu_backend_internal.h"
 #include "backends/cpu/cpu_caps.h"
 #include "context_internal.h"
 #include "core/dispatch/kernel_query.h"
@@ -188,6 +189,50 @@ void marmot_destroy(marmot_context_t *ctx) {
     }
 
     free(ctx);
+}
+
+static marmot_error_t
+marmot_context_set_thread_count_impl(marmot_context_t *ctx, size_t num_threads, bool explicit_override) {
+    if (ctx == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null context passed to set thread count");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    if (num_threads == 0) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Thread count must be greater than zero");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    if (ctx->backend_type != MARMOT_BACKEND_CPU || ctx->device_ctx == nullptr) {
+        marmot_set_error(MARMOT_ERROR_NOT_IMPLEMENTED, "Runtime thread count control is only supported on CPU");
+        return MARMOT_ERROR_NOT_IMPLEMENTED;
+    }
+
+    marmot_error_t err = cpu_context_set_num_threads(ctx->device_ctx, num_threads, explicit_override);
+    if (err != MARMOT_SUCCESS) {
+        marmot_set_error(err, "Failed to update CPU thread count");
+    }
+    return err;
+}
+
+marmot_error_t marmot_context_set_thread_count(marmot_context_t *ctx, size_t num_threads) {
+    return marmot_context_set_thread_count_impl(ctx, num_threads, true);
+}
+
+marmot_error_t marmot_context_set_thread_count_auto(marmot_context_t *ctx, size_t num_threads) {
+    return marmot_context_set_thread_count_impl(ctx, num_threads, false);
+}
+
+size_t marmot_context_get_thread_count(const marmot_context_t *ctx) {
+    if (ctx == nullptr || ctx->backend_type != MARMOT_BACKEND_CPU || ctx->device_ctx == nullptr) {
+        return 0;
+    }
+    return cpu_context_get_num_threads(ctx->device_ctx);
+}
+
+bool marmot_context_thread_count_is_explicit(const marmot_context_t *ctx) {
+    if (ctx == nullptr || ctx->backend_type != MARMOT_BACKEND_CPU || ctx->device_ctx == nullptr) {
+        return false;
+    }
+    return cpu_context_thread_count_is_explicit(ctx->device_ctx);
 }
 
 marmot_error_t marmot_device_synchronize(const marmot_context_t *ctx) {

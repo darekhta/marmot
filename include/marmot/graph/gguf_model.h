@@ -22,10 +22,15 @@ typedef struct {
     size_t n_head_kv;
     size_t n_vocab;
     size_t ff_length;
+    size_t n_experts;
+    size_t n_experts_used;
+    size_t n_shared_experts;
     size_t rope_dimension;
     size_t head_dim; // explicit head dimension (for GQA models like Qwen3)
     float rope_freq_base;
+    float expert_weights_scale;
     marmot_rope_type_t rope_type;
+    marmot_router_weight_policy_t router_weight_policy;
     marmot_rope_scaling_type_t rope_scaling_type;
     float rope_freq_scale;
     float rope_ext_factor;
@@ -35,6 +40,7 @@ typedef struct {
     uint32_t rope_orig_ctx_len;
     float rms_norm_eps;
     float embedding_scale;
+    bool is_moe;
 } marmot_gguf_model_meta_t;
 
 // Packed token graph build options (paged attention + token metadata)

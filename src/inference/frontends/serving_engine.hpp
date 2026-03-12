@@ -16,6 +16,10 @@
 
 #include "inference/common/tensor_ptr.hpp"
 
+namespace marmot::graph {
+class FastPlan;
+}
+
 namespace marmot::inference {
 
 class Model;
@@ -98,6 +102,11 @@ class ServingEngine {
 
     using GraphOwner = std::unique_ptr<marmot_graph_t, GraphDeleter>;
 
+    struct PackedGraphEntry {
+        GraphOwner graph{};
+        std::unique_ptr<marmot::graph::FastPlan> fast_plan{};
+    };
+
     struct PackedGraphKey {
         uint32_t token_count{0};
         uint32_t sample_count{0};
@@ -133,8 +142,10 @@ class ServingEngine {
     [[nodiscard]] marmot_error_t
     parse_request_ext(const marmot_llm_generate_options_t &gen_opts, Request &req, std::string &error);
     [[nodiscard]] marmot_error_t ensure_scratch(size_t token_count, size_t sample_count, std::string &error);
-    [[nodiscard]] marmot_error_t
-    ensure_packed_graph(size_t token_count, size_t sample_count, marmot_graph_t **out_graph, std::string &error);
+    [[nodiscard]] marmot_error_t ensure_packed_graph(
+        size_t token_count, size_t sample_count, marmot_graph_t **out_graph,
+        const marmot::graph::FastPlan **out_fast_plan, std::string &error
+    );
     [[nodiscard]] marmot_error_t
     step_pipelined_greedy_decode(size_t max_steps, size_t &out_steps_done, std::string &error);
 
@@ -187,7 +198,7 @@ class ServingEngine {
     std::optional<PipelineInFlight> pipeline_in_flight_{};
     uint32_t pipeline_next_argmax_buffer_index_{0};
 
-    std::unordered_map<PackedGraphKey, GraphOwner, PackedGraphKeyHash, PackedGraphKeyEq> packed_graphs_{};
+    std::unordered_map<PackedGraphKey, PackedGraphEntry, PackedGraphKeyHash, PackedGraphKeyEq> packed_graphs_{};
     std::unordered_map<uint64_t, PrefixEntry> prefix_cache_{};
     std::vector<uint64_t> block_hash_by_id_{};
     std::vector<uint8_t> block_hash_valid_{};

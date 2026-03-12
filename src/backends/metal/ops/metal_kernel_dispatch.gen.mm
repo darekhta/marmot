@@ -8047,6 +8047,636 @@ marmot_metal_matmul_q8_k_f16_bias_silu_nt_exec(const void *device_ctx, const mar
     return metal_matmul_quantized(device_ctx, args->input, args->weight, args->epilogue, args->output);
 }
 
+// topk_f32: topk
+
+marmot_error_t marmot_metal_topk_f32_exec(const void *device_ctx, const marmot_kernel_args_topk_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_topk_desc_t desc = {
+        .x = args->input,
+        .values_out = args->values_out,
+        .indices_out = args->indices_out,
+        .axis = args->axis,
+        .k = args->k,
+    };
+    return metal_topk_impl(device_ctx, &desc);
+}
+
+// topk_f16: topk
+
+marmot_error_t marmot_metal_topk_f16_exec(const void *device_ctx, const marmot_kernel_args_topk_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_topk_desc_t desc = {
+        .x = args->input,
+        .values_out = args->values_out,
+        .indices_out = args->indices_out,
+        .axis = args->axis,
+        .k = args->k,
+    };
+    return metal_topk_impl(device_ctx, &desc);
+}
+
+// moe_experts_f32: fused MoE experts
+
+marmot_error_t marmot_metal_moe_experts_f32_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_f16: fused MoE experts
+
+marmot_error_t marmot_metal_moe_experts_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q4_0: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q4_0_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q4_1: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q4_1_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q5_0: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q5_0_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q5_1: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q5_1_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q8_0: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q8_0_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q8_1: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q8_1_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q2_k: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q2_k_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q3_k: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q3_k_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q4_k: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q4_k_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q5_k: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q5_k_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q6_k: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q6_k_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q8_k: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q8_k_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q4_0_f16: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q4_0_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q4_1_f16: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q4_1_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q5_0_f16: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q5_0_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q5_1_f16: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q5_1_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q8_0_f16: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q8_0_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q8_1_f16: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q8_1_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q2_k_f16: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q2_k_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q3_k_f16: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q3_k_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q4_k_f16: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q4_k_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q5_k_f16: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q5_k_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q6_k_f16: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q6_k_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
+// moe_experts_q8_k_f16: fused MoE experts
+
+marmot_error_t
+marmot_metal_moe_experts_q8_k_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+    return metal_moe_experts_impl(device_ctx, &desc);
+}
+
 // layernorm_f32: layer normalization
 
 marmot_error_t marmot_metal_layernorm_f32_exec(const void *device_ctx, const marmot_kernel_args_layernorm_t *args) {

@@ -423,6 +423,101 @@ static void test_paged_attention_mixed_kv_dtype(void **state) {
     marmot_tensor_destroy(token_meta);
 }
 
+static void test_paged_attention_invalid_token_meta_ranges(void **state) {
+    marmot_test_env_t *env = (marmot_test_env_t *)(*state);
+    marmot_kv_pool_options_t opts;
+    assert_int_equal(marmot_kv_pool_options_init(&opts), MARMOT_SUCCESS);
+    opts.backend = env->backend;
+    opts.max_seqs = 1;
+    opts.max_seq_len = 4;
+    opts.block_size = 4;
+    opts.num_blocks = 1;
+    opts.num_layers = 1;
+    opts.num_kv_heads = 1;
+    opts.head_dim = 2;
+    opts.kv_dtype = MARMOT_DTYPE_FLOAT32;
+
+    marmot_kv_pool_t *pool = nullptr;
+    assert_int_equal(marmot_kv_pool_create(env->ctx, &opts, &pool), MARMOT_SUCCESS);
+    assert_non_null(pool);
+
+    marmot_seq_slot_t seq = 0;
+    assert_int_equal(marmot_kv_pool_acquire_seq(pool, &seq), MARMOT_SUCCESS);
+
+    marmot_kv_append_plan_t plan = {0};
+    marmot_kv_slot_t slots[1] = {0};
+    size_t start_pos = 0;
+    assert_int_equal(marmot_kv_pool_prepare_append(pool, seq, 1, &plan, slots, &start_pos), MARMOT_SUCCESS);
+    assert_int_equal(marmot_kv_pool_commit_append(pool, &plan), MARMOT_SUCCESS);
+
+    const size_t meta_shape[2] = {1, 4};
+    marmot_tensor_t *token_meta = marmot_tensor_create(env->ctx, meta_shape, 2, MARMOT_DTYPE_UINT32);
+    assert_non_null(token_meta);
+
+    marmot_uint32_t *meta_data = marmot_tensor_data_u32_mut(env->ctx, token_meta);
+    assert_non_null(meta_data);
+    meta_data[0].value = 1u;
+    meta_data[1].value = (uint32_t)start_pos;
+    meta_data[2].value = slots[0];
+    meta_data[3].value = kTokenFlagPrefill;
+
+    const size_t q_shape[3] = {1, 1, 2};
+    marmot_tensor_t *q = marmot_tensor_create(env->ctx, q_shape, 3, MARMOT_DTYPE_FLOAT32);
+    marmot_tensor_t *k_new = marmot_tensor_create(env->ctx, q_shape, 3, MARMOT_DTYPE_FLOAT32);
+    marmot_tensor_t *v_new = marmot_tensor_create(env->ctx, q_shape, 3, MARMOT_DTYPE_FLOAT32);
+    marmot_tensor_t *out = marmot_tensor_create(env->ctx, q_shape, 3, MARMOT_DTYPE_FLOAT32);
+    assert_non_null(q);
+    assert_non_null(k_new);
+    assert_non_null(v_new);
+    assert_non_null(out);
+
+    float q_vals[2] = {1.0f, 0.0f};
+    float k_vals[2] = {1.0f, 0.0f};
+    float v_vals[2] = {1.0f, 0.0f};
+    memcpy(q->data, q_vals, sizeof(q_vals));
+    memcpy(k_new->data, k_vals, sizeof(k_vals));
+    memcpy(v_new->data, v_vals, sizeof(v_vals));
+
+    marmot_tensor_t *kv_k = nullptr;
+    marmot_tensor_t *kv_v = nullptr;
+    marmot_tensor_t *block_table = nullptr;
+    assert_int_equal(marmot_kv_pool_get_tensors(pool, &kv_k, &kv_v, &block_table), MARMOT_SUCCESS);
+    assert_non_null(kv_k);
+    assert_non_null(kv_v);
+    assert_non_null(block_table);
+
+    marmot_paged_attention_desc_t desc = marmot_paged_attention_desc_default();
+    desc.token_count = 1;
+    desc.layer_idx = 0;
+    desc.num_q_heads = 1;
+    desc.num_kv_heads = 1;
+    desc.head_dim = 2;
+    desc.block_size = (uint32_t)opts.block_size;
+    desc.scale = 1.0f;
+    desc.token_meta = token_meta;
+    desc.q = q;
+    desc.k_new = k_new;
+    desc.v_new = v_new;
+    desc.kv_k = kv_k;
+    desc.kv_v = kv_v;
+    desc.block_table = block_table;
+    desc.out = out;
+
+    assert_int_equal(marmot_paged_attention(env->ctx, &desc), MARMOT_ERROR_DIMENSION_MISMATCH);
+
+    meta_data[0].value = seq;
+    meta_data[2].value = (uint32_t)(opts.num_blocks << log2_u32((uint32_t)opts.block_size));
+    assert_int_equal(marmot_paged_attention(env->ctx, &desc), MARMOT_ERROR_DIMENSION_MISMATCH);
+
+    assert_int_equal(marmot_kv_pool_release_seq(pool, seq), MARMOT_SUCCESS);
+    marmot_kv_pool_destroy(pool);
+    marmot_tensor_destroy(out);
+    marmot_tensor_destroy(v_new);
+    marmot_tensor_destroy(k_new);
+    marmot_tensor_destroy(q);
+    marmot_tensor_destroy(token_meta);
+}
+
 static void test_paged_attention_prefill_mixed_kv_flash_metal(void **state) {
     marmot_test_env_t *env = (marmot_test_env_t *)(*state);
     if (env->backend != MARMOT_BACKEND_METAL) {
@@ -556,6 +651,7 @@ int main(void) {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_paged_attention_basic),
         cmocka_unit_test(test_paged_attention_mixed_kv_dtype),
+        cmocka_unit_test(test_paged_attention_invalid_token_meta_ranges),
         cmocka_unit_test(test_paged_attention_prefill_mixed_kv_flash_metal),
         cmocka_unit_test(test_kv_pool_cow_partial),
     };

@@ -90,29 +90,6 @@ static inline int8x16_t cpu_vec_dot_q6_k_decode_16(const uint8_t *ql, const uint
     return vsubq_s8(signed_vals, vdupq_n_s8(32));
 }
 
-static inline int32_t cpu_vec_dot_q6_k_block_dotprod(const marmot_q6_k_block_t *w_block, const int8_t *q8) {
-    int32x4_t block_acc = vdupq_n_s32(0);
-    const int8_t *a_ptr = q8;
-    for (size_t sg = 0; sg < MARMOT_QK_K_VALUES / 16; ++sg) {
-        const size_t group32 = sg / 2;
-        const size_t half = group32 / 4;
-        const size_t group_in_half = group32 & 3;
-        const size_t part = sg & 1;
-        const uint8_t *ql = w_block->ql + half * 64 + ((group_in_half & 1) ? 32 : 0) + (part * 16);
-        const uint8_t *qh = w_block->qh + half * 32 + (part * 16);
-        const int shift = (int)(group_in_half * 2);
-        const bool high_nibble = group_in_half >= 2;
-        const int8_t scale = w_block->scales[sg];
-        int32x4_t acc = vdupq_n_s32(0);
-        int8x16_t wv = cpu_vec_dot_q6_k_decode_16(ql, qh, shift, high_nibble);
-        int8x16_t av = vld1q_s8(a_ptr);
-        acc = vdotq_s32(acc, wv, av);
-        block_acc = vaddq_s32(block_acc, vmulq_n_s32(acc, (int32_t)scale));
-        a_ptr += 16;
-    }
-    return vaddvq_s32(block_acc);
-}
-
 float cpu_vec_dot_q8_0_q8_0_neon_dotprod(
     const marmot_q8_0_block_t *weights, const marmot_q8_0_block_t *activations, size_t num_blocks
 ) {
@@ -664,27 +641,160 @@ float cpu_vec_dot_q6_k_q8_k_neon_dotprod(
         return 0.0f;
     }
 
+    const uint8x16_t low_mask = vdupq_n_u8(0x0F);
+    const uint8x16_t high_mask = vdupq_n_u8(0x03);
+    const int32x4_t zero = vdupq_n_s32(0);
     float total = 0.0f;
 
     for (size_t block_index = 0; block_index < num_blocks; ++block_index) {
         const marmot_q6_k_block_t *w_block = &weights[block_index];
         const marmot_q8_k_block_t *a_block = &activations[block_index];
+        const uint8_t *ql = w_block->ql;
+        const uint8_t *qh = w_block->qh;
+        const int8_t *q8 = a_block->qs;
+        const int8_t *scales = w_block->scales;
 
-        const int32_t block_sum = cpu_vec_dot_q6_k_block_dotprod(w_block, a_block->qs);
+        const int16x8x2_t q8_sums = vld1q_s16_x2(a_block->bsums);
+        const int8x16_t scale_bytes = vld1q_s8(scales);
+        const int16x8_t scale_lo = vmovl_s8(vget_low_s8(scale_bytes));
+        const int16x8_t scale_hi = vmovl_s8(vget_high_s8(scale_bytes));
+        const int32x4_t bias_acc = vaddq_s32(
+            vaddq_s32(
+                vmull_s16(vget_low_s16(q8_sums.val[0]), vget_low_s16(scale_lo)),
+                vmull_s16(vget_high_s16(q8_sums.val[0]), vget_high_s16(scale_lo))
+            ),
+            vaddq_s32(
+                vmull_s16(vget_low_s16(q8_sums.val[1]), vget_low_s16(scale_hi)),
+                vmull_s16(vget_high_s16(q8_sums.val[1]), vget_high_s16(scale_hi))
+            )
+        );
+        int32_t isum = 0;
+        const int32_t isum_bias = vaddvq_s32(bias_acc);
+
+        for (size_t j = 0; j < MARMOT_QK_K_VALUES / 128; ++j) {
+            const uint8x16x2_t qh_bits = vld1q_u8_x2(qh);
+            qh += 32;
+            const uint8x16x4_t ql_bits = vld1q_u8_x4(ql);
+            ql += 64;
+            int8x16x4_t q8_bytes = vld1q_s8_x4(q8);
+            q8 += 64;
+
+            uint8x16x4_t hi_bits;
+            hi_bits.val[0] = vshlq_n_u8(vandq_u8(qh_bits.val[0], high_mask), 4);
+            hi_bits.val[1] = vshlq_n_u8(vandq_u8(qh_bits.val[1], high_mask), 4);
+            hi_bits.val[2] = vshlq_n_u8(vandq_u8(vshrq_n_u8(qh_bits.val[0], 2), high_mask), 4);
+            hi_bits.val[3] = vshlq_n_u8(vandq_u8(vshrq_n_u8(qh_bits.val[1], 2), high_mask), 4);
+
+            int8x16x4_t q6_bytes;
+            q6_bytes.val[0] = vreinterpretq_s8_u8(vorrq_u8(vandq_u8(ql_bits.val[0], low_mask), hi_bits.val[0]));
+            q6_bytes.val[1] = vreinterpretq_s8_u8(vorrq_u8(vandq_u8(ql_bits.val[1], low_mask), hi_bits.val[1]));
+            q6_bytes.val[2] = vreinterpretq_s8_u8(vorrq_u8(vandq_u8(ql_bits.val[2], low_mask), hi_bits.val[2]));
+            q6_bytes.val[3] = vreinterpretq_s8_u8(vorrq_u8(vandq_u8(ql_bits.val[3], low_mask), hi_bits.val[3]));
+
+            isum += vaddvq_s32(vdotq_s32(zero, q6_bytes.val[0], q8_bytes.val[0])) * (int32_t)scales[0] +
+                vaddvq_s32(vdotq_s32(zero, q6_bytes.val[1], q8_bytes.val[1])) * (int32_t)scales[1] +
+                vaddvq_s32(vdotq_s32(zero, q6_bytes.val[2], q8_bytes.val[2])) * (int32_t)scales[2] +
+                vaddvq_s32(vdotq_s32(zero, q6_bytes.val[3], q8_bytes.val[3])) * (int32_t)scales[3];
+
+            scales += 4;
+            q8_bytes = vld1q_s8_x4(q8);
+            q8 += 64;
+
+            hi_bits.val[0] = vshlq_n_u8(vandq_u8(vshrq_n_u8(qh_bits.val[0], 4), high_mask), 4);
+            hi_bits.val[1] = vshlq_n_u8(vandq_u8(vshrq_n_u8(qh_bits.val[1], 4), high_mask), 4);
+            hi_bits.val[2] = vshlq_n_u8(vandq_u8(vshrq_n_u8(qh_bits.val[0], 6), high_mask), 4);
+            hi_bits.val[3] = vshlq_n_u8(vandq_u8(vshrq_n_u8(qh_bits.val[1], 6), high_mask), 4);
+
+            q6_bytes.val[0] = vreinterpretq_s8_u8(vorrq_u8(vshrq_n_u8(ql_bits.val[0], 4), hi_bits.val[0]));
+            q6_bytes.val[1] = vreinterpretq_s8_u8(vorrq_u8(vshrq_n_u8(ql_bits.val[1], 4), hi_bits.val[1]));
+            q6_bytes.val[2] = vreinterpretq_s8_u8(vorrq_u8(vshrq_n_u8(ql_bits.val[2], 4), hi_bits.val[2]));
+            q6_bytes.val[3] = vreinterpretq_s8_u8(vorrq_u8(vshrq_n_u8(ql_bits.val[3], 4), hi_bits.val[3]));
+
+            isum += vaddvq_s32(vdotq_s32(zero, q6_bytes.val[0], q8_bytes.val[0])) * (int32_t)scales[0] +
+                vaddvq_s32(vdotq_s32(zero, q6_bytes.val[1], q8_bytes.val[1])) * (int32_t)scales[1] +
+                vaddvq_s32(vdotq_s32(zero, q6_bytes.val[2], q8_bytes.val[2])) * (int32_t)scales[2] +
+                vaddvq_s32(vdotq_s32(zero, q6_bytes.val[3], q8_bytes.val[3])) * (int32_t)scales[3];
+
+            scales += 4;
+        }
+
         const float d = a_block->d * (float)marmot_float16_to_native(w_block->d);
-        total += d * (float)block_sum;
+        total += d * (float)(isum - 32 * isum_bias);
     }
 
     return total;
 }
 
+void cpu_vec_dot_q6_k_q8_k_2rows_neon_dotprod(
+    const marmot_q6_k_block_t *weights_row0, const marmot_q6_k_block_t *weights_row1,
+    const marmot_q8_k_block_t *activations, size_t num_blocks, float *sum_row0, float *sum_row1
+) {
+    if (sum_row0 != nullptr) {
+        *sum_row0 = 0.0f;
+    }
+    if (sum_row1 != nullptr) {
+        *sum_row1 = 0.0f;
+    }
+    if (weights_row0 == nullptr || weights_row1 == nullptr || activations == nullptr || num_blocks == 0 ||
+        sum_row0 == nullptr || sum_row1 == nullptr) {
+        return;
+    }
+
+    float total0 = 0.0f;
+    float total1 = 0.0f;
+
+    for (size_t block_index = 0; block_index < num_blocks; ++block_index) {
+        const marmot_q6_k_block_t *w_block0 = &weights_row0[block_index];
+        const marmot_q6_k_block_t *w_block1 = &weights_row1[block_index];
+        const marmot_q8_k_block_t *a_block = &activations[block_index];
+        const int8_t *a_ptr = a_block->qs;
+        int32x4_t block_acc0 = vdupq_n_s32(0);
+        int32x4_t block_acc1 = vdupq_n_s32(0);
+
+        for (size_t sg = 0; sg < MARMOT_QK_K_VALUES / 16; ++sg) {
+            const size_t group32 = sg / 2;
+            const size_t half = group32 / 4;
+            const size_t group_in_half = group32 & 3;
+            const size_t part = sg & 1;
+            const uint8_t *ql0 = w_block0->ql + half * 64 + ((group_in_half & 1) ? 32 : 0) + (part * 16);
+            const uint8_t *qh0 = w_block0->qh + half * 32 + (part * 16);
+            const uint8_t *ql1 = w_block1->ql + half * 64 + ((group_in_half & 1) ? 32 : 0) + (part * 16);
+            const uint8_t *qh1 = w_block1->qh + half * 32 + (part * 16);
+            const int shift = (int)(group_in_half * 2);
+            const bool high_nibble = group_in_half >= 2;
+            const int32_t scale0 = (int32_t)w_block0->scales[sg];
+            const int32_t scale1 = (int32_t)w_block1->scales[sg];
+
+            const int8x16_t wv0 = cpu_vec_dot_q6_k_decode_16(ql0, qh0, shift, high_nibble);
+            const int8x16_t wv1 = cpu_vec_dot_q6_k_decode_16(ql1, qh1, shift, high_nibble);
+            const int8x16_t av = vld1q_s8(a_ptr);
+            int32x4_t acc0 = vdupq_n_s32(0);
+            int32x4_t acc1 = vdupq_n_s32(0);
+            acc0 = vdotq_s32(acc0, wv0, av);
+            acc1 = vdotq_s32(acc1, wv1, av);
+            block_acc0 = vaddq_s32(block_acc0, vmulq_n_s32(acc0, scale0));
+            block_acc1 = vaddq_s32(block_acc1, vmulq_n_s32(acc1, scale1));
+            a_ptr += 16;
+        }
+
+        const float d0 = a_block->d * (float)marmot_float16_to_native(w_block0->d);
+        const float d1 = a_block->d * (float)marmot_float16_to_native(w_block1->d);
+        total0 += d0 * (float)vaddvq_s32(block_acc0);
+        total1 += d1 * (float)vaddvq_s32(block_acc1);
+    }
+
+    *sum_row0 = total0;
+    *sum_row1 = total1;
+}
+
 #endif // __ARM_FEATURE_DOTPROD
 
-#if defined(__ARM_FEATURE_I8MM) || defined(__ARM_FEATURE_MATMUL_INT8)
+#if MARMOT_ENABLE_ARM_I8MM_TARGET
 static inline int32_t cpu_vec_dot_i8mm_sum(int32x4_t acc) {
     return vgetq_lane_s32(acc, 0) + vgetq_lane_s32(acc, 3);
 }
 
+MARMOT_ARM_I8MM_TARGET
 float cpu_vec_dot_q8_0_q8_0_neon_i8mm(
     const marmot_q8_0_block_t *weights, const marmot_q8_0_block_t *activations, size_t num_blocks
 ) {
@@ -715,6 +825,7 @@ float cpu_vec_dot_q8_0_q8_0_neon_i8mm(
     return total;
 }
 
+MARMOT_ARM_I8MM_TARGET
 float cpu_vec_dot_q8_1_q8_0_neon_i8mm(
     const marmot_q8_1_block_t *weights, const marmot_q8_0_block_t *activations, size_t num_blocks
 ) {
@@ -745,6 +856,7 @@ float cpu_vec_dot_q8_1_q8_0_neon_i8mm(
     return total;
 }
 
+MARMOT_ARM_I8MM_TARGET
 float cpu_vec_dot_q8_k_q8_k_neon_i8mm(
     const marmot_q8_k_block_t *weights, const marmot_q8_k_block_t *activations, size_t num_blocks
 ) {
@@ -770,6 +882,97 @@ float cpu_vec_dot_q8_k_q8_k_neon_i8mm(
         const float d = w_block->d * a_block->d;
         const int32_t block_sum = cpu_vec_dot_i8mm_sum(acc);
         total += d * (float)block_sum;
+    }
+
+    return total;
+}
+
+MARMOT_ARM_I8MM_TARGET
+float cpu_vec_dot_q4_k_q8_k_neon_i8mm(
+    const marmot_q4_k_block_t *weights, const marmot_q8_k_block_t *activations, size_t num_blocks
+) {
+    if (weights == nullptr || activations == nullptr || num_blocks == 0) {
+        return 0.0f;
+    }
+
+    const uint8x16_t nibble_mask = vdupq_n_u8(0x0F);
+    float total = 0.0f;
+
+    for (size_t block_index = 0; block_index < num_blocks; ++block_index) {
+        const marmot_q4_k_block_t *w_block = &weights[block_index];
+        const marmot_q8_k_block_t *a_block = &activations[block_index];
+        const int8_t *q8 = a_block->qs;
+
+        uint8_t scales[8];
+        uint8_t mins[8];
+        cpu_vec_dot_unpack_k4_scales(w_block->scales, scales, mins);
+
+        const int32_t sumi = cpu_vec_dot_k4_sumi(a_block->bsums, mins);
+        int32_t block_acc = 0;
+
+        for (int sg = 0; sg < 8; ++sg) {
+            const uint8_t *q4_block = w_block->qs + (sg / 2) * 32;
+            const int8_t *q8_block = q8 + sg * 32;
+            const bool high = (sg & 1) != 0;
+
+            uint8x16_t bytes0 = vld1q_u8(q4_block);
+            uint8x16_t bytes1 = vld1q_u8(q4_block + 16);
+            uint8x16_t vals0 = high ? vshrq_n_u8(bytes0, 4) : vandq_u8(bytes0, nibble_mask);
+            uint8x16_t vals1 = high ? vshrq_n_u8(bytes1, 4) : vandq_u8(bytes1, nibble_mask);
+
+            int8x16_t w0 = vreinterpretq_s8_u8(vals0);
+            int8x16_t w1 = vreinterpretq_s8_u8(vals1);
+            int8x16_t a0 = vld1q_s8(q8_block);
+            int8x16_t a1 = vld1q_s8(q8_block + 16);
+
+            const int32x4_t acc0 = vmmlaq_s32(vdupq_n_s32(0), w0, a0);
+            const int32x4_t acc1 = vmmlaq_s32(vdupq_n_s32(0), w1, a1);
+            block_acc += (int32_t)scales[sg] * (cpu_vec_dot_i8mm_sum(acc0) + cpu_vec_dot_i8mm_sum(acc1));
+        }
+
+        const float d = a_block->d * (float)marmot_float16_to_native(w_block->d);
+        const float dmin = a_block->d * (float)marmot_float16_to_native(w_block->dmin);
+        total += d * (float)block_acc - dmin * (float)sumi;
+    }
+
+    return total;
+}
+
+MARMOT_ARM_I8MM_TARGET
+float cpu_vec_dot_q6_k_q8_k_neon_i8mm(
+    const marmot_q6_k_block_t *weights, const marmot_q8_k_block_t *activations, size_t num_blocks
+) {
+    if (weights == nullptr || activations == nullptr || num_blocks == 0) {
+        return 0.0f;
+    }
+
+    float total = 0.0f;
+
+    for (size_t block_index = 0; block_index < num_blocks; ++block_index) {
+        const marmot_q6_k_block_t *w_block = &weights[block_index];
+        const marmot_q8_k_block_t *a_block = &activations[block_index];
+        const int8_t *a_ptr = a_block->qs;
+        int32_t block_acc = 0;
+
+        for (size_t sg = 0; sg < MARMOT_QK_K_VALUES / 16; ++sg) {
+            const size_t group32 = sg / 2;
+            const size_t half = group32 / 4;
+            const size_t group_in_half = group32 & 3;
+            const size_t part = sg & 1;
+            const uint8_t *ql = w_block->ql + half * 64 + ((group_in_half & 1) ? 32 : 0) + (part * 16);
+            const uint8_t *qh = w_block->qh + half * 32 + (part * 16);
+            const int shift = (int)(group_in_half * 2);
+            const bool high_nibble = group_in_half >= 2;
+            const int32_t scale = (int32_t)w_block->scales[sg];
+            const int8x16_t wv = cpu_vec_dot_q6_k_decode_16(ql, qh, shift, high_nibble);
+            const int8x16_t av = vld1q_s8(a_ptr);
+            const int32x4_t acc = vmmlaq_s32(vdupq_n_s32(0), wv, av);
+            block_acc += scale * cpu_vec_dot_i8mm_sum(acc);
+            a_ptr += 16;
+        }
+
+        const float d = a_block->d * (float)marmot_float16_to_native(w_block->d);
+        total += d * (float)block_acc;
     }
 
     return total;

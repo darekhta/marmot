@@ -1261,6 +1261,202 @@ kernel void matmul_q4_k_f16_f16_mv(
     );
 }
 
+template <typename InputType, typename OutputType>
+static inline void matmul_q4_k_dual_mv_compute(
+    device const q4_k_block *weight_q, device const q4_k_block *weight_k, device const InputType *input,
+    device OutputType *output_q, device OutputType *output_k, uint N, uint K, uint M, uint stride_n, uint stride_k,
+    uint weight_blocks, uint2 tgp, ushort tiisg, ushort sgitg
+) {
+    constexpr uint NR0 = 2u;
+    constexpr uint NSG = 2u;
+    constexpr uint R0PTG = NR0 * NSG;
+
+    const uint n = tgp.y;
+    if (n >= N) {
+        return;
+    }
+
+    const uint m_base = tgp.x * R0PTG + uint(sgitg) * NR0;
+    if (m_base >= M) {
+        return;
+    }
+
+    const uint m0 = m_base;
+    const uint m1 = m_base + 1u;
+    const bool has_m1 = m1 < M;
+
+    device const InputType *input_row = input + n * stride_n;
+    device const q4_k_block *weight_row_q0 = weight_q + m0 * weight_blocks;
+    device const q4_k_block *weight_row_q1 = has_m1 ? (weight_row_q0 + weight_blocks) : weight_row_q0;
+    device const q4_k_block *weight_row_k0 = weight_k + m0 * weight_blocks;
+    device const q4_k_block *weight_row_k1 = has_m1 ? (weight_row_k0 + weight_blocks) : weight_row_k0;
+
+    const uint tid = uint(tiisg);
+    const uint ix = tid >> 3;
+    const uint it = tid & 7u;
+    const uint iq = it >> 2;
+    const uint ir = it & 3u;
+
+    float yl[16];
+    float yh[16];
+    float sum_q0 = 0.0f;
+    float sum_q1 = 0.0f;
+    float sum_k0 = 0.0f;
+    float sum_k1 = 0.0f;
+
+    const bool full_k = (K & (kQK_K - 1u)) == 0u;
+    if (stride_k == 1u && full_k) {
+        const uint nb = min(weight_blocks, K / kQK_K);
+        device const InputType *y4 = input_row + ix * kQK_K + 64u * iq + 8u * ir;
+        device const q4_k_block *xq0 = weight_row_q0 + ix;
+        device const q4_k_block *xq1 = weight_row_q1 + ix;
+        device const q4_k_block *xk0 = weight_row_k0 + ix;
+        device const q4_k_block *xk1 = weight_row_k1 + ix;
+
+        for (uint ib = ix; ib < nb; ib += 4u) {
+            float4 sumy = 0.0f;
+            for (uint i = 0; i < 8u; ++i) {
+                const float v0 = float(y4[i + 0u]);
+                const float v1 = float(y4[i + 32u]);
+                const float v2 = float(y4[i + 128u]);
+                const float v3 = float(y4[i + 160u]);
+
+                yl[i + 0u] = v0;
+                yl[i + 8u] = v1;
+                yh[i + 0u] = v2;
+                yh[i + 8u] = v3;
+
+                sumy[0] += v0;
+                sumy[1] += v1;
+                sumy[2] += v2;
+                sumy[3] += v3;
+            }
+
+            sum_q0 += marmot_mv_q4_k_dot_block(*xq0, yl, yh, sumy, iq, ir);
+            sum_q1 += marmot_mv_q4_k_dot_block(*xq1, yl, yh, sumy, iq, ir);
+            sum_k0 += marmot_mv_q4_k_dot_block(*xk0, yl, yh, sumy, iq, ir);
+            sum_k1 += marmot_mv_q4_k_dot_block(*xk1, yl, yh, sumy, iq, ir);
+            y4 += 4u * kQK_K;
+            xq0 += 4u;
+            xq1 += 4u;
+            xk0 += 4u;
+            xk1 += 4u;
+        }
+    } else {
+        for (uint sb = ix; sb < weight_blocks; sb += 4u) {
+            const uint block_start = sb * kQK_K;
+            if (block_start >= K) {
+                break;
+            }
+
+            float4 sumy = 0.0f;
+            const uint y_base = block_start + 64u * iq + 8u * ir;
+            if (stride_k == 1u && (block_start + kQK_K) <= K) {
+                device const InputType *y_ptr = input_row + y_base;
+                for (uint i = 0; i < 8u; ++i) {
+                    const float v0 = float(y_ptr[i + 0u]);
+                    const float v1 = float(y_ptr[i + 32u]);
+                    const float v2 = float(y_ptr[i + 128u]);
+                    const float v3 = float(y_ptr[i + 160u]);
+
+                    yl[i + 0u] = v0;
+                    yl[i + 8u] = v1;
+                    yh[i + 0u] = v2;
+                    yh[i + 8u] = v3;
+
+                    sumy[0] += v0;
+                    sumy[1] += v1;
+                    sumy[2] += v2;
+                    sumy[3] += v3;
+                }
+            } else {
+                for (uint i = 0; i < 8u; ++i) {
+                    const float v0 = marmot_mv_load_scalar(input_row, y_base + i + 0u, K, stride_k);
+                    const float v1 = marmot_mv_load_scalar(input_row, y_base + i + 32u, K, stride_k);
+                    const float v2 = marmot_mv_load_scalar(input_row, y_base + i + 128u, K, stride_k);
+                    const float v3 = marmot_mv_load_scalar(input_row, y_base + i + 160u, K, stride_k);
+
+                    yl[i + 0u] = v0;
+                    yl[i + 8u] = v1;
+                    yh[i + 0u] = v2;
+                    yh[i + 8u] = v3;
+
+                    sumy[0] += v0;
+                    sumy[1] += v1;
+                    sumy[2] += v2;
+                    sumy[3] += v3;
+                }
+            }
+
+            sum_q0 += marmot_mv_q4_k_dot_block(weight_row_q0[sb], yl, yh, sumy, iq, ir);
+            sum_q1 += marmot_mv_q4_k_dot_block(weight_row_q1[sb], yl, yh, sumy, iq, ir);
+            sum_k0 += marmot_mv_q4_k_dot_block(weight_row_k0[sb], yl, yh, sumy, iq, ir);
+            sum_k1 += marmot_mv_q4_k_dot_block(weight_row_k1[sb], yl, yh, sumy, iq, ir);
+        }
+    }
+
+    const float out_q0 = simd_sum(sum_q0);
+    const float out_q1 = simd_sum(sum_q1);
+    const float out_k0 = simd_sum(sum_k0);
+    const float out_k1 = simd_sum(sum_k1);
+    if (tiisg == 0) {
+        output_q[n * M + m0] = OutputType(out_q0);
+        output_k[n * M + m0] = OutputType(out_k0);
+        if (has_m1) {
+            output_q[n * M + m1] = OutputType(out_q1);
+            output_k[n * M + m1] = OutputType(out_k1);
+        }
+    }
+}
+
+kernel void matmul_qkv_q4_k_dual_f32_f32_mv(
+    device const q4_k_block *weight_q [[buffer(0)]], device const q4_k_block *weight_k [[buffer(1)]],
+    device const q4_k_block *weight_v [[buffer(2)]], device const float *input [[buffer(3)]],
+    device float *out_q [[buffer(4)]], device float *out_k [[buffer(5)]], device float *out_v [[buffer(6)]],
+    constant uint &N [[buffer(7)]], constant uint &K [[buffer(8)]], constant uint &M [[buffer(9)]],
+    constant uint &stride_n [[buffer(10)]], constant uint &stride_k [[buffer(11)]],
+    constant uint &weight_blocks [[buffer(12)]], ushort tiisg [[thread_index_in_simdgroup]],
+    ushort sgitg [[simdgroup_index_in_threadgroup]], uint2 tgp [[threadgroup_position_in_grid]]
+) {
+    (void)weight_v;
+    (void)out_v;
+    matmul_q4_k_dual_mv_compute<float, float>(
+        weight_q, weight_k, input, out_q, out_k, N, K, M, stride_n, stride_k, weight_blocks, tgp, tiisg, sgitg
+    );
+}
+
+kernel void matmul_qkv_q4_k_dual_f16_f32_mv(
+    device const q4_k_block *weight_q [[buffer(0)]], device const q4_k_block *weight_k [[buffer(1)]],
+    device const q4_k_block *weight_v [[buffer(2)]], device const half *input [[buffer(3)]],
+    device float *out_q [[buffer(4)]], device float *out_k [[buffer(5)]], device float *out_v [[buffer(6)]],
+    constant uint &N [[buffer(7)]], constant uint &K [[buffer(8)]], constant uint &M [[buffer(9)]],
+    constant uint &stride_n [[buffer(10)]], constant uint &stride_k [[buffer(11)]],
+    constant uint &weight_blocks [[buffer(12)]], ushort tiisg [[thread_index_in_simdgroup]],
+    ushort sgitg [[simdgroup_index_in_threadgroup]], uint2 tgp [[threadgroup_position_in_grid]]
+) {
+    (void)weight_v;
+    (void)out_v;
+    matmul_q4_k_dual_mv_compute<half, float>(
+        weight_q, weight_k, input, out_q, out_k, N, K, M, stride_n, stride_k, weight_blocks, tgp, tiisg, sgitg
+    );
+}
+
+kernel void matmul_qkv_q4_k_dual_f16_f16_mv(
+    device const q4_k_block *weight_q [[buffer(0)]], device const q4_k_block *weight_k [[buffer(1)]],
+    device const q4_k_block *weight_v [[buffer(2)]], device const half *input [[buffer(3)]],
+    device half *out_q [[buffer(4)]], device half *out_k [[buffer(5)]], device half *out_v [[buffer(6)]],
+    constant uint &N [[buffer(7)]], constant uint &K [[buffer(8)]], constant uint &M [[buffer(9)]],
+    constant uint &stride_n [[buffer(10)]], constant uint &stride_k [[buffer(11)]],
+    constant uint &weight_blocks [[buffer(12)]], ushort tiisg [[thread_index_in_simdgroup]],
+    ushort sgitg [[simdgroup_index_in_threadgroup]], uint2 tgp [[threadgroup_position_in_grid]]
+) {
+    (void)weight_v;
+    (void)out_v;
+    matmul_q4_k_dual_mv_compute<half, half>(
+        weight_q, weight_k, input, out_q, out_k, N, K, M, stride_n, stride_k, weight_blocks, tgp, tiisg, sgitg
+    );
+}
+
 template <typename OutputType>
 static inline void matmul_q4_k_mv_ext_r1_4_compute_f32(
     device const q4_k_block *weight, device const float *input, device OutputType *output, uint N, uint K, uint M,
@@ -3174,6 +3370,283 @@ static inline void matmul_q6_k_mv_compute(
     }
 }
 
+template <typename InputType, typename OutputType>
+static inline void matmul_q6_k_dual_mv_compute(
+    device const q6_k_block *weight_q, device const q6_k_block *weight_k, device const InputType *input,
+    device OutputType *output_q, device OutputType *output_k, uint N, uint K, uint M, uint stride_n, uint stride_k,
+    uint weight_blocks, uint2 tgp, ushort tiisg, ushort sgitg
+) {
+    constexpr uint NR0 = 2u;
+    constexpr uint NSG = 2u;
+    constexpr uint R0PTG = NR0 * NSG;
+
+    const uint n = tgp.y;
+    if (n >= N) {
+        return;
+    }
+
+    const uint m_base = tgp.x * R0PTG + uint(sgitg) * NR0;
+    if (m_base >= M) {
+        return;
+    }
+
+    const uint m0 = m_base;
+    const uint m1 = m_base + 1u;
+    const bool has_m1 = m1 < M;
+
+    device const InputType *input_row = input + n * stride_n;
+    device const q6_k_block *weight_row_q0 = weight_q + m0 * weight_blocks;
+    device const q6_k_block *weight_row_q1 = has_m1 ? (weight_row_q0 + weight_blocks) : weight_row_q0;
+    device const q6_k_block *weight_row_k0 = weight_k + m0 * weight_blocks;
+    device const q6_k_block *weight_row_k1 = has_m1 ? (weight_row_k0 + weight_blocks) : weight_row_k0;
+
+    float sum_q0 = 0.0f;
+    float sum_q1 = 0.0f;
+    float sum_k0 = 0.0f;
+    float sum_k1 = 0.0f;
+
+    const bool full_k = (stride_k == 1u) && ((K & (kQK_K - 1u)) == 0u);
+    if (full_k) {
+        constexpr uchar kmask1 = 0x03;
+        constexpr uchar kmask2 = 0x0C;
+        constexpr uchar kmask3 = 0x30;
+        constexpr uchar kmask4 = 0xC0;
+
+        const ushort tid = tiisg >> 1;
+        const ushort ix = tiisg & 1;
+        const ushort ip = tid >> 3;
+        const ushort il = tid & 7;
+        const ushort l0 = il * 4;
+        const ushort is = 8 * ip + l0 / 16;
+
+        const ushort y_offset = 128 * ip + l0;
+        const ushort q_offset_l = 64 * ip + l0;
+        const ushort q_offset_h = 32 * ip + l0;
+
+        const uint nb = min(weight_blocks, K / kQK_K);
+        device const InputType *y = input_row + uint(ix) * kQK_K + uint(y_offset);
+
+        float yl[16];
+
+        for (uint ib = uint(ix); ib < nb; ib += 2u) {
+#pragma clang loop unroll(full)
+            for (ushort l = 0; l < 4; ++l) {
+                yl[4u * uint(l) + 0u] = float(y[l + 0]);
+                yl[4u * uint(l) + 1u] = float(y[l + 32]);
+                yl[4u * uint(l) + 2u] = float(y[l + 64]);
+                yl[4u * uint(l) + 3u] = float(y[l + 96]);
+            }
+
+            {
+                const device q6_k_block &blk = weight_row_q0[ib];
+                const device uchar *q1 = blk.ql + q_offset_l;
+                const device uchar *q2 = q1 + 32;
+                const device uchar *qh = blk.qh + q_offset_h;
+                const device char *sc = blk.scales + is;
+                float4 sums = 0.0f;
+#pragma clang loop unroll(full)
+                for (ushort l = 0; l < 4; ++l) {
+                    sums[0] += yl[4u * uint(l) + 0u] * float(int(char((q1[l] & 0xFu) | ((qh[l] & kmask1) << 4))) - 32);
+                    sums[1] += yl[4u * uint(l) + 1u] * float(int(char((q2[l] & 0xFu) | ((qh[l] & kmask2) << 2))) - 32);
+                    sums[2] += yl[4u * uint(l) + 2u] * float(int(char((q1[l] >> 4) | ((qh[l] & kmask3) << 0))) - 32);
+                    sums[3] += yl[4u * uint(l) + 3u] * float(int(char((q2[l] >> 4) | ((qh[l] & kmask4) >> 2))) - 32);
+                }
+                sum_q0 += float(blk.d) *
+                    (sums[0] * float(sc[0]) + sums[1] * float(sc[2]) + sums[2] * float(sc[4]) + sums[3] * float(sc[6]));
+            }
+            {
+                const device q6_k_block &blk = weight_row_q1[ib];
+                const device uchar *q1 = blk.ql + q_offset_l;
+                const device uchar *q2 = q1 + 32;
+                const device uchar *qh = blk.qh + q_offset_h;
+                const device char *sc = blk.scales + is;
+                float4 sums = 0.0f;
+#pragma clang loop unroll(full)
+                for (ushort l = 0; l < 4; ++l) {
+                    sums[0] += yl[4u * uint(l) + 0u] * float(int(char((q1[l] & 0xFu) | ((qh[l] & kmask1) << 4))) - 32);
+                    sums[1] += yl[4u * uint(l) + 1u] * float(int(char((q2[l] & 0xFu) | ((qh[l] & kmask2) << 2))) - 32);
+                    sums[2] += yl[4u * uint(l) + 2u] * float(int(char((q1[l] >> 4) | ((qh[l] & kmask3) << 0))) - 32);
+                    sums[3] += yl[4u * uint(l) + 3u] * float(int(char((q2[l] >> 4) | ((qh[l] & kmask4) >> 2))) - 32);
+                }
+                sum_q1 += float(blk.d) *
+                    (sums[0] * float(sc[0]) + sums[1] * float(sc[2]) + sums[2] * float(sc[4]) + sums[3] * float(sc[6]));
+            }
+            {
+                const device q6_k_block &blk = weight_row_k0[ib];
+                const device uchar *q1 = blk.ql + q_offset_l;
+                const device uchar *q2 = q1 + 32;
+                const device uchar *qh = blk.qh + q_offset_h;
+                const device char *sc = blk.scales + is;
+                float4 sums = 0.0f;
+#pragma clang loop unroll(full)
+                for (ushort l = 0; l < 4; ++l) {
+                    sums[0] += yl[4u * uint(l) + 0u] * float(int(char((q1[l] & 0xFu) | ((qh[l] & kmask1) << 4))) - 32);
+                    sums[1] += yl[4u * uint(l) + 1u] * float(int(char((q2[l] & 0xFu) | ((qh[l] & kmask2) << 2))) - 32);
+                    sums[2] += yl[4u * uint(l) + 2u] * float(int(char((q1[l] >> 4) | ((qh[l] & kmask3) << 0))) - 32);
+                    sums[3] += yl[4u * uint(l) + 3u] * float(int(char((q2[l] >> 4) | ((qh[l] & kmask4) >> 2))) - 32);
+                }
+                sum_k0 += float(blk.d) *
+                    (sums[0] * float(sc[0]) + sums[1] * float(sc[2]) + sums[2] * float(sc[4]) + sums[3] * float(sc[6]));
+            }
+            {
+                const device q6_k_block &blk = weight_row_k1[ib];
+                const device uchar *q1 = blk.ql + q_offset_l;
+                const device uchar *q2 = q1 + 32;
+                const device uchar *qh = blk.qh + q_offset_h;
+                const device char *sc = blk.scales + is;
+                float4 sums = 0.0f;
+#pragma clang loop unroll(full)
+                for (ushort l = 0; l < 4; ++l) {
+                    sums[0] += yl[4u * uint(l) + 0u] * float(int(char((q1[l] & 0xFu) | ((qh[l] & kmask1) << 4))) - 32);
+                    sums[1] += yl[4u * uint(l) + 1u] * float(int(char((q2[l] & 0xFu) | ((qh[l] & kmask2) << 2))) - 32);
+                    sums[2] += yl[4u * uint(l) + 2u] * float(int(char((q1[l] >> 4) | ((qh[l] & kmask3) << 0))) - 32);
+                    sums[3] += yl[4u * uint(l) + 3u] * float(int(char((q2[l] >> 4) | ((qh[l] & kmask4) >> 2))) - 32);
+                }
+                sum_k1 += float(blk.d) *
+                    (sums[0] * float(sc[0]) + sums[1] * float(sc[2]) + sums[2] * float(sc[4]) + sums[3] * float(sc[6]));
+            }
+
+            y += 2u * kQK_K;
+        }
+    } else {
+        const uint lane = uint(tiisg);
+        const uint q_offset = lane << 3;
+
+        const uint chunk = q_offset >> 7;
+        const uint local = q_offset & 127u;
+        const uint segment = local >> 5;
+        const bool high_nibble = (segment & 2u) != 0u;
+        const uint l_base = local & 31u;
+        const uint ql_base = chunk * 64u + ((segment & 1u) != 0u ? 32u : 0u) + l_base;
+        const uint qh_base = chunk * 32u + l_base;
+        const uint shift_h = segment * 2u;
+        const uint is = l_base >> 4;
+
+        for (uint sb = 0; sb < weight_blocks; ++sb) {
+            const uint block_start = sb * kQK_K;
+            if (block_start >= K) {
+                break;
+            }
+
+            float4 a0 = 0.0f;
+            float4 a1 = 0.0f;
+            float sum_a = 0.0f;
+            marmot_mv_load8(input_row, block_start + q_offset, K, stride_k, a0, a1, sum_a);
+            (void)sum_a;
+
+            {
+                const device q6_k_block &blk = weight_row_q0[sb];
+                const int scale_i8 = int(blk.scales[chunk * 8u + segment * 2u + is]);
+                const float dl = float(blk.d) * float(scale_i8);
+                const device uchar *ql = blk.ql + ql_base;
+                const device uchar *qh = blk.qh + qh_base;
+                float4 qv0;
+                float4 qv1;
+#pragma clang loop unroll(full)
+                for (uint i = 0; i < 8u; ++i) {
+                    const uchar qlb = ql[i];
+                    const uchar qhb = qh[i];
+                    const uint lo4 = high_nibble ? uint(qlb >> 4) : uint(qlb & 0x0Fu);
+                    const uint hi2 = (uint(qhb) >> shift_h) & 0x3u;
+                    const int q6 = int(lo4 | (hi2 << 4u)) - 32;
+                    const float qf = float(q6);
+                    if (i < 4u) {
+                        qv0[i] = qf;
+                    } else {
+                        qv1[i - 4u] = qf;
+                    }
+                }
+                sum_q0 += dl * (dot(qv0, a0) + dot(qv1, a1));
+            }
+            {
+                const device q6_k_block &blk = weight_row_q1[sb];
+                const int scale_i8 = int(blk.scales[chunk * 8u + segment * 2u + is]);
+                const float dl = float(blk.d) * float(scale_i8);
+                const device uchar *ql = blk.ql + ql_base;
+                const device uchar *qh = blk.qh + qh_base;
+                float4 qv0;
+                float4 qv1;
+#pragma clang loop unroll(full)
+                for (uint i = 0; i < 8u; ++i) {
+                    const uchar qlb = ql[i];
+                    const uchar qhb = qh[i];
+                    const uint lo4 = high_nibble ? uint(qlb >> 4) : uint(qlb & 0x0Fu);
+                    const uint hi2 = (uint(qhb) >> shift_h) & 0x3u;
+                    const int q6 = int(lo4 | (hi2 << 4u)) - 32;
+                    const float qf = float(q6);
+                    if (i < 4u) {
+                        qv0[i] = qf;
+                    } else {
+                        qv1[i - 4u] = qf;
+                    }
+                }
+                sum_q1 += dl * (dot(qv0, a0) + dot(qv1, a1));
+            }
+            {
+                const device q6_k_block &blk = weight_row_k0[sb];
+                const int scale_i8 = int(blk.scales[chunk * 8u + segment * 2u + is]);
+                const float dl = float(blk.d) * float(scale_i8);
+                const device uchar *ql = blk.ql + ql_base;
+                const device uchar *qh = blk.qh + qh_base;
+                float4 qv0;
+                float4 qv1;
+#pragma clang loop unroll(full)
+                for (uint i = 0; i < 8u; ++i) {
+                    const uchar qlb = ql[i];
+                    const uchar qhb = qh[i];
+                    const uint lo4 = high_nibble ? uint(qlb >> 4) : uint(qlb & 0x0Fu);
+                    const uint hi2 = (uint(qhb) >> shift_h) & 0x3u;
+                    const int q6 = int(lo4 | (hi2 << 4u)) - 32;
+                    const float qf = float(q6);
+                    if (i < 4u) {
+                        qv0[i] = qf;
+                    } else {
+                        qv1[i - 4u] = qf;
+                    }
+                }
+                sum_k0 += dl * (dot(qv0, a0) + dot(qv1, a1));
+            }
+            {
+                const device q6_k_block &blk = weight_row_k1[sb];
+                const int scale_i8 = int(blk.scales[chunk * 8u + segment * 2u + is]);
+                const float dl = float(blk.d) * float(scale_i8);
+                const device uchar *ql = blk.ql + ql_base;
+                const device uchar *qh = blk.qh + qh_base;
+                float4 qv0;
+                float4 qv1;
+#pragma clang loop unroll(full)
+                for (uint i = 0; i < 8u; ++i) {
+                    const uchar qlb = ql[i];
+                    const uchar qhb = qh[i];
+                    const uint lo4 = high_nibble ? uint(qlb >> 4) : uint(qlb & 0x0Fu);
+                    const uint hi2 = (uint(qhb) >> shift_h) & 0x3u;
+                    const int q6 = int(lo4 | (hi2 << 4u)) - 32;
+                    const float qf = float(q6);
+                    if (i < 4u) {
+                        qv0[i] = qf;
+                    } else {
+                        qv1[i - 4u] = qf;
+                    }
+                }
+                sum_k1 += dl * (dot(qv0, a0) + dot(qv1, a1));
+            }
+        }
+    }
+
+    const float out_q0 = simd_sum(sum_q0);
+    const float out_q1 = simd_sum(sum_q1);
+    const float out_k0 = simd_sum(sum_k0);
+    const float out_k1 = simd_sum(sum_k1);
+    if (tiisg == 0) {
+        output_q[n * M + m0] = OutputType(out_q0);
+        output_k[n * M + m0] = OutputType(out_k0);
+        if (has_m1) {
+            output_q[n * M + m1] = OutputType(out_q1);
+            output_k[n * M + m1] = OutputType(out_k1);
+        }
+    }
+}
+
 kernel void matmul_q6_k_f32_f32_mv(
     device const q6_k_block *weight [[buffer(0)]], device const float *input [[buffer(1)]],
     device float *output [[buffer(2)]], constant uint &N [[buffer(3)]], constant uint &K [[buffer(4)]],
@@ -3207,6 +3680,54 @@ kernel void matmul_q6_k_f16_f16_mv(
 ) {
     matmul_q6_k_mv_compute<half, half>(
         weight, input, output, N, K, M, stride_n, stride_k, weight_blocks, tgp, tiisg, sgitg
+    );
+}
+
+kernel void matmul_qkv_q6_k_dual_f32_f32_mv(
+    device const q6_k_block *weight_q [[buffer(0)]], device const q6_k_block *weight_k [[buffer(1)]],
+    device const q6_k_block *weight_v [[buffer(2)]], device const float *input [[buffer(3)]],
+    device float *out_q [[buffer(4)]], device float *out_k [[buffer(5)]], device float *out_v [[buffer(6)]],
+    constant uint &N [[buffer(7)]], constant uint &K [[buffer(8)]], constant uint &M [[buffer(9)]],
+    constant uint &stride_n [[buffer(10)]], constant uint &stride_k [[buffer(11)]],
+    constant uint &weight_blocks [[buffer(12)]], ushort tiisg [[thread_index_in_simdgroup]],
+    ushort sgitg [[simdgroup_index_in_threadgroup]], uint2 tgp [[threadgroup_position_in_grid]]
+) {
+    (void)weight_v;
+    (void)out_v;
+    matmul_q6_k_dual_mv_compute<float, float>(
+        weight_q, weight_k, input, out_q, out_k, N, K, M, stride_n, stride_k, weight_blocks, tgp, tiisg, sgitg
+    );
+}
+
+kernel void matmul_qkv_q6_k_dual_f16_f32_mv(
+    device const q6_k_block *weight_q [[buffer(0)]], device const q6_k_block *weight_k [[buffer(1)]],
+    device const q6_k_block *weight_v [[buffer(2)]], device const half *input [[buffer(3)]],
+    device float *out_q [[buffer(4)]], device float *out_k [[buffer(5)]], device float *out_v [[buffer(6)]],
+    constant uint &N [[buffer(7)]], constant uint &K [[buffer(8)]], constant uint &M [[buffer(9)]],
+    constant uint &stride_n [[buffer(10)]], constant uint &stride_k [[buffer(11)]],
+    constant uint &weight_blocks [[buffer(12)]], ushort tiisg [[thread_index_in_simdgroup]],
+    ushort sgitg [[simdgroup_index_in_threadgroup]], uint2 tgp [[threadgroup_position_in_grid]]
+) {
+    (void)weight_v;
+    (void)out_v;
+    matmul_q6_k_dual_mv_compute<half, float>(
+        weight_q, weight_k, input, out_q, out_k, N, K, M, stride_n, stride_k, weight_blocks, tgp, tiisg, sgitg
+    );
+}
+
+kernel void matmul_qkv_q6_k_dual_f16_f16_mv(
+    device const q6_k_block *weight_q [[buffer(0)]], device const q6_k_block *weight_k [[buffer(1)]],
+    device const q6_k_block *weight_v [[buffer(2)]], device const half *input [[buffer(3)]],
+    device half *out_q [[buffer(4)]], device half *out_k [[buffer(5)]], device half *out_v [[buffer(6)]],
+    constant uint &N [[buffer(7)]], constant uint &K [[buffer(8)]], constant uint &M [[buffer(9)]],
+    constant uint &stride_n [[buffer(10)]], constant uint &stride_k [[buffer(11)]],
+    constant uint &weight_blocks [[buffer(12)]], ushort tiisg [[thread_index_in_simdgroup]],
+    ushort sgitg [[simdgroup_index_in_threadgroup]], uint2 tgp [[threadgroup_position_in_grid]]
+) {
+    (void)weight_v;
+    (void)out_v;
+    matmul_q6_k_dual_mv_compute<half, half>(
+        weight_q, weight_k, input, out_q, out_k, N, K, M, stride_n, stride_k, weight_blocks, tgp, tiisg, sgitg
     );
 }
 
@@ -8180,6 +8701,94 @@ kernel void matmul_q8_k_f16_f16_mm16(
         out_v[out_index] = CAST_EXPR(acc_v);                                                                           \
     }
 
+#define DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(NAME, WEIGHT_BLOCK_T, INPUT_T, DOT_FN, OUT_T, CAST_EXPR)               \
+    kernel void NAME(                                                                                                  \
+        device const WEIGHT_BLOCK_T *weight_q [[buffer(0)]], device const WEIGHT_BLOCK_T *weight_k [[buffer(1)]],      \
+        device const WEIGHT_BLOCK_T *weight_v [[buffer(2)]], device const INPUT_T *input [[buffer(3)]],                \
+        device OUT_T *out_q [[buffer(4)]], device OUT_T *out_k [[buffer(5)]], device OUT_T *out_v [[buffer(6)]],       \
+        constant uint &N [[buffer(7)]], constant uint &K [[buffer(8)]], constant uint &M [[buffer(9)]],                \
+        constant uint &stride_n [[buffer(10)]], constant uint &stride_k [[buffer(11)]],                                \
+        device const float *rope_positions [[buffer(12)]], device const float *rope_freqs [[buffer(13)]],              \
+        constant MatmulQKVQuantUniforms &uniforms [[buffer(14)]], uint2 gid [[thread_position_in_grid]],               \
+        ushort2 tid [[thread_position_in_threadgroup]]                                                                 \
+    ) {                                                                                                                \
+        (void)weight_v;                                                                                                \
+        (void)out_v;                                                                                                   \
+        const uint m = gid.x;                                                                                          \
+        const uint n = gid.y;                                                                                          \
+        if (n >= N || m >= M) {                                                                                        \
+            return;                                                                                                    \
+        }                                                                                                              \
+        const uint weight_blocks = (K + kQK_K - 1u) / kQK_K;                                                           \
+        device const WEIGHT_BLOCK_T *row_q = weight_q + m * weight_blocks;                                             \
+        device const WEIGHT_BLOCK_T *row_k = weight_k + m * weight_blocks;                                             \
+        device const INPUT_T *input_row = input + n * stride_n;                                                        \
+        float acc_q = 0.0f;                                                                                            \
+        float acc_k = 0.0f;                                                                                            \
+        for (uint sb = 0; sb < weight_blocks; ++sb) {                                                                  \
+            const uint block_start = sb * kQK_K;                                                                       \
+            if (block_start >= K) {                                                                                    \
+                break;                                                                                                 \
+            }                                                                                                          \
+            const uint block_len = min(kQK_K, K - block_start);                                                        \
+            acc_q += DOT_FN(row_q[sb], input_row, block_start, block_len, stride_k);                                   \
+            acc_k += DOT_FN(row_k[sb], input_row, block_start, block_len, stride_k);                                   \
+        }                                                                                                              \
+        threadgroup float tileRopeQ[MARMOT_QKV_QUANT_TILE_M][MARMOT_QKV_QUANT_TILE_N];                                 \
+        threadgroup float tileRopeK[MARMOT_QKV_QUANT_TILE_M][MARMOT_QKV_QUANT_TILE_N];                                 \
+        bool rope_enabled = (uniforms.rope_enabled != 0u) && rope_positions != nullptr && rope_freqs != nullptr;       \
+        bool apply_rope_q = rope_enabled && (uniforms.rope_apply_q != 0u);                                             \
+        bool apply_rope_k = rope_enabled && (uniforms.rope_apply_k != 0u);                                             \
+        bool needs_rope = apply_rope_q || apply_rope_k;                                                                \
+        uint rope_head_dim = uniforms.rope_head_dim;                                                                   \
+        if (rope_head_dim == 0u || rope_head_dim > M || (M % rope_head_dim) != 0u || (rope_head_dim & 1u) != 0u) {     \
+            rope_head_dim = M;                                                                                         \
+        }                                                                                                              \
+        float final_q = acc_q;                                                                                         \
+        float final_k = acc_k;                                                                                         \
+        if (needs_rope) {                                                                                              \
+            const uint tile_col_base = gid.x - tid.x;                                                                  \
+            tileRopeQ[tid.y][tid.x] = acc_q;                                                                           \
+            tileRopeK[tid.y][tid.x] = acc_k;                                                                           \
+            threadgroup_barrier(mem_flags::mem_threadgroup);                                                           \
+            uint head_base = (m / rope_head_dim) * rope_head_dim;                                                      \
+            uint local = m - head_base;                                                                                \
+            uint even_local = local & ~1u;                                                                             \
+            uint odd_local = even_local + 1u;                                                                          \
+            if (odd_local < rope_head_dim) {                                                                           \
+                uint even_col = head_base + even_local;                                                                \
+                uint odd_col = head_base + odd_local;                                                                  \
+                uint even_tile = even_col - tile_col_base;                                                             \
+                uint odd_tile = odd_col - tile_col_base;                                                               \
+                if (even_tile < MARMOT_QKV_QUANT_TILE_N && odd_tile < MARMOT_QKV_QUANT_TILE_N) {                       \
+                    float even_q = tileRopeQ[tid.y][even_tile];                                                        \
+                    float odd_q = tileRopeQ[tid.y][odd_tile];                                                          \
+                    float even_k = tileRopeK[tid.y][even_tile];                                                        \
+                    float odd_k = tileRopeK[tid.y][odd_tile];                                                          \
+                    float position = rope_positions[n];                                                                \
+                    float freq = rope_freqs[even_local >> 1];                                                          \
+                    float angle = position * freq;                                                                     \
+                    float cos_val = cos(angle) * uniforms.rope_attn_scale;                                             \
+                    float sin_val = sin(angle) * uniforms.rope_attn_scale;                                             \
+                    if (apply_rope_q) {                                                                                \
+                        float rotated_even_q = even_q * cos_val - odd_q * sin_val;                                     \
+                        float rotated_odd_q = even_q * sin_val + odd_q * cos_val;                                      \
+                        final_q = (m == even_col) ? rotated_even_q : rotated_odd_q;                                    \
+                    }                                                                                                  \
+                    if (apply_rope_k) {                                                                                \
+                        float rotated_even_k = even_k * cos_val - odd_k * sin_val;                                     \
+                        float rotated_odd_k = even_k * sin_val + odd_k * cos_val;                                      \
+                        final_k = (m == even_col) ? rotated_even_k : rotated_odd_k;                                    \
+                    }                                                                                                  \
+                }                                                                                                      \
+            }                                                                                                          \
+            threadgroup_barrier(mem_flags::mem_threadgroup);                                                           \
+        }                                                                                                              \
+        const uint out_index = n * M + m;                                                                              \
+        out_q[out_index] = CAST_EXPR(final_q);                                                                         \
+        out_k[out_index] = CAST_EXPR(final_k);                                                                         \
+    }
+
 DEFINE_MATMUL_QKV_QK_DIRECT_KERNEL(
     matmul_qkv_q2_k_f32_f32, q2_k_block, float, compute_q2k_block_dot_direct, float, STORE_F32
 )
@@ -8191,6 +8800,18 @@ DEFINE_MATMUL_QKV_QK_DIRECT_KERNEL(
 )
 DEFINE_MATMUL_QKV_QK_DIRECT_KERNEL(
     matmul_qkv_q2_k_f16_f16, q2_k_block, half, compute_q2k_block_dot_direct, half, STORE_F16
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q2_k_dual_f32_f32, q2_k_block, float, compute_q2k_block_dot_direct, float, STORE_F32
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q2_k_dual_f32_f16, q2_k_block, float, compute_q2k_block_dot_direct, half, STORE_F16
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q2_k_dual_f16_f32, q2_k_block, half, compute_q2k_block_dot_direct, float, STORE_F32
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q2_k_dual_f16_f16, q2_k_block, half, compute_q2k_block_dot_direct, half, STORE_F16
 )
 DEFINE_MATMUL_QKV_QK_DIRECT_KERNEL(
     matmul_qkv_q3_k_f32_f32, q3_k_block, float, compute_q3k_block_dot_direct, float, STORE_F32
@@ -8204,6 +8825,18 @@ DEFINE_MATMUL_QKV_QK_DIRECT_KERNEL(
 DEFINE_MATMUL_QKV_QK_DIRECT_KERNEL(
     matmul_qkv_q3_k_f16_f16, q3_k_block, half, compute_q3k_block_dot_direct, half, STORE_F16
 )
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q3_k_dual_f32_f32, q3_k_block, float, compute_q3k_block_dot_direct, float, STORE_F32
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q3_k_dual_f32_f16, q3_k_block, float, compute_q3k_block_dot_direct, half, STORE_F16
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q3_k_dual_f16_f32, q3_k_block, half, compute_q3k_block_dot_direct, float, STORE_F32
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q3_k_dual_f16_f16, q3_k_block, half, compute_q3k_block_dot_direct, half, STORE_F16
+)
 DEFINE_MATMUL_QKV_QK_DIRECT_KERNEL(
     matmul_qkv_q4_k_f32_f32, q4_k_block, float, compute_q4k_block_dot_direct, float, STORE_F32
 )
@@ -8215,6 +8848,18 @@ DEFINE_MATMUL_QKV_QK_DIRECT_KERNEL(
 )
 DEFINE_MATMUL_QKV_QK_DIRECT_KERNEL(
     matmul_qkv_q4_k_f16_f16, q4_k_block, half, compute_q4k_block_dot_direct, half, STORE_F16
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q4_k_dual_f32_f32, q4_k_block, float, compute_q4k_block_dot_direct, float, STORE_F32
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q4_k_dual_f32_f16, q4_k_block, float, compute_q4k_block_dot_direct, half, STORE_F16
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q4_k_dual_f16_f32, q4_k_block, half, compute_q4k_block_dot_direct, float, STORE_F32
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q4_k_dual_f16_f16, q4_k_block, half, compute_q4k_block_dot_direct, half, STORE_F16
 )
 DEFINE_MATMUL_QKV_QK_DIRECT_KERNEL(
     matmul_qkv_q5_k_f32_f32, q5_k_block, float, compute_q5k_block_dot_direct, float, STORE_F32
@@ -8228,6 +8873,18 @@ DEFINE_MATMUL_QKV_QK_DIRECT_KERNEL(
 DEFINE_MATMUL_QKV_QK_DIRECT_KERNEL(
     matmul_qkv_q5_k_f16_f16, q5_k_block, half, compute_q5k_block_dot_direct, half, STORE_F16
 )
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q5_k_dual_f32_f32, q5_k_block, float, compute_q5k_block_dot_direct, float, STORE_F32
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q5_k_dual_f32_f16, q5_k_block, float, compute_q5k_block_dot_direct, half, STORE_F16
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q5_k_dual_f16_f32, q5_k_block, half, compute_q5k_block_dot_direct, float, STORE_F32
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q5_k_dual_f16_f16, q5_k_block, half, compute_q5k_block_dot_direct, half, STORE_F16
+)
 DEFINE_MATMUL_QKV_QK_DIRECT_KERNEL(
     matmul_qkv_q6_k_f32_f32, q6_k_block, float, compute_q6k_block_dot_direct, float, STORE_F32
 )
@@ -8240,6 +8897,18 @@ DEFINE_MATMUL_QKV_QK_DIRECT_KERNEL(
 DEFINE_MATMUL_QKV_QK_DIRECT_KERNEL(
     matmul_qkv_q6_k_f16_f16, q6_k_block, half, compute_q6k_block_dot_direct, half, STORE_F16
 )
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q6_k_dual_f32_f32, q6_k_block, float, compute_q6k_block_dot_direct, float, STORE_F32
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q6_k_dual_f32_f16, q6_k_block, float, compute_q6k_block_dot_direct, half, STORE_F16
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q6_k_dual_f16_f32, q6_k_block, half, compute_q6k_block_dot_direct, float, STORE_F32
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q6_k_dual_f16_f16, q6_k_block, half, compute_q6k_block_dot_direct, half, STORE_F16
+)
 DEFINE_MATMUL_QKV_QK_DIRECT_KERNEL(
     matmul_qkv_q8_k_f32_f32, q8_k_block, float, compute_q8k_block_dot_direct, float, STORE_F32
 )
@@ -8251,6 +8920,18 @@ DEFINE_MATMUL_QKV_QK_DIRECT_KERNEL(
 )
 DEFINE_MATMUL_QKV_QK_DIRECT_KERNEL(
     matmul_qkv_q8_k_f16_f16, q8_k_block, half, compute_q8k_block_dot_direct, half, STORE_F16
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q8_k_dual_f32_f32, q8_k_block, float, compute_q8k_block_dot_direct, float, STORE_F32
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q8_k_dual_f32_f16, q8_k_block, float, compute_q8k_block_dot_direct, half, STORE_F16
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q8_k_dual_f16_f32, q8_k_block, half, compute_q8k_block_dot_direct, float, STORE_F32
+)
+DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL(
+    matmul_qkv_q8_k_dual_f16_f16, q8_k_block, half, compute_q8k_block_dot_direct, half, STORE_F16
 )
 
 #define DEFINE_MATMUL_QKV_Q80_KERNEL(NAME, WEIGHT_BLOCK_T, ACCUM_FN, OUT_T, CAST_EXPR)                                 \
@@ -8355,6 +9036,7 @@ DEFINE_MATMUL_QKV_Q80_KERNEL(matmul_qkv_q8_1_q8_0_f16, q8_1_block, matmul_qkv_ac
 #undef STORE_F32
 #undef STORE_F16
 #undef DEFINE_MATMUL_QKV_QK_DIRECT_KERNEL
+#undef DEFINE_MATMUL_QKV_QK_DIRECT_DUAL_KERNEL
 #undef DEFINE_MATMUL_QKV_Q80_KERNEL
 
 // Q4_1 × Q8_0 matmul

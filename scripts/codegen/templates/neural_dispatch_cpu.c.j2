@@ -97,6 +97,84 @@ marmot_error_t marmot_cpu_{{ kernel.name }}_exec(const void *device_ctx, const m
 {% endfor %}
 
 // ============================================================================
+// TopK Implementations
+// ============================================================================
+{% for kernel in neural_kernels %}
+{% if kernel.kind == 'topk' %}
+// {{ kernel.name }}: TopK
+{% if kernel.platform_guard and kernel.platform_guard != "1" %}#if {{ kernel.platform_guard }}
+{% endif %}
+{% if kernel.requires_fp8 %}#if MARMOT_ENABLE_FP8
+{% endif %}
+marmot_error_t marmot_cpu_{{ kernel.name }}_exec(const void *device_ctx, const marmot_kernel_args_topk_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_topk_desc_t desc = {
+        .x = args->input,
+        .values_out = args->values_out,
+        .indices_out = args->indices_out,
+        .axis = args->axis,
+        .k = args->k,
+    };
+{% if kernel.kernel_func %}
+    return {{ kernel.kernel_func }}(device_ctx, &desc);
+{% else %}
+    return cpu_topk_impl(device_ctx, &desc);
+{% endif %}
+}
+{% if kernel.requires_fp8 %}#endif
+{% endif %}
+{% if kernel.platform_guard and kernel.platform_guard != "1" %}#endif
+{% endif %}
+
+{% endif %}
+{% endfor %}
+
+// ============================================================================
+// MoE Expert Implementations
+// ============================================================================
+{% for kernel in neural_kernels %}
+{% if kernel.kind == 'moe_experts' %}
+// {{ kernel.name }}: MoE experts
+{% if kernel.platform_guard and kernel.platform_guard != "1" %}#if {{ kernel.platform_guard }}
+{% endif %}
+{% if kernel.requires_fp8 %}#if MARMOT_ENABLE_FP8
+{% endif %}
+marmot_error_t
+marmot_cpu_{{ kernel.name }}_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+{% if kernel.kernel_func %}
+    return {{ kernel.kernel_func }}(device_ctx, &desc);
+{% else %}
+    return cpu_moe_experts_impl(device_ctx, &desc);
+{% endif %}
+}
+{% if kernel.requires_fp8 %}#endif
+{% endif %}
+{% if kernel.platform_guard and kernel.platform_guard != "1" %}#endif
+{% endif %}
+
+{% endif %}
+{% endfor %}
+
+// ============================================================================
 // Paged Attention Implementations
 // ============================================================================
 {% for kernel in neural_kernels %}

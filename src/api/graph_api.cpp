@@ -60,6 +60,16 @@ marmot_error_t marmot_graph_add_op(
     }
 }
 
+marmot_error_t
+marmot_graph_set_last_node_moe_params(marmot_graph_t *graph, marmot_ffn_type_t ffn_type, float weights_scale) {
+    try {
+        return marmot::graph::GraphApiFacade::set_last_node_moe_params(graph, ffn_type, weights_scale);
+    } catch (...) {
+        marmot_set_error(MARMOT_ERROR_INVALID_OPERATION, "marmot_graph_set_last_node_moe_params threw");
+        return MARMOT_ERROR_INVALID_OPERATION;
+    }
+}
+
 marmot_error_t marmot_graph_finalize(marmot_graph_t *graph, marmot_backend_type_t backend) {
     try {
         return marmot::graph::GraphApiFacade::finalize(graph, backend);

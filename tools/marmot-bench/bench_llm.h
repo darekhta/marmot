@@ -11,12 +11,19 @@
 extern "C" {
 #endif
 
+typedef enum {
+    MARMOT_BENCH_LLM_MODE_DIRECT = 0,
+    MARMOT_BENCH_LLM_MODE_SERVING = 1,
+} marmot_bench_llm_mode_t;
+
 // LLM benchmark parameters
 typedef struct {
     size_t n_prompt;    // -p: Number of prompt tokens to process
     size_t n_gen;       // -n: Number of tokens to generate
     size_t n_depth;     // -d: Pre-filled KV cache depth
     size_t n_seqs;      // --concurrency: Concurrent requests
+    size_t warmup_runs; // Warmup runs excluded from measured repetitions
+    marmot_bench_llm_mode_t mode;
 } marmot_bench_llm_params_t;
 
 // LLM benchmark results
@@ -39,6 +46,7 @@ typedef struct {
     size_t n_gen;
     size_t n_depth;
     size_t n_seqs;
+    marmot_bench_llm_mode_t mode;
 } marmot_bench_llm_result_t;
 
 // Initialize LLM params with defaults
@@ -46,6 +54,20 @@ void marmot_bench_llm_params_init(marmot_bench_llm_params_t *params);
 
 // Run LLM benchmark (prompt processing + token generation)
 [[nodiscard]] marmot_error_t marmot_bench_llm_run(
+    const marmot_bench_model_t *model,
+    const marmot_bench_llm_params_t *params,
+    size_t repetitions,
+    marmot_bench_llm_result_t *result
+);
+
+[[nodiscard]] marmot_error_t marmot_bench_llm_run_direct(
+    const marmot_bench_model_t *model,
+    const marmot_bench_llm_params_t *params,
+    size_t repetitions,
+    marmot_bench_llm_result_t *result
+);
+
+[[nodiscard]] marmot_error_t marmot_bench_llm_run_serving(
     const marmot_bench_model_t *model,
     const marmot_bench_llm_params_t *params,
     size_t repetitions,

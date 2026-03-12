@@ -531,6 +531,44 @@ marmot_error_t marmot_metal_mod_u16_exec(const void *device_ctx, const marmot_ke
 marmot_error_t marmot_metal_mod_u32_exec(const void *device_ctx, const marmot_kernel_args_binary_t *args);
 marmot_error_t marmot_metal_mod_u64_exec(const void *device_ctx, const marmot_kernel_args_binary_t *args);
 marmot_error_t marmot_metal_mod_u8_exec(const void *device_ctx, const marmot_kernel_args_binary_t *args);
+marmot_error_t marmot_metal_moe_experts_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t marmot_metal_moe_experts_f32_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t marmot_metal_moe_experts_q2_k_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t
+marmot_metal_moe_experts_q2_k_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t marmot_metal_moe_experts_q3_k_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t
+marmot_metal_moe_experts_q3_k_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t marmot_metal_moe_experts_q4_0_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t
+marmot_metal_moe_experts_q4_0_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t marmot_metal_moe_experts_q4_1_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t
+marmot_metal_moe_experts_q4_1_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t marmot_metal_moe_experts_q4_k_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t
+marmot_metal_moe_experts_q4_k_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t marmot_metal_moe_experts_q5_0_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t
+marmot_metal_moe_experts_q5_0_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t marmot_metal_moe_experts_q5_1_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t
+marmot_metal_moe_experts_q5_1_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t marmot_metal_moe_experts_q5_k_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t
+marmot_metal_moe_experts_q5_k_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t marmot_metal_moe_experts_q6_k_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t
+marmot_metal_moe_experts_q6_k_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t marmot_metal_moe_experts_q8_0_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t
+marmot_metal_moe_experts_q8_0_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t marmot_metal_moe_experts_q8_1_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t
+marmot_metal_moe_experts_q8_1_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t marmot_metal_moe_experts_q8_k_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
+marmot_error_t
+marmot_metal_moe_experts_q8_k_f16_exec(const void *device_ctx, const marmot_kernel_args_moe_experts_t *args);
 marmot_error_t marmot_metal_mul_bf16_exec(const void *device_ctx, const marmot_kernel_args_binary_t *args);
 marmot_error_t marmot_metal_mul_f16_exec(const void *device_ctx, const marmot_kernel_args_binary_t *args);
 marmot_error_t marmot_metal_mul_f32_exec(const void *device_ctx, const marmot_kernel_args_binary_t *args);
@@ -773,6 +811,8 @@ marmot_error_t
 marmot_metal_tensor_transpose_generic_exec(const void *device_ctx, const marmot_kernel_args_transpose_t *args);
 marmot_error_t marmot_metal_tensor_view_fp8_exec(const void *device_ctx, const marmot_kernel_args_view_t *args);
 marmot_error_t marmot_metal_tensor_view_generic_exec(const void *device_ctx, const marmot_kernel_args_view_t *args);
+marmot_error_t marmot_metal_topk_f16_exec(const void *device_ctx, const marmot_kernel_args_topk_t *args);
+marmot_error_t marmot_metal_topk_f32_exec(const void *device_ctx, const marmot_kernel_args_topk_t *args);
 marmot_error_t marmot_metal_vec_dot_q2_k_q8_k_exec(const void *device_ctx, const marmot_kernel_args_vec_dot_t *args);
 marmot_error_t marmot_metal_vec_dot_q3_k_q8_k_exec(const void *device_ctx, const marmot_kernel_args_vec_dot_t *args);
 marmot_error_t marmot_metal_vec_dot_q4_0_q8_0_exec(const void *device_ctx, const marmot_kernel_args_vec_dot_t *args);
@@ -16047,6 +16087,1150 @@ static marmot_error_t marmot_metal_bc_exec_mod_u8(
     return status;
 }
 
+static marmot_error_t marmot_metal_bc_exec_moe_experts_f16(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_f16_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_f32(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_f32_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q2_k(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q2_k_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q2_k_f16(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q2_k_f16_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q3_k(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q3_k_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q3_k_f16(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q3_k_f16_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q4_0(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q4_0_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q4_0_f16(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q4_0_f16_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q4_1(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q4_1_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q4_1_f16(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q4_1_f16_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q4_k(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q4_k_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q4_k_f16(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q4_k_f16_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q5_0(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q5_0_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q5_0_f16(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q5_0_f16_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q5_1(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q5_1_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q5_1_f16(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q5_1_f16_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q5_k(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q5_k_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q5_k_f16(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q5_k_f16_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q6_k(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q6_k_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q6_k_f16(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q6_k_f16_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q8_0(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q8_0_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q8_0_f16(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q8_0_f16_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q8_1(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q8_1_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q8_1_f16(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q8_1_f16_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q8_k(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q8_k_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_moe_experts_q8_k_f16(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
+    };
+    marmot_error_t status = marmot_metal_moe_experts_q8_k_f16_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
 static marmot_error_t marmot_metal_bc_exec_mul_bf16(
     const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
 ) {
@@ -25359,6 +26543,74 @@ static marmot_error_t marmot_metal_bc_exec_tensor_view_generic(
     return status;
 }
 
+static marmot_error_t marmot_metal_bc_exec_topk_f16(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t input_idx = marmot_bc_read_u16(&pc);
+    uint16_t values_out_idx = marmot_bc_read_u16(&pc);
+    uint16_t indices_out_idx = marmot_bc_read_u16(&pc);
+    int32_t axis = (int32_t)marmot_bc_read_u32(&pc);
+    uint32_t k = marmot_bc_read_u32(&pc);
+    marmot_kernel_args_topk_t args = {
+        .ctx = ctx,
+        .input = marmot_bc_reg(regs, input_idx),
+        .values_out = marmot_bc_reg(regs, values_out_idx),
+        .indices_out = marmot_bc_reg(regs, indices_out_idx),
+        .axis = axis,
+        .k = k,
+    };
+    marmot_error_t status = marmot_metal_topk_f16_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
+static marmot_error_t marmot_metal_bc_exec_topk_f32(
+    const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
+) {
+    const marmot_bc_exec_ctx_t *exec_ctx = (const marmot_bc_exec_ctx_t *)backend_exec_ctx;
+    if (exec_ctx == nullptr || exec_ctx->ctx == nullptr || exec_ctx->device_ctx == nullptr || regs == nullptr ||
+        imm == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null bytecode exec arguments");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    const marmot_context_t *ctx = exec_ctx->ctx;
+    const void *device_ctx = exec_ctx->device_ctx;
+    marmot_tensor_t **concat_inputs = nullptr;
+    const uint8_t *pc = imm;
+    (void)const_pool;
+    uint16_t input_idx = marmot_bc_read_u16(&pc);
+    uint16_t values_out_idx = marmot_bc_read_u16(&pc);
+    uint16_t indices_out_idx = marmot_bc_read_u16(&pc);
+    int32_t axis = (int32_t)marmot_bc_read_u32(&pc);
+    uint32_t k = marmot_bc_read_u32(&pc);
+    marmot_kernel_args_topk_t args = {
+        .ctx = ctx,
+        .input = marmot_bc_reg(regs, input_idx),
+        .values_out = marmot_bc_reg(regs, values_out_idx),
+        .indices_out = marmot_bc_reg(regs, indices_out_idx),
+        .axis = axis,
+        .k = k,
+    };
+    marmot_error_t status = marmot_metal_topk_f32_exec(device_ctx, &args);
+    if (concat_inputs != nullptr) {
+        free(concat_inputs);
+    }
+    return status;
+}
+
 static marmot_error_t marmot_metal_bc_exec_vec_dot_q2_k_q8_k(
     const void *backend_exec_ctx, marmot_tensor_t **regs, const uint8_t *imm, const uint8_t *const_pool
 ) {
@@ -26387,7 +27639,8 @@ const uint16_t marmot_metal_bc_imm_size[MARMOT_METAL_BC_OP_COUNT] = {
 #else
     0,
 #endif
-    6,  6,  6,  6,  6,  6,  6,  6,  6,  6,
+    6,  6,  6,  6,  6,  6,  6,  26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26, 26,
+    26, 26, 26, 26, 26, 6,  6,  6,
 #if MARMOT_ENABLE_FP8
     6,
 #else
@@ -26618,7 +27871,7 @@ const uint16_t marmot_metal_bc_imm_size[MARMOT_METAL_BC_OP_COUNT] = {
 #else
     0,
 #endif
-    12, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
+    12, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14, 14,
 #if MARMOT_ENABLE_FP8
     8,
 #else
@@ -27247,6 +28500,32 @@ const marmot_bc_schema_id_t marmot_metal_bc_schema_id[MARMOT_METAL_BC_OP_COUNT] 
     MARMOT_BC_SCHEMA_BINARY,
     MARMOT_BC_SCHEMA_BINARY,
     MARMOT_BC_SCHEMA_BINARY,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
     MARMOT_BC_SCHEMA_BINARY,
     MARMOT_BC_SCHEMA_BINARY,
     MARMOT_BC_SCHEMA_BINARY,
@@ -27626,6 +28905,8 @@ const marmot_bc_schema_id_t marmot_metal_bc_schema_id[MARMOT_METAL_BC_OP_COUNT] 
     MARMOT_BC_SCHEMA_INVALID,
 #endif
     MARMOT_BC_SCHEMA_VIEW,
+    MARMOT_BC_SCHEMA_TOPK,
+    MARMOT_BC_SCHEMA_TOPK,
     MARMOT_BC_SCHEMA_VEC_DOT,
     MARMOT_BC_SCHEMA_VEC_DOT,
     MARMOT_BC_SCHEMA_VEC_DOT,
@@ -28266,6 +29547,32 @@ const marmot_bc_exec_fn marmot_metal_bc_exec_table[MARMOT_METAL_BC_OP_COUNT] = {
     marmot_metal_bc_exec_mod_u32,
     marmot_metal_bc_exec_mod_u64,
     marmot_metal_bc_exec_mod_u8,
+    marmot_metal_bc_exec_moe_experts_f16,
+    marmot_metal_bc_exec_moe_experts_f32,
+    marmot_metal_bc_exec_moe_experts_q2_k,
+    marmot_metal_bc_exec_moe_experts_q2_k_f16,
+    marmot_metal_bc_exec_moe_experts_q3_k,
+    marmot_metal_bc_exec_moe_experts_q3_k_f16,
+    marmot_metal_bc_exec_moe_experts_q4_0,
+    marmot_metal_bc_exec_moe_experts_q4_0_f16,
+    marmot_metal_bc_exec_moe_experts_q4_1,
+    marmot_metal_bc_exec_moe_experts_q4_1_f16,
+    marmot_metal_bc_exec_moe_experts_q4_k,
+    marmot_metal_bc_exec_moe_experts_q4_k_f16,
+    marmot_metal_bc_exec_moe_experts_q5_0,
+    marmot_metal_bc_exec_moe_experts_q5_0_f16,
+    marmot_metal_bc_exec_moe_experts_q5_1,
+    marmot_metal_bc_exec_moe_experts_q5_1_f16,
+    marmot_metal_bc_exec_moe_experts_q5_k,
+    marmot_metal_bc_exec_moe_experts_q5_k_f16,
+    marmot_metal_bc_exec_moe_experts_q6_k,
+    marmot_metal_bc_exec_moe_experts_q6_k_f16,
+    marmot_metal_bc_exec_moe_experts_q8_0,
+    marmot_metal_bc_exec_moe_experts_q8_0_f16,
+    marmot_metal_bc_exec_moe_experts_q8_1,
+    marmot_metal_bc_exec_moe_experts_q8_1_f16,
+    marmot_metal_bc_exec_moe_experts_q8_k,
+    marmot_metal_bc_exec_moe_experts_q8_k_f16,
     marmot_metal_bc_exec_mul_bf16,
     marmot_metal_bc_exec_mul_f16,
     marmot_metal_bc_exec_mul_f32,
@@ -28645,6 +29952,8 @@ const marmot_bc_exec_fn marmot_metal_bc_exec_table[MARMOT_METAL_BC_OP_COUNT] = {
     nullptr,
 #endif
     marmot_metal_bc_exec_tensor_view_generic,
+    marmot_metal_bc_exec_topk_f16,
+    marmot_metal_bc_exec_topk_f32,
     marmot_metal_bc_exec_vec_dot_q2_k_q8_k,
     marmot_metal_bc_exec_vec_dot_q3_k_q8_k,
     marmot_metal_bc_exec_vec_dot_q4_0_q8_0,

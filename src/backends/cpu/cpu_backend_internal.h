@@ -220,11 +220,88 @@ typedef struct cpu_rope_sincos_cache {
     bool owns_storage;
 } cpu_rope_sincos_cache_t;
 
+#define CPU_PACKED_WEIGHT_CACHE_SLOTS 128u
+
+typedef enum cpu_packed_weight_layout {
+    CPU_PACKED_WEIGHT_LAYOUT_RAW = 0,
+    CPU_PACKED_WEIGHT_LAYOUT_ROW_PANEL = 1,
+    CPU_PACKED_WEIGHT_LAYOUT_Q4_K_ROW_PANEL_DECODED = 2,
+    CPU_PACKED_WEIGHT_LAYOUT_Q6_K_ROW_PANEL_DECODED = 3,
+} cpu_packed_weight_layout_t;
+
+typedef struct cpu_packed_weight_cache_entry {
+    const void *src;
+    uint8_t *packed;
+    size_t bytes;
+    size_t row_bytes;
+    size_t rows;
+    size_t block_bytes;
+    size_t blocks_per_row;
+    size_t panel_rows;
+    size_t packed_bytes;
+    cpu_packed_weight_layout_t layout;
+    size_t capacity_bytes;
+    uint64_t stamp;
+    bool valid;
+    bool sticky;
+} cpu_packed_weight_cache_entry_t;
+
+typedef struct cpu_packed_weight_cache_stats {
+    uint64_t exact_lookups;
+    uint64_t exact_hits;
+    uint64_t range_lookups;
+    uint64_t range_hits;
+    uint64_t inserts;
+    uint64_t evictions;
+    uint64_t full_sticky_misses;
+} cpu_packed_weight_cache_stats_t;
+
+typedef struct cpu_packed_weight_cache {
+    pthread_mutex_t mutex;
+    cpu_packed_weight_cache_entry_t entries[CPU_PACKED_WEIGHT_CACHE_SLOTS];
+    uint64_t stamp;
+    cpu_packed_weight_cache_stats_t stats;
+} cpu_packed_weight_cache_t;
+
+typedef struct cpu_prepacked_weight_store {
+    pthread_mutex_t mutex;
+    cpu_packed_weight_cache_entry_t *entries;
+    size_t count;
+    size_t capacity;
+    cpu_packed_weight_cache_stats_t stats;
+} cpu_prepacked_weight_store_t;
+
+typedef struct cpu_packed_weight_view {
+    const uint8_t *data;
+    size_t row_bytes;
+    size_t rows;
+    size_t block_bytes;
+    size_t blocks_per_row;
+    size_t panel_rows;
+    size_t packed_bytes;
+    cpu_packed_weight_layout_t layout;
+} cpu_packed_weight_view_t;
+
+#define CPU_QUANT_WORKSPACE_SLOTS 8u
+
+typedef struct cpu_quant_workspace_slot {
+    pthread_mutex_t mutex;
+    uint8_t *activation_blocks;
+    size_t activation_blocks_capacity;
+    uint8_t *activation_panel;
+    size_t activation_panel_capacity;
+} cpu_quant_workspace_slot_t;
+
+typedef struct cpu_quant_workspace_pool {
+    cpu_quant_workspace_slot_t slots[CPU_QUANT_WORKSPACE_SLOTS];
+} cpu_quant_workspace_pool_t;
+
 // CPU backend context (shared across all modules)
 typedef struct cpu_context {
     int initialized;
 
     size_t num_threads;
+    bool thread_count_explicit;
     marmot_quant_activation_mode_t quant_activation_mode;
     bool force_q8_activations;
 
@@ -243,6 +320,11 @@ typedef struct cpu_context {
 
     // Scratch buffer pool for GEMM operations (avoids malloc per matmul)
     marmot_neon_scratch_pool_t neon_scratch_pool;
+    cpu_packed_weight_cache_t pinned_weight_cache;
+    cpu_prepacked_weight_store_t prepacked_weight_store;
+    cpu_packed_weight_cache_t packed_weight_cache;
+    cpu_quant_workspace_pool_t quant_workspace_pool;
+    bool profile_packed_weight_cache;
 
 } cpu_context_t;
 
@@ -254,6 +336,70 @@ static inline bool cpu_matmul_take_pending_epilogue(cpu_context_t *ctx, marmot_m
     ctx->pending_matmul_epilogue_valid = false;
     return true;
 }
+
+void cpu_packed_weight_cache_init(cpu_packed_weight_cache_t *cache);
+void cpu_packed_weight_cache_destroy(cpu_packed_weight_cache_t *cache);
+void cpu_prepacked_weight_store_init(cpu_prepacked_weight_store_t *store);
+void cpu_prepacked_weight_store_destroy(cpu_prepacked_weight_store_t *store);
+const uint8_t *
+cpu_packed_weight_cache_get(cpu_context_t *ctx, const void *src, size_t bytes, size_t row_bytes, size_t rows);
+const uint8_t *
+cpu_prepacked_weight_lookup(cpu_context_t *ctx, const void *src, size_t bytes, size_t row_bytes, size_t rows);
+const uint8_t *
+cpu_pinned_weight_cache_lookup(cpu_context_t *ctx, const void *src, size_t bytes, size_t row_bytes, size_t rows);
+const uint8_t *cpu_pinned_weight_cache_lookup_range(cpu_context_t *ctx, const void *src, size_t bytes);
+bool cpu_pinned_weight_cache_pin(cpu_context_t *ctx, const void *src, size_t bytes, size_t row_bytes, size_t rows);
+cpu_packed_weight_view_t cpu_packed_weight_cache_get_row_panel(
+    cpu_context_t *ctx, const void *src, size_t rows, size_t row_bytes, size_t block_bytes, size_t blocks_per_row,
+    size_t panel_rows
+);
+cpu_packed_weight_view_t cpu_packed_weight_cache_get_q4_k_row_panel_decoded(
+    cpu_context_t *ctx, const void *src, size_t rows, size_t row_bytes, size_t blocks_per_row, size_t panel_rows
+);
+cpu_packed_weight_view_t cpu_packed_weight_cache_get_q6_k_row_panel_decoded(
+    cpu_context_t *ctx, const void *src, size_t rows, size_t row_bytes, size_t blocks_per_row, size_t panel_rows
+);
+cpu_packed_weight_view_t cpu_packed_weight_cache_lookup_packed_range(
+    cpu_context_t *ctx, const void *src, size_t rows, size_t row_bytes, size_t block_bytes, size_t blocks_per_row,
+    size_t panel_rows, cpu_packed_weight_layout_t layout
+);
+cpu_packed_weight_view_t cpu_prepacked_weight_lookup_packed_range(
+    cpu_context_t *ctx, const void *src, size_t rows, size_t row_bytes, size_t block_bytes, size_t blocks_per_row,
+    size_t panel_rows, cpu_packed_weight_layout_t layout
+);
+bool cpu_prepacked_weight_store_put_raw(
+    cpu_context_t *ctx, const void *src, size_t bytes, size_t row_bytes, size_t rows
+);
+cpu_packed_weight_view_t cpu_prepacked_weight_store_put_row_panel(
+    cpu_context_t *ctx, const void *src, size_t rows, size_t row_bytes, size_t block_bytes, size_t blocks_per_row,
+    size_t panel_rows
+);
+cpu_packed_weight_view_t cpu_prepacked_weight_store_put_q4_k_row_panel_decoded(
+    cpu_context_t *ctx, const void *src, size_t rows, size_t row_bytes, size_t blocks_per_row, size_t panel_rows
+);
+cpu_packed_weight_view_t cpu_prepacked_weight_store_put_q6_k_row_panel_decoded(
+    cpu_context_t *ctx, const void *src, size_t rows, size_t row_bytes, size_t blocks_per_row, size_t panel_rows
+);
+void cpu_packed_weight_cache_mark_sticky(
+    cpu_context_t *ctx, const void *src, size_t bytes, size_t row_bytes, size_t rows, cpu_packed_weight_layout_t layout,
+    size_t block_bytes, size_t blocks_per_row, size_t panel_rows
+);
+void cpu_packed_weight_cache_invalidate_ptr(cpu_context_t *ctx, const void *ptr);
+void cpu_packed_weight_cache_invalidate_range(cpu_context_t *ctx, const void *start, size_t length);
+void cpu_quant_workspace_pool_init(cpu_quant_workspace_pool_t *pool);
+void cpu_quant_workspace_pool_destroy(cpu_quant_workspace_pool_t *pool);
+cpu_quant_workspace_slot_t *cpu_quant_workspace_acquire(cpu_context_t *ctx);
+void cpu_quant_workspace_release(cpu_quant_workspace_slot_t *slot);
+void cpu_dispatch_set_thread_limit(size_t thread_limit);
+size_t cpu_dispatch_get_thread_limit(void);
+[[nodiscard]] marmot_error_t cpu_context_set_num_threads(void *device_ctx, size_t num_threads, bool explicit_override);
+[[nodiscard]] size_t cpu_context_get_num_threads(const void *device_ctx);
+[[nodiscard]] bool cpu_context_thread_count_is_explicit(const void *device_ctx);
+bool cpu_quant_workspace_ensure_buffers(
+    cpu_quant_workspace_slot_t *slot, size_t activation_blocks_bytes, size_t activation_panel_bytes
+);
+void cpu_on_host_ptr_freed(void *device_ctx, const void *ptr);
+void cpu_on_host_range_freed(void *device_ctx, const void *start, size_t length);
 
 // ===================================================================
 // Validation Macros
@@ -737,6 +883,8 @@ marmot_error_t cpu_layernorm_impl(const void *device_ctx, const marmot_layernorm
 marmot_error_t cpu_rmsnorm_impl(const void *device_ctx, const marmot_rmsnorm_desc_t *desc);
 marmot_error_t cpu_rmsnorm_gemma_impl(const void *device_ctx, const marmot_rmsnorm_desc_t *desc);
 marmot_error_t cpu_softmax_impl(const void *device_ctx, const marmot_softmax_desc_t *desc);
+marmot_error_t cpu_topk_impl(const void *device_ctx, const marmot_topk_desc_t *desc);
+marmot_error_t cpu_moe_experts_impl(const void *device_ctx, const marmot_moe_experts_desc_t *desc);
 marmot_error_t cpu_rmsnorm(const void *device_ctx, const marmot_rmsnorm_desc_t *desc);
 
 // Tensor manipulation operations

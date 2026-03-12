@@ -353,8 +353,8 @@ bool metal_matmul_epilogue_supported(
 }
 
 marmot_error_t metal_matmul_apply_epilogue(
-    metal_context_t *ctx, const marmot_tensor_t *out, id<MTLBuffer> bufferOut, size_t total_elements,
-    size_t feature_dim, bool bias_is_scalar, const marmot_matmul_epilogue_t *epilogue
+    metal_context_t *ctx, const marmot_tensor_t *out, id<MTLBuffer> bufferOut, size_t bufferOutOffset,
+    size_t total_elements, size_t feature_dim, bool bias_is_scalar, const marmot_matmul_epilogue_t *epilogue
 ) {
     if (ctx == nullptr || out == nullptr || bufferOut == nil || epilogue == nullptr) {
         return MARMOT_ERROR_INVALID_ARGUMENT;
@@ -495,10 +495,10 @@ marmot_error_t metal_matmul_apply_epilogue(
         bufferBias = nil;
     }
 
-    [encoder setBuffer:bufferOut offset:0 atIndex:0];
+    [encoder setBuffer:bufferOut offset:bufferOutOffset atIndex:0];
     [encoder setBuffer:activeBias offset:0 atIndex:1];
-    [encoder setBuffer:bufferResidual offset:0 atIndex:2];
-    [encoder setBuffer:bufferOut offset:0 atIndex:3];
+    [encoder setBuffer:bufferResidual offset:bufferOutOffset atIndex:2];
+    [encoder setBuffer:bufferOut offset:bufferOutOffset atIndex:3];
     [encoder setBytes:&uniforms length:sizeof(metal_matmul_fused_uniforms_t) atIndex:4];
 
     const size_t work_items_size = total_elements;
@@ -546,17 +546,16 @@ extern "C" marmot_error_t metal_matmul_generic(
     size_t bytesWeight = marmot_tensor_size_bytes(weight);
     size_t bytesOut = marmot_tensor_size_bytes(out);
 
-    id<MTLBuffer> bufferInput = metal_buffer_acquire(ctx, input->data, bytesInput);
-    id<MTLBuffer> bufferWeight = metal_buffer_acquire(ctx, weight->data, bytesWeight);
-
-    bool out_private = false;
-    bool out_is_new = false;
-    id<MTLBuffer> bufferOut = metal_residency_acquire_compute(ctx, out, out->dtype, &out_is_new);
-    if (bufferOut == nil) {
-        bufferOut = metal_buffer_acquire(ctx, out->data, bytesOut);
-    } else {
-        out_private = true;
-    }
+    metal_tensor_buffer_t input_view = metal_buffer_acquire_view(ctx, input, input->dtype, bytesInput);
+    metal_tensor_buffer_t weight_view = metal_buffer_acquire_view(ctx, weight, weight->dtype, bytesWeight);
+    metal_tensor_buffer_t out_view = metal_buffer_acquire_view(ctx, out, out->dtype, bytesOut);
+    id<MTLBuffer> bufferInput = input_view.buffer;
+    id<MTLBuffer> bufferWeight = weight_view.buffer;
+    id<MTLBuffer> bufferOut = out_view.buffer;
+    const size_t input_offset = input_view.offset;
+    const size_t weight_offset = weight_view.offset;
+    const size_t out_offset = out_view.offset;
+    const bool out_private = out_view.is_private;
 
     if (bufferInput == nil || bufferWeight == nil || bufferOut == nil) {
         if (bufferInput != nil) {
@@ -591,9 +590,9 @@ extern "C" marmot_error_t metal_matmul_generic(
         [bufferOut release];
         return MARMOT_ERROR_BACKEND_INIT_FAILED;
     }
-    [encoder setBuffer:bufferInput offset:0 atIndex:0];
-    [encoder setBuffer:bufferWeight offset:0 atIndex:1];
-    [encoder setBuffer:bufferOut offset:0 atIndex:2];
+    [encoder setBuffer:bufferInput offset:input_offset atIndex:0];
+    [encoder setBuffer:bufferWeight offset:weight_offset atIndex:1];
+    [encoder setBuffer:bufferOut offset:out_offset atIndex:2];
     if (is_nn_kernel) {
         [encoder setBytes:&rows_u32 length:sizeof(uint32_t) atIndex:3];
         [encoder setBytes:&inner_u32 length:sizeof(uint32_t) atIndex:4];
@@ -626,8 +625,9 @@ extern "C" marmot_error_t metal_matmul_generic(
     bool epilogue_applied = false;
     if (apply_epilogue) {
         id<MTLBuffer> ep_buffer = [bufferOut retain];
-        marmot_error_t ep_status =
-            metal_matmul_apply_epilogue(ctx, out, ep_buffer, rows * cols, feature_dim, bias_is_scalar, epilogue);
+        marmot_error_t ep_status = metal_matmul_apply_epilogue(
+            ctx, out, ep_buffer, out_offset, rows * cols, feature_dim, bias_is_scalar, epilogue
+        );
         [ep_buffer release];
         if (ep_status == MARMOT_SUCCESS) {
             epilogue_applied = true;
@@ -917,30 +917,16 @@ extern "C" marmot_error_t marmot_metal_gemm(
     size_t bytesWeight = marmot_tensor_size_bytes(weight);
     size_t bytesOut = marmot_tensor_size_bytes(out);
 
-    id<MTLBuffer> bufferInput = metal_residency_acquire_existing(ctx, input, input->dtype);
-    if (bufferInput == nil) {
-        bufferInput = metal_residency_acquire_compute(ctx, input, input->dtype, nullptr);
-    }
-    if (bufferInput == nil) {
-        bufferInput = metal_buffer_acquire(ctx, input->data, bytesInput);
-    }
-
-    id<MTLBuffer> bufferWeight = metal_residency_acquire_existing(ctx, weight, weight->dtype);
-    if (bufferWeight == nil) {
-        bufferWeight = metal_residency_acquire_compute(ctx, weight, weight->dtype, nullptr);
-    }
-    if (bufferWeight == nil) {
-        bufferWeight = metal_buffer_acquire(ctx, weight->data, bytesWeight);
-    }
-
-    bool out_private = false;
-    bool out_is_new = false;
-    id<MTLBuffer> bufferOut = metal_residency_acquire_compute(ctx, out, out->dtype, &out_is_new);
-    if (bufferOut == nil) {
-        bufferOut = metal_buffer_acquire(ctx, out->data, bytesOut);
-    } else {
-        out_private = true;
-    }
+    metal_tensor_buffer_t input_view = metal_buffer_acquire_view(ctx, input, input->dtype, bytesInput);
+    metal_tensor_buffer_t weight_view = metal_buffer_acquire_view(ctx, weight, weight->dtype, bytesWeight);
+    metal_tensor_buffer_t out_view = metal_buffer_acquire_view(ctx, out, out->dtype, bytesOut);
+    id<MTLBuffer> bufferInput = input_view.buffer;
+    id<MTLBuffer> bufferWeight = weight_view.buffer;
+    id<MTLBuffer> bufferOut = out_view.buffer;
+    const size_t input_offset = input_view.offset;
+    const size_t weight_offset = weight_view.offset;
+    const size_t out_offset = out_view.offset;
+    const bool out_private = out_view.is_private;
 
     if (bufferInput == nil || bufferWeight == nil || bufferOut == nil) {
         if (bufferInput != nil) {
@@ -972,9 +958,9 @@ extern "C" marmot_error_t marmot_metal_gemm(
         return MARMOT_ERROR_BACKEND_INIT_FAILED;
     }
 
-    [encoder setBuffer:bufferInput offset:0 atIndex:0];
-    [encoder setBuffer:bufferWeight offset:0 atIndex:1];
-    [encoder setBuffer:bufferOut offset:0 atIndex:2];
+    [encoder setBuffer:bufferInput offset:input_offset atIndex:0];
+    [encoder setBuffer:bufferWeight offset:weight_offset atIndex:1];
+    [encoder setBuffer:bufferOut offset:out_offset atIndex:2];
     [encoder setBytes:&params length:sizeof(params) atIndex:3];
 
     metal_profiling_set_label(ctx, "matmul");
@@ -996,7 +982,7 @@ extern "C" marmot_error_t marmot_metal_gemm(
     if (apply_epilogue) {
         id<MTLBuffer> ep_buffer = [bufferOut retain];
         marmot_error_t ep_status =
-            metal_matmul_apply_epilogue(ctx, out, ep_buffer, M * N, feature_dim, bias_is_scalar, epilogue);
+            metal_matmul_apply_epilogue(ctx, out, ep_buffer, out_offset, M * N, feature_dim, bias_is_scalar, epilogue);
         [ep_buffer release];
         if (ep_status == MARMOT_SUCCESS) {
             epilogue_applied = true;

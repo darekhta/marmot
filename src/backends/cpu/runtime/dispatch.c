@@ -13,14 +13,25 @@ static dispatch_queue_t g_high_queue = nullptr;
 static dispatch_queue_t g_normal_queue = nullptr;
 static dispatch_queue_t g_low_queue = nullptr;
 static atomic_bool g_initialized = false;
-static size_t g_thread_limit = 1;
+static atomic_size_t g_thread_limit = 0;
+
+void cpu_dispatch_set_thread_limit(size_t thread_limit) {
+    atomic_store(&g_thread_limit, thread_limit > 0 ? thread_limit : 1);
+}
+
+size_t cpu_dispatch_get_thread_limit(void) {
+    size_t thread_limit = atomic_load(&g_thread_limit);
+    return thread_limit > 0 ? thread_limit : 1;
+}
 
 void marmot_dispatch_init(void) {
     if (atomic_exchange(&g_initialized, true)) {
         return;
     }
 
-    g_thread_limit = cpu_default_thread_count();
+    if (atomic_load(&g_thread_limit) == 0) {
+        cpu_dispatch_set_thread_limit(cpu_default_thread_count());
+    }
 
     dispatch_queue_attr_t high_attr =
         dispatch_queue_attr_make_with_qos_class(DISPATCH_QUEUE_CONCURRENT, QOS_CLASS_USER_INTERACTIVE, 0);
@@ -91,7 +102,7 @@ void marmot_dispatch_parallel_for(
         queue = marmot_dispatch_get_queue(priority);
     }
 
-    size_t num_chunks = g_thread_limit;
+    size_t num_chunks = cpu_dispatch_get_thread_limit();
     if (num_chunks > count) {
         num_chunks = count;
     }
@@ -137,7 +148,7 @@ void marmot_dispatch_parallel_for_range(
         queue = marmot_dispatch_get_queue(priority);
     }
 
-    size_t num_chunks = g_thread_limit;
+    size_t num_chunks = cpu_dispatch_get_thread_limit();
     if (min_chunk_size > 0 && count / min_chunk_size < num_chunks) {
         num_chunks = count / min_chunk_size;
     }
@@ -195,7 +206,7 @@ marmot_error_t marmot_dispatch_parallel_for_range_with_error(
         queue = marmot_dispatch_get_queue(priority);
     }
 
-    size_t num_chunks = g_thread_limit;
+    size_t num_chunks = cpu_dispatch_get_thread_limit();
     if (min_chunk_size > 0 && count / min_chunk_size < num_chunks) {
         num_chunks = count / min_chunk_size;
     }
@@ -270,6 +281,21 @@ void marmot_dispatch_barrier_sync(marmot_dispatch_priority_t priority) {
 
 extern size_t cpu_default_thread_count(void);
 
+static atomic_size_t g_thread_limit = 0;
+
+void cpu_dispatch_set_thread_limit(size_t thread_limit) {
+    atomic_store(&g_thread_limit, thread_limit > 0 ? thread_limit : 1);
+}
+
+size_t cpu_dispatch_get_thread_limit(void) {
+    size_t thread_limit = atomic_load(&g_thread_limit);
+    if (thread_limit == 0) {
+        thread_limit = cpu_default_thread_count();
+        cpu_dispatch_set_thread_limit(thread_limit);
+    }
+    return thread_limit;
+}
+
 typedef struct {
     void *context;
     marmot_dispatch_work_fn work;
@@ -303,7 +329,7 @@ void marmot_dispatch_parallel_for(
         return;
     }
 
-    size_t thread_count = cpu_default_thread_count();
+    size_t thread_count = cpu_dispatch_get_thread_limit();
     if (thread_count > count) {
         thread_count = count;
     }
@@ -384,7 +410,7 @@ void marmot_dispatch_parallel_for_range(
         return;
     }
 
-    size_t thread_count = cpu_default_thread_count();
+    size_t thread_count = cpu_dispatch_get_thread_limit();
     if (min_chunk_size > 0 && count / min_chunk_size < thread_count) {
         thread_count = count / min_chunk_size;
     }
@@ -466,7 +492,7 @@ marmot_error_t marmot_dispatch_parallel_for_range_with_error(
         return MARMOT_SUCCESS;
     }
 
-    size_t thread_count = cpu_default_thread_count();
+    size_t thread_count = cpu_dispatch_get_thread_limit();
     if (min_chunk_size > 0 && count / min_chunk_size < thread_count) {
         thread_count = count / min_chunk_size;
     }

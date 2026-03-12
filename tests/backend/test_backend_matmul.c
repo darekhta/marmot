@@ -933,7 +933,7 @@ static void test_rope_rotation_pattern_matches_reference(void **state) {
     marmot_test_tensor_destroy_all(1, tensor);
 }
 
-static void test_matmul_qkv_quantized_separate_backend(void **state) {
+static void run_matmul_qkv_quantized_separate_backend(void **state, bool prepack_weights) {
     marmot_test_env_t *env = (marmot_test_env_t *)(*state);
     if (env->backend != MARMOT_BACKEND_CPU && env->backend != MARMOT_BACKEND_METAL) {
         skip();
@@ -973,6 +973,9 @@ static void test_matmul_qkv_quantized_separate_backend(void **state) {
         assert_int_equal(
             marmot_tensor_copy_from_host_buffer(env->ctx, weights[i], tc->weights, tc->weight_bytes), MARMOT_SUCCESS
         );
+        if (prepack_weights && env->backend == MARMOT_BACKEND_CPU) {
+            assert_int_equal(marmot_matmul_prepack_quant_weight(env->ctx, weights[i]), MARMOT_SUCCESS);
+        }
     }
 
     marmot_matmul_qkv_desc_t desc = marmot_matmul_qkv_desc_default();
@@ -1026,6 +1029,19 @@ static void test_matmul_qkv_quantized_separate_backend(void **state) {
     free(host_k);
     free(host_v);
     marmot_test_tensor_destroy_all(7, out_v, out_k, out_q, wv, wk, wq, input);
+}
+
+static void test_matmul_qkv_quantized_separate_backend(void **state) {
+    run_matmul_qkv_quantized_separate_backend(state, false);
+}
+
+static void test_matmul_qkv_quantized_separate_prepacked_cpu(void **state) {
+    marmot_test_env_t *env = (marmot_test_env_t *)(*state);
+    if (env->backend != MARMOT_BACKEND_CPU) {
+        skip();
+        return;
+    }
+    run_matmul_qkv_quantized_separate_backend(state, true);
 }
 
 static void test_matmul_rope_epilogue_matches_reference_backend(void **state) {
@@ -4451,6 +4467,9 @@ int main(void) {
         ),
         cmocka_unit_test_setup_teardown(
             test_matmul_qkv_quantized_separate_backend, marmot_test_backend_setup, marmot_test_backend_teardown
+        ),
+        cmocka_unit_test_setup_teardown(
+            test_matmul_qkv_quantized_separate_prepacked_cpu, marmot_test_backend_setup, marmot_test_backend_teardown
         ),
         cmocka_unit_test_setup_teardown(
             test_matmul_rope_epilogue_matches_reference_backend, marmot_test_backend_setup, marmot_test_backend_teardown

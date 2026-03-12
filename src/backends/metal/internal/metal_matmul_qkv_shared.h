@@ -125,6 +125,10 @@ void metal_matmul_qkv_release_packed_weights(metal_matmul_qkv_packed_weights_t *
 marmot_error_t metal_matmul_qkv_run_quantized(
     metal_context_t *ctx, const marmot_matmul_qkv_desc_t *desc, const metal_matmul_qkv_dims_t *dims
 );
+marmot_error_t metal_matmul_qkv_run_quantized_dual_output(
+    metal_context_t *ctx, const marmot_tensor_t *input, const marmot_tensor_t *weight_q,
+    const marmot_tensor_t *weight_k, marmot_tensor_t *out_q, marmot_tensor_t *out_k
+);
 
 #ifdef __cplusplus
 }

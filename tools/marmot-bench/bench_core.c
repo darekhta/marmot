@@ -109,7 +109,7 @@ static marmot_error_t run_single_workload(
         workload->setup(backend, ctx, &graph, &inputs, &num_inputs, &outputs, &num_outputs, workload->user_data);
     if (err != MARMOT_SUCCESS) {
         out_result->success = false;
-        out_result->error_message = "Setup failed";
+        out_result->error_message = marmot_get_last_error_detail();
         return err;
     }
 
@@ -170,7 +170,14 @@ static marmot_error_t run_single_workload(
 
         double start = now_seconds();
         for (uint32_t b = 0; b < batch_size; ++b) {
-            workload->execute(ctx, graph, inputs, num_inputs, outputs, num_outputs);
+            err = workload->execute(ctx, graph, inputs, num_inputs, outputs, num_outputs);
+            if (err != MARMOT_SUCCESS) {
+                free(samples);
+                workload->teardown(graph, inputs, num_inputs, outputs, num_outputs, workload->user_data);
+                out_result->success = false;
+                out_result->error_message = marmot_get_last_error_detail();
+                return err;
+            }
         }
         (void)marmot_device_synchronize(ctx);
         double end = now_seconds();

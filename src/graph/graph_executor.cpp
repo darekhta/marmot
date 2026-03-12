@@ -5,6 +5,7 @@
 #include "marmot/error.h"
 #include "marmot/graph/graph.hpp"
 #include "marmot/op_metadata.gen.h"
+#include "marmot/ops/conversion.h"
 #include "marmot/ops/manipulation.h"
 #include "marmot/ops/matmul.h"
 #include "marmot/ops/paged_attention.h"
@@ -14,6 +15,7 @@
 #include <algorithm>
 #include <array>
 #include <cctype>
+#include <chrono>
 #include <cinttypes>
 #include <cmath>
 #include <cstdint>
@@ -30,6 +32,8 @@
 #include "core/dispatch/dispatch_build.h"
 #include "core/dispatch/fusion_detection.h"
 #include "execution_session.hpp"
+#include "fast_executor.hpp"
+#include "fast_plan.hpp"
 #include "graph_impl.hpp"
 #include "kernel_dispatch_args.gen.h"
 #include "tensor_alloc.hpp"
@@ -51,6 +55,11 @@ bool graph_nan_check_enabled() {
         return env != nullptr && env[0] != '\0' && std::strcmp(env, "0") != 0;
     }();
     return enabled;
+}
+
+uint64_t stage_profile_now_ns() {
+    using clock = std::chrono::steady_clock;
+    return (uint64_t)std::chrono::duration_cast<std::chrono::nanoseconds>(clock::now().time_since_epoch()).count();
 }
 
 bool tensor_has_nan(const marmot_context_t *ctx, marmot_tensor_t *tensor);
@@ -96,6 +105,11 @@ struct GraphBcHookContext {
     marmot::graph::ExecutionSession *session;
     const marmot_context_t *ctx;
     std::span<marmot_tensor_t *> bindings;
+    const marmot::graph::FastPlan *fast_plan;
+    marmot::graph::FastExecProfile *fast_profile;
+    uint32_t active_stage_index;
+    uint64_t active_stage_start_ns;
+    uint64_t total_start_ns;
     bool trace;
     bool nan_check;
 };
@@ -106,13 +120,34 @@ struct GraphBcOpState {
     marmot_value_id_t rope_restore_id;
 };
 
+static void graph_bc_profile_finish_stage(GraphBcHookContext *ctx, uint64_t now_ns) {
+    if (ctx == nullptr || ctx->fast_profile == nullptr || ctx->active_stage_index == UINT32_MAX) {
+        return;
+    }
+    if (ctx->active_stage_index >= ctx->fast_profile->stages.size()) {
+        return;
+    }
+    auto &stage = ctx->fast_profile->stages[ctx->active_stage_index];
+    if (now_ns >= ctx->active_stage_start_ns) {
+        stage.duration_ns += now_ns - ctx->active_stage_start_ns;
+    }
+}
+
 static void graph_bc_on_start(
     const marmot_bc_program_t *program, const void *backend_exec_ctx, marmot_tensor_t **regs, void *user_data
 ) {
     (void)backend_exec_ctx;
     (void)regs;
     auto *ctx = static_cast<GraphBcHookContext *>(user_data);
-    if (ctx == nullptr || ctx->nodes == nullptr || ctx->bc_instr_nodes == nullptr || !ctx->trace) {
+    if (ctx == nullptr || ctx->nodes == nullptr || ctx->bc_instr_nodes == nullptr) {
+        return;
+    }
+    if (ctx->fast_plan != nullptr && ctx->fast_profile != nullptr) {
+        ctx->active_stage_index = UINT32_MAX;
+        ctx->active_stage_start_ns = 0;
+        ctx->total_start_ns = stage_profile_now_ns();
+    }
+    if (!ctx->trace) {
         return;
     }
     if (program != nullptr && program->code_size >= sizeof(uint16_t)) {
@@ -155,6 +190,20 @@ static marmot_error_t graph_bc_before_op(const marmot_bc_hook_info_t *info, void
         info->instr_index < ctx->bc_instr_nodes->size() ? (*ctx->bc_instr_nodes)[info->instr_index] : UINT32_MAX;
     if (state != nullptr) {
         state->node_index = node_index;
+    }
+
+    if (ctx->fast_plan != nullptr && ctx->fast_profile != nullptr && node_index != UINT32_MAX) {
+        const auto node_to_stage = ctx->fast_plan->node_to_stage();
+        const uint32_t stage_index = node_index < node_to_stage.size() ? node_to_stage[node_index] : UINT32_MAX;
+        if (stage_index != UINT32_MAX && stage_index < ctx->fast_profile->stages.size()) {
+            const uint64_t now_ns = stage_profile_now_ns();
+            if (ctx->active_stage_index != stage_index) {
+                graph_bc_profile_finish_stage(ctx, now_ns);
+                ctx->active_stage_index = stage_index;
+                ctx->active_stage_start_ns = now_ns;
+            }
+            ctx->fast_profile->stages[stage_index].executed_ops++;
+        }
     }
 
     if (ctx->trace && node_index != UINT32_MAX && node_index < ctx->nodes->size()) {
@@ -350,6 +399,25 @@ graph_bc_after_op(const marmot_bc_hook_info_t *info, marmot_error_t status, void
     }
 
     return status;
+}
+
+static void graph_bc_on_finish(
+    const marmot_bc_program_t *program, const void *backend_exec_ctx, marmot_tensor_t **regs, marmot_error_t status,
+    void *user_data
+) {
+    (void)program;
+    (void)backend_exec_ctx;
+    (void)regs;
+    (void)status;
+    auto *ctx = static_cast<GraphBcHookContext *>(user_data);
+    if (ctx == nullptr || ctx->fast_profile == nullptr) {
+        return;
+    }
+    const uint64_t now_ns = stage_profile_now_ns();
+    graph_bc_profile_finish_stage(ctx, now_ns);
+    if (ctx->total_start_ns != 0 && now_ns >= ctx->total_start_ns) {
+        ctx->fast_profile->total_ns = now_ns - ctx->total_start_ns;
+    }
 }
 
 bool tensor_has_nan(const marmot_context_t *ctx, marmot_tensor_t *tensor) {
@@ -683,7 +751,10 @@ marmot_error_t Executor::update_qkv_rope_params(std::span<marmot_tensor_t *> bin
 
 Executor::Executor(Graph::Impl &graph_impl, ExecutionSession *session) : impl_(graph_impl), session_(session) {}
 
-marmot_error_t Executor::execute_bound(const marmot_context_t *ctx, std::span<marmot_tensor_t *> bindings) {
+marmot_error_t Executor::execute_bound(
+    const marmot_context_t *ctx, std::span<marmot_tensor_t *> bindings, const FastPlan *fast_plan,
+    FastExecProfile *profile
+) {
     if (ctx == nullptr) {
         marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null context");
         return MARMOT_ERROR_INVALID_ARGUMENT;
@@ -703,6 +774,7 @@ marmot_error_t Executor::execute_bound(const marmot_context_t *ctx, std::span<ma
 
     const bool trace = graph_trace_enabled();
     const bool nan_check = graph_nan_check_enabled();
+    const bool stage_profile = fast_plan != nullptr && profile != nullptr;
     marmot_error_t status = MARMOT_SUCCESS;
 
     if (status == MARMOT_SUCCESS) {
@@ -792,6 +864,25 @@ marmot_error_t Executor::execute_bound(const marmot_context_t *ctx, std::span<ma
             rope_needs_hooks = true;
         }
 
+        if (stage_profile) {
+            profile->backend = ctx->backend_type;
+            profile->phase = fast_plan->phase();
+            profile->total_ns = 0;
+            profile->stages.clear();
+            profile->stages.reserve(fast_plan->stages().size());
+            for (const FastPlan::Stage &stage : fast_plan->stages()) {
+                profile->stages.push_back(
+                    FastExecProfileStage{
+                        .kind = stage.kind,
+                        .first_node = stage.first_node,
+                        .node_count = stage.node_count,
+                        .executed_ops = 0,
+                        .duration_ns = 0,
+                    }
+                );
+            }
+        }
+
         if (status == MARMOT_SUCCESS) {
             marmot_error_t rope_patch_status = update_qkv_rope_params(bindings);
             if (rope_patch_status != MARMOT_SUCCESS) {
@@ -799,7 +890,7 @@ marmot_error_t Executor::execute_bound(const marmot_context_t *ctx, std::span<ma
             }
         }
 
-        const bool needs_hooks = trace || nan_check || rope_needs_hooks;
+        const bool needs_hooks = trace || nan_check || rope_needs_hooks || stage_profile;
         if (status == MARMOT_SUCCESS && !needs_hooks) {
             status = marmot_bc_execute(&program, &exec_ctx, bindings.data());
         } else if (status == MARMOT_SUCCESS) {
@@ -809,6 +900,11 @@ marmot_error_t Executor::execute_bound(const marmot_context_t *ctx, std::span<ma
                 .session = session_,
                 .ctx = ctx,
                 .bindings = bindings,
+                .fast_plan = fast_plan,
+                .fast_profile = profile,
+                .active_stage_index = UINT32_MAX,
+                .active_stage_start_ns = 0,
+                .total_start_ns = 0,
                 .trace = trace,
                 .nan_check = nan_check,
             };
@@ -824,7 +920,7 @@ marmot_error_t Executor::execute_bound(const marmot_context_t *ctx, std::span<ma
                 .on_start = graph_bc_on_start,
                 .before_op = graph_bc_before_op,
                 .after_op = graph_bc_after_op,
-                .on_finish = nullptr,
+                .on_finish = graph_bc_on_finish,
             };
             status = marmot_bc_execute_with_hooks(&program, &exec_ctx, bindings.data(), &hooks);
         }
@@ -849,6 +945,9 @@ marmot_error_t Executor::execute_node(
     }
     if (node.signature.op_id == MARMOT_OP_DEQUANTIZE) {
         return execute_dequantize(node, ctx, bindings);
+    }
+    if (node.signature.op_id == MARMOT_OP_CONVERT) {
+        return execute_convert(node, ctx, bindings);
     }
     if (node.signature.op_id == MARMOT_OP_VEC_DOT) {
         return execute_vec_dot(node, ctx, bindings);
@@ -882,6 +981,12 @@ marmot_error_t Executor::execute_node(
     }
     if (node.signature.op_id == MARMOT_OP_SOFTMAX) {
         return execute_softmax(node, ctx, bindings);
+    }
+    if (node.signature.op_id == MARMOT_OP_TOPK) {
+        return execute_topk(node, ctx, bindings);
+    }
+    if (node.signature.op_id == MARMOT_OP_MOE_EXPERTS) {
+        return execute_moe_experts(node, ctx, bindings);
     }
     if (node.signature.op_id == MARMOT_OP_PAGED_ATTENTION) {
         return execute_paged_attention(node, ctx, bindings);
@@ -1107,6 +1212,30 @@ marmot_error_t Executor::execute_dequantize(
     marmot_quant_layout_t layout = MARMOT_QUANT_LAYOUT_GENERIC;
     marmot_kernel_args_dequantize_t packed = {};
     marmot_error_t build_status = marmot_dequantize_build(ctx, kind, input, output, &sig, &packed, &layout);
+    if (build_status != MARMOT_SUCCESS) {
+        return build_status;
+    }
+
+    return dispatch_node_bytecode(node, ctx, &sig, &packed, node.op_name.c_str());
+}
+
+marmot_error_t
+Executor::execute_convert(const GraphNode &node, const marmot_context_t *ctx, std::span<marmot_tensor_t *> bindings) {
+    if (node.inputs.empty() || node.outputs.empty()) {
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+
+    const marmot_tensor_t *input = bindings[node.inputs[0]];
+    marmot_tensor_t *output = bindings[node.outputs[0]];
+    if (input == nullptr || output == nullptr) {
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+
+    const size_t count = marmot_tensor_num_elements(input);
+    marmot_op_signature_t sig{};
+    marmot_kernel_args_convert_t packed = {};
+    marmot_error_t build_status =
+        marmot_convert_build(ctx, output->dtype, output->data, input->dtype, input->data, count, &sig, &packed);
     if (build_status != MARMOT_SUCCESS) {
         return build_status;
     }
@@ -1572,6 +1701,80 @@ Executor::execute_softmax(const GraphNode &node, const marmot_context_t *ctx, st
 
     marmot_kernel_args_softmax_t packed = {.ctx = ctx, .input = input, .output = output, .axis = axis};
     return dispatch_node_bytecode(node, ctx, &node.signature, &packed, "softmax");
+}
+
+marmot_error_t
+Executor::execute_topk(const GraphNode &node, const marmot_context_t *ctx, std::span<marmot_tensor_t *> bindings) {
+    if (node.inputs.size() != 1 || node.outputs.size() != 2) {
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+
+    const marmot_tensor_t *input = bindings[node.inputs[0]];
+    marmot_tensor_t *values_out = bindings[node.outputs[0]];
+    marmot_tensor_t *indices_out = bindings[node.outputs[1]];
+    if (input == nullptr || values_out == nullptr || indices_out == nullptr) {
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    if (values_out->shape.ndim == 0) {
+        marmot_set_error(MARMOT_ERROR_DIMENSION_MISMATCH, "TOPK output must be at least 1D");
+        return MARMOT_ERROR_DIMENSION_MISMATCH;
+    }
+
+    const size_t k = values_out->shape.shape[values_out->shape.ndim - 1];
+    if (k == 0 || k > UINT32_MAX) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "TOPK output width is invalid");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+
+    marmot_kernel_args_topk_t packed = {
+        .ctx = ctx,
+        .input = input,
+        .values_out = values_out,
+        .indices_out = indices_out,
+        .axis = -1,
+        .k = (uint32_t)k,
+    };
+    return dispatch_node_bytecode(node, ctx, &node.signature, &packed, "topk");
+}
+
+marmot_error_t Executor::execute_moe_experts(
+    const GraphNode &node, const marmot_context_t *ctx, std::span<marmot_tensor_t *> bindings
+) {
+    if (node.inputs.size() != 6 || node.outputs.size() != 1) {
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+
+    const marmot_tensor_t *hidden_states = bindings[node.inputs[0]];
+    const marmot_tensor_t *gate_exps = bindings[node.inputs[1]];
+    const marmot_tensor_t *up_exps = bindings[node.inputs[2]];
+    const marmot_tensor_t *down_exps = bindings[node.inputs[3]];
+    const marmot_tensor_t *topk_ids = bindings[node.inputs[4]];
+    const marmot_tensor_t *topk_weights = bindings[node.inputs[5]];
+    marmot_tensor_t *out = bindings[node.outputs[0]];
+    if (hidden_states == nullptr || gate_exps == nullptr || up_exps == nullptr || down_exps == nullptr ||
+        topk_ids == nullptr || topk_weights == nullptr || out == nullptr) {
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    if (node.moe_ffn_type >= MARMOT_FFN_COUNT || !std::isfinite(node.moe_weights_scale) ||
+        node.moe_router_weight_policy >= MARMOT_ROUTER_WEIGHT_POLICY_COUNT) {
+        marmot_set_error(MARMOT_ERROR_INVALID_OPERATION, "MOE_EXPERTS node is missing MoE parameters");
+        return MARMOT_ERROR_INVALID_OPERATION;
+    }
+
+    marmot_kernel_args_moe_experts_t packed = {
+        .ctx = ctx,
+        .hidden_states = hidden_states,
+        .gate_exps = gate_exps,
+        .up_exps = up_exps,
+        .down_exps = down_exps,
+        .topk_ids = topk_ids,
+        .topk_weights = topk_weights,
+        .out = out,
+        .ffn_type = node.moe_ffn_type,
+        .weights_scale = node.moe_weights_scale,
+        .router_weight_policy = node.moe_router_weight_policy,
+    };
+    return dispatch_node_bytecode(node, ctx, &node.signature, &packed, "moe_experts");
 }
 
 marmot_error_t

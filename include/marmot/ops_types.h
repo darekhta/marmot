@@ -192,6 +192,27 @@ struct marmot_softmax_desc {
     int32_t axis;
 };
 
+struct marmot_topk_desc {
+    const marmot_tensor_t *x;
+    marmot_tensor_t *values_out;
+    marmot_tensor_t *indices_out;
+    int32_t axis;
+    uint32_t k;
+};
+
+struct marmot_moe_experts_desc {
+    const marmot_tensor_t *hidden_states;
+    const marmot_tensor_t *gate_exps;
+    const marmot_tensor_t *up_exps;
+    const marmot_tensor_t *down_exps;
+    const marmot_tensor_t *topk_ids;
+    const marmot_tensor_t *topk_weights;
+    marmot_tensor_t *out;
+    marmot_ffn_type_t ffn_type;
+    float weights_scale;
+    marmot_router_weight_policy_t router_weight_policy;
+};
+
 struct marmot_reduction_desc {
     const marmot_tensor_t *input;
     marmot_tensor_t *out;

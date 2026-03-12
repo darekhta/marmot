@@ -109,6 +109,29 @@ typedef struct {
     metal_norm_ops_t ops;
 } metal_norm_traits_t;
 
+typedef struct metal_moe_workspace {
+    marmot_allocation_t route_counts_alloc;
+    marmot_allocation_t route_offsets_alloc;
+    marmot_allocation_t route_status_alloc;
+    marmot_allocation_t route_summary_alloc;
+    marmot_allocation_t route_indices_alloc;
+    marmot_allocation_t route_experts_alloc;
+    marmot_allocation_t route_weights_alloc;
+    marmot_allocation_t hidden_batch_alloc;
+    marmot_allocation_t gate_batch_alloc;
+    marmot_allocation_t up_batch_alloc;
+    marmot_allocation_t fused_batch_alloc;
+    marmot_allocation_t down_batch_alloc;
+    size_t *expert_counts;
+    size_t *expert_offsets;
+    size_t *expert_cursor;
+    size_t *expert_order;
+    size_t experts_capacity;
+    bool in_use;
+    uint64_t release_serial;
+    struct metal_moe_workspace *next;
+} metal_moe_workspace_t;
+
 typedef struct metal_context {
     id<MTLDevice> device;
     id<MTLCommandQueue> queue;
@@ -184,6 +207,7 @@ typedef struct metal_context {
     size_t reduction_partials_capacity;
     id<MTLBuffer> embedding_ids_buffer;
     size_t embedding_ids_capacity;
+    metal_moe_workspace_t *moe_workspaces;
 
     metal_norm_entry_t norm_table[MARMOT_DTYPE_COUNT];
 
@@ -235,6 +259,9 @@ void metal_context_destroy(metal_context_t *ctx);
 
 id<MTLComputePipelineState> metal_pipeline_get(metal_context_t *ctx, const char *function_name);
 id<MTLComputePipelineState> metal_pipeline_get_ns(metal_context_t *ctx, NSString *function_name);
+id<MTLComputePipelineState>
+metal_pipeline_get_with_u32_constant(metal_context_t *ctx, const char *function_name, uint32_t index, uint32_t value);
+void metal_moe_workspace_pool_destroy(metal_context_t *ctx);
 
 // Command stream helpers ----------------------------------------------------
 
@@ -242,6 +269,8 @@ id<MTLCommandBuffer> metal_command_acquire_buffer(metal_context_t *ctx);
 id<MTLComputeCommandEncoder>
 metal_command_acquire_compute_encoder(metal_context_t *ctx, id<MTLComputePipelineState> pipeline);
 id<MTLBlitCommandEncoder> metal_command_acquire_blit_encoder(metal_context_t *ctx);
+void metal_command_batch_begin(metal_context_t *ctx);
+void metal_command_batch_end(metal_context_t *ctx, bool commit);
 void metal_command_stream_flush(metal_context_t *ctx, bool wait_for_completion);
 void metal_command_stream_discard(metal_context_t *ctx);
 void metal_command_stream_track_shared_write(metal_context_t *ctx, const void *ptr);
@@ -263,6 +292,8 @@ typedef struct {
     bool is_private;
 } metal_tensor_buffer_t;
 
+#define METAL_MATMUL_QUANT_HINT_PREFER_MV (1u << 0)
+
 metal_tensor_buffer_t metal_buffer_acquire_view(
     metal_context_t *ctx, const marmot_tensor_t *tensor, marmot_dtype_t compute_dtype, size_t bytes
 );
@@ -272,6 +303,8 @@ id<MTLBuffer> metal_residency_acquire_compute(
 id<MTLBuffer>
 metal_residency_acquire_existing(metal_context_t *ctx, const marmot_tensor_t *tensor, marmot_dtype_t compute_dtype);
 void metal_residency_mark_dirty(metal_context_t *ctx, const marmot_tensor_t *tensor, marmot_dtype_t compute_dtype);
+void metal_residency_mark_shared_write(metal_context_t *ctx, const void *ptr);
+void metal_residency_sync_shared_range(metal_context_t *ctx, const void *ptr, size_t bytes);
 void metal_residency_sync_dirty_buffers(metal_context_t *ctx);
 void metal_residency_invalidate(metal_context_t *ctx, const void *ptr);
 void metal_residency_invalidate_mapped_range(metal_context_t *ctx, const void *start, size_t length);
@@ -280,8 +313,8 @@ bool metal_matmul_epilogue_supported(
     const marmot_tensor_t *out, const marmot_matmul_epilogue_t *epilogue, size_t *feature_dim, bool *bias_is_scalar
 );
 marmot_error_t metal_matmul_apply_epilogue(
-    metal_context_t *ctx, const marmot_tensor_t *out, id<MTLBuffer> bufferOut, size_t total_elements,
-    size_t feature_dim, bool bias_is_scalar, const marmot_matmul_epilogue_t *epilogue
+    metal_context_t *ctx, const marmot_tensor_t *out, id<MTLBuffer> bufferOut, size_t buffer_out_offset,
+    size_t total_elements, size_t feature_dim, bool bias_is_scalar, const marmot_matmul_epilogue_t *epilogue
 );
 marmot_error_t metal_matmul_generic(
     metal_context_t *ctx, const marmot_tensor_t *input, const marmot_tensor_t *weight,
@@ -372,12 +405,16 @@ marmot_error_t metal_matmul_quantized(
     const void *device_ctx, const marmot_tensor_t *weights, const marmot_tensor_t *activations,
     const marmot_matmul_epilogue_t *epilogue, marmot_tensor_t *out
 );
+void metal_matmul_quant_push_hints(uint32_t hints);
+void metal_matmul_quant_pop_hints(uint32_t hints);
 marmot_error_t metal_vec_dot(const void *device_ctx, const marmot_vec_dot_descriptor_t *desc, float *result);
 marmot_error_t metal_layernorm_impl(const void *device_ctx, const marmot_layernorm_desc_t *desc);
 marmot_error_t metal_rmsnorm_impl(const void *device_ctx, const marmot_rmsnorm_desc_t *desc);
 marmot_error_t metal_rmsnorm_gemma_impl(const void *device_ctx, const marmot_rmsnorm_desc_t *desc);
 marmot_error_t metal_rmsnorm(const void *device_ctx, const marmot_rmsnorm_desc_t *desc);
 marmot_error_t metal_softmax_impl(const void *device_ctx, const marmot_softmax_desc_t *desc);
+marmot_error_t metal_topk_impl(const void *device_ctx, const marmot_topk_desc_t *desc);
+marmot_error_t metal_moe_experts_impl(const void *device_ctx, const marmot_moe_experts_desc_t *desc);
 marmot_error_t metal_embedding_gather(const void *device_ctx, const marmot_embedding_gather_desc_t *desc);
 
 marmot_error_t metal_binary_dispatch(

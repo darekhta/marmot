@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "binding_table.hpp"
+#include "fast_executor.hpp"
 #include "graph_impl.hpp"
 
 namespace marmot::graph {
@@ -24,6 +25,10 @@ class ExecutionSession {
     [[nodiscard]] marmot_error_t execute(
         const marmot_context_t *ctx, std::span<const marmot_tensor_t *const> inputs,
         std::span<marmot_tensor_t *const> outputs
+    );
+    [[nodiscard]] marmot_error_t execute_with_fast_plan(
+        const marmot_context_t *ctx, std::span<const marmot_tensor_t *const> inputs,
+        std::span<marmot_tensor_t *const> outputs, const FastPlan *plan, FastExecProfile *profile
     );
 
     [[nodiscard]] marmot_tensor_t *

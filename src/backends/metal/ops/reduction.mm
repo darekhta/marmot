@@ -405,12 +405,13 @@ static marmot_error_t metal_reduction_run(
         }
         if (buffer_indices == nil) {
             buffer_indices = metal_residency_acquire_compute(ctx, out_indices, out_indices->dtype, &out_indices_is_new);
+            if (buffer_indices != nil) {
+                out_indices_private = true;
+            }
         }
         if (buffer_indices == nil) {
             buffer_indices = metal_buffer_acquire(ctx, out_indices->data, indices_bytes);
             out_indices_shared = buffer_indices != nil;
-        } else {
-            out_indices_private = true;
         }
     }
 
@@ -628,6 +629,8 @@ static marmot_error_t metal_reduction_run(
     stage1_threads_per_group = MTLSizeMake(stage1_threads, 1, 1);
     [encoder dispatchThreadgroups:stage1_threadgroups threadsPerThreadgroup:stage1_threads_per_group];
 
+    [encoder memoryBarrierWithScope:MTLBarrierScopeBuffers];
+
     encoder = metal_command_acquire_compute_encoder(ctx, stage2_pipeline);
     if (encoder == nil) {
         result = MARMOT_ERROR_BACKEND_INIT_FAILED;
@@ -663,8 +666,16 @@ static marmot_error_t metal_reduction_run(
     if (out_values_private) {
         metal_residency_mark_dirty(ctx, out_values, out_values->dtype);
     }
-    if ((out_indices_private || out_indices_shared) && out_indices != nullptr) {
-        metal_residency_mark_dirty(ctx, out_indices, out_indices->dtype);
+    if (out_indices != nullptr) {
+        if (out_indices_private) {
+            metal_residency_mark_dirty(ctx, out_indices, out_indices->dtype);
+        } else if (out_indices_shared) {
+            // GPU wrote to the shared buffer — mark shared as authoritative so any
+            // stale private buffer is re-uploaded on next acquire_compute.
+            metal_residency_mark_shared_write(ctx, out_indices->data);
+            ((marmot_tensor_t *)out_indices)->memory_location = MARMOT_MEMORY_DEVICE;
+            ((marmot_tensor_t *)out_indices)->needs_sync = true;
+        }
     }
 
 cleanup:

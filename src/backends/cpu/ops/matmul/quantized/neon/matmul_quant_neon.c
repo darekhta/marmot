@@ -147,6 +147,8 @@ static void cpu_matmul_quant_kernels_neon_dotprod_init(void) {
 
     cpu_matmul_quant_kernels_neon_dotprod_table[MARMOT_QUANT_KIND_Q6_K].ops.dot_q8_k =
         (cpu_matmul_quant_vec_dot_q8k_fn)cpu_vec_dot_q6_k_q8_k_neon_dotprod;
+    cpu_matmul_quant_kernels_neon_dotprod_table[MARMOT_QUANT_KIND_Q6_K].ops.dot_q8_k_2rows =
+        (cpu_matmul_quant_vec_dot_q8k_2rows_fn)cpu_vec_dot_q6_k_q8_k_2rows_neon_dotprod;
     cpu_matmul_quant_kernels_neon_dotprod_table[MARMOT_QUANT_KIND_Q6_K].impl_name = "neon:q6_k:dotprod";
 
     cpu_matmul_quant_kernels_neon_dotprod_table[MARMOT_QUANT_KIND_Q8_K].ops.dot_q8_k =
@@ -168,7 +170,7 @@ static void cpu_matmul_quant_kernels_neon_i8mm_init(void) {
         sizeof(cpu_matmul_quant_kernels_neon_i8mm_table)
     );
 
-#if defined(__aarch64__) && (defined(__ARM_FEATURE_I8MM) || defined(__ARM_FEATURE_MATMUL_INT8))
+#if MARMOT_ENABLE_ARM_I8MM_TARGET
     cpu_matmul_quant_kernels_neon_i8mm_table[MARMOT_QUANT_KIND_Q8_0].ops.dot_q8_0 =
         (cpu_matmul_quant_vec_dot_fn)cpu_vec_dot_q8_0_q8_0_neon_i8mm;
     cpu_matmul_quant_kernels_neon_i8mm_table[MARMOT_QUANT_KIND_Q8_0].impl_name = "neon:q8_0:i8mm";
@@ -176,6 +178,10 @@ static void cpu_matmul_quant_kernels_neon_i8mm_init(void) {
     cpu_matmul_quant_kernels_neon_i8mm_table[MARMOT_QUANT_KIND_Q8_1].ops.dot_q8_0 =
         (cpu_matmul_quant_vec_dot_fn)cpu_vec_dot_q8_1_q8_0_neon_i8mm;
     cpu_matmul_quant_kernels_neon_i8mm_table[MARMOT_QUANT_KIND_Q8_1].impl_name = "neon:q8_1:i8mm";
+
+    cpu_matmul_quant_kernels_neon_i8mm_table[MARMOT_QUANT_KIND_Q4_K].ops.dot_q8_k =
+        (cpu_matmul_quant_vec_dot_q8k_fn)cpu_vec_dot_q4_k_q8_k_neon_i8mm;
+    cpu_matmul_quant_kernels_neon_i8mm_table[MARMOT_QUANT_KIND_Q4_K].impl_name = "neon:q4_k:i8mm";
 
     cpu_matmul_quant_kernels_neon_i8mm_table[MARMOT_QUANT_KIND_Q8_K].ops.dot_q8_k =
         (cpu_matmul_quant_vec_dot_q8k_fn)cpu_vec_dot_q8_k_q8_k_neon_i8mm;
@@ -200,7 +206,7 @@ static bool cpu_matmul_quant_neon_has_dotprod(void) {
 }
 
 static bool cpu_matmul_quant_neon_has_i8mm(void) {
-#if defined(__aarch64__) && (defined(__ARM_FEATURE_I8MM) || defined(__ARM_FEATURE_MATMUL_INT8))
+#if MARMOT_ENABLE_ARM_I8MM_TARGET
     static bool checked = false;
     static bool supported = false;
     if (!checked) {

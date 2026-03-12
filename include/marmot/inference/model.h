@@ -48,6 +48,9 @@ typedef struct {
     float rope_beta_slow;
     uint32_t rope_orig_ctx_len;
     float rms_norm_eps;
+    bool is_moe;
+    size_t n_experts;
+    size_t n_experts_used;
 } marmot_model_info_t;
 
 MARMOT_NODISCARD marmot_error_t marmot_model_options_init(marmot_model_options_t *opts);

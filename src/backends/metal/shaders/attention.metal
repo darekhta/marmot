@@ -1,3 +1,4 @@
+#include <metal_simdgroup_matrix>
 #include <metal_stdlib>
 using namespace metal;
 
@@ -174,49 +175,6 @@ DEFINE_ROPE_QK_KERNEL(rope_qk_f16, half, read_half, write_half)
 DEFINE_ROPE_QK_KERNEL(rope_qk_bf16, ushort, read_bf16, write_bf16)
 
 #undef DEFINE_ROPE_QK_KERNEL
-
-// -----------------------------------------------------------------------------
-// Flash Attention (tiled, memory-efficient scaled dot-product attention)
-// -----------------------------------------------------------------------------
-
-#define FLASH_ATTN_BLOCK_M_F32 8
-#define FLASH_ATTN_BLOCK_N_F32 32
-#define FLASH_ATTN_MAX_DIM_F32 128
-#define FLASH_ATTN_BLOCK_M_F32_NARROW 8
-#define FLASH_ATTN_BLOCK_N_F32_NARROW 16
-#define FLASH_ATTN_BLOCK_M_F32_WIDE 4
-#define FLASH_ATTN_BLOCK_N_F32_WIDE 16
-#define FLASH_ATTN_MAX_DIM_F32_WIDE 256
-#define FLASH_ATTN_BLOCK_M_F32_WIDE_NARROW 4
-#define FLASH_ATTN_BLOCK_N_F32_WIDE_NARROW 8
-#define FLASH_ATTN_BLOCK_M_F16 16
-#define FLASH_ATTN_BLOCK_N_F16 32
-#define FLASH_ATTN_MAX_DIM_F16 128
-#define FLASH_ATTN_BLOCK_M_F16_NARROW 16
-#define FLASH_ATTN_BLOCK_N_F16_NARROW 16
-#define FLASH_ATTN_BLOCK_M_F16_WIDE 8
-#define FLASH_ATTN_BLOCK_N_F16_WIDE 32
-#define FLASH_ATTN_MAX_DIM_F16_WIDE 256
-#define FLASH_ATTN_BLOCK_M_F16_WIDE_NARROW 8
-#define FLASH_ATTN_BLOCK_N_F16_WIDE_NARROW 16
-#define FLASH_ATTN_BLOCK_M_BF16 16
-#define FLASH_ATTN_BLOCK_N_BF16 32
-#define FLASH_ATTN_MAX_DIM_BF16 128
-#define FLASH_ATTN_BLOCK_M_BF16_NARROW 16
-#define FLASH_ATTN_BLOCK_N_BF16_NARROW 16
-#define FLASH_ATTN_BLOCK_M_BF16_WIDE 8
-#define FLASH_ATTN_BLOCK_N_BF16_WIDE 32
-#define FLASH_ATTN_MAX_DIM_BF16_WIDE 256
-#define FLASH_ATTN_BLOCK_M_BF16_WIDE_NARROW 8
-#define FLASH_ATTN_BLOCK_N_BF16_WIDE_NARROW 16
-#if MARMOT_ENABLE_FP8
-#define FLASH_ATTN_BLOCK_M_FP8 16
-#define FLASH_ATTN_BLOCK_N_FP8 32
-#define FLASH_ATTN_MAX_DIM_FP8 128
-#define FLASH_ATTN_BLOCK_M_FP8_WIDE 8
-#define FLASH_ATTN_BLOCK_N_FP8_WIDE 32
-#define FLASH_ATTN_MAX_DIM_FP8_WIDE 256
-#endif
 
 // -----------------------------------------------------------------------------
 // Paged attention (packed tokens + paged KV)
@@ -602,610 +560,496 @@ DEFINE_PAGED_ATTENTION_KERNEL_MIXED(paged_attention_sg8_bf16_kv_f16, ushort, hal
 #undef DEFINE_PAGED_ATTENTION_KERNEL_MIXED
 
 #undef DEFINE_PAGED_ATTENTION_KERNEL
+#undef PAGED_ATTN_MAX_CHUNKS
+#undef PAGED_ATTN_MAX_DIM
+#undef PAGED_ATTN_SIMD_WIDTH
 
-#define DEFINE_PAGED_FLASH_ATTENTION_KERNEL(NAME, VALUE_T, READ_FN, WRITE_FN, TILE_T, MAX_DIM, BLOCK_M, BLOCK_N)       \
-    kernel void NAME(                                                                                                  \
-        device const uint *token_meta [[buffer(0)]], device const uint *block_table [[buffer(1)]],                     \
-        device const VALUE_T *q [[buffer(2)]], device const VALUE_T *kv_k [[buffer(3)]],                               \
-        device const VALUE_T *kv_v [[buffer(4)]], device VALUE_T *out [[buffer(5)]],                                   \
-        constant PagedAttentionUniforms &u [[buffer(6)]], constant PagedAttentionStrides &s [[buffer(7)]],             \
-        uint3 gid [[threadgroup_position_in_grid]], uint3 tid [[thread_position_in_threadgroup]],                      \
-        uint3 tgsize [[threads_per_threadgroup]]                                                                       \
-    ) {                                                                                                                \
-        const uint q_block_idx = gid.x;                                                                                \
-        const uint q_head = gid.y;                                                                                     \
-        if (q_head >= u.num_q_heads || u.head_dim == 0u || u.head_dim > MAX_DIM) {                                     \
-            return;                                                                                                    \
-        }                                                                                                              \
-        const uint q_start = q_block_idx * BLOCK_M;                                                                    \
-        if (q_start >= u.token_count) {                                                                                \
-            return;                                                                                                    \
-        }                                                                                                              \
-        const uint block_m = min((uint)BLOCK_M, u.token_count - q_start);                                              \
-        const uint tid_k = tid.x;                                                                                      \
-        const uint tid_q = tid.y;                                                                                      \
-        const uint gqa_group = (u.gqa_group_size == 0u) ? 1u : u.gqa_group_size;                                       \
-        const uint kv_head = (gqa_group == 1u) ? q_head : (q_head / gqa_group);                                        \
-        threadgroup TILE_T q_tile[BLOCK_M * MAX_DIM];                                                                  \
-        threadgroup TILE_T kv_tile[BLOCK_N * MAX_DIM];                                                                 \
-        threadgroup float s_tile[BLOCK_M * BLOCK_N];                                                                   \
-        threadgroup float r_tile[BLOCK_M * BLOCK_N];                                                                   \
-        threadgroup float o_tile[BLOCK_M * MAX_DIM];                                                                   \
-        threadgroup float m_tile[BLOCK_M];                                                                             \
-        threadgroup float l_tile[BLOCK_M];                                                                             \
-        threadgroup float block_max[BLOCK_M];                                                                          \
-        threadgroup float block_sum[BLOCK_M];                                                                          \
-        threadgroup float exp_prev_tile[BLOCK_M];                                                                      \
-        threadgroup float exp_block_tile[BLOCK_M];                                                                     \
-        threadgroup uint row_pos[BLOCK_M];                                                                             \
-        threadgroup uint seq_slot_shared;                                                                              \
-        threadgroup uint kv_len_max;                                                                                   \
-        threadgroup uint kv_valid[BLOCK_N];                                                                            \
-        threadgroup ulong kv_row_base[BLOCK_N];                                                                        \
-        const uint linear_tid = tid_q * tgsize.x + tid_k;                                                              \
-        const uint total_threads = tgsize.x * tgsize.y;                                                                \
-        const uint my_q_row = tid_q;                                                                                   \
-        if (tid_k == 0 && tid_q < BLOCK_M) {                                                                           \
-            if (tid_q < block_m) {                                                                                     \
-                const uint token_index = u.token_offset + q_start + tid_q;                                             \
-                const size_t meta_base = (size_t)token_index * (size_t)u.meta_stride0;                                 \
-                row_pos[tid_q] = token_meta[meta_base + (size_t)1u * u.meta_stride1];                                  \
-                if (tid_q == 0u) {                                                                                     \
-                    seq_slot_shared = token_meta[meta_base + (size_t)0u * u.meta_stride1];                             \
-                }                                                                                                      \
-            } else {                                                                                                   \
-                row_pos[tid_q] = 0u;                                                                                   \
-                if (tid_q == 0u) {                                                                                     \
-                    seq_slot_shared = 0u;                                                                              \
-                }                                                                                                      \
-            }                                                                                                          \
-        }                                                                                                              \
-        threadgroup_barrier(mem_flags::mem_threadgroup);                                                               \
-        if (tid_k == 0 && tid_q == 0) {                                                                                \
-            uint max_pos = 0u;                                                                                         \
-            for (uint r = 0; r < block_m; ++r) {                                                                       \
-                max_pos = max(max_pos, row_pos[r]);                                                                    \
-            }                                                                                                          \
-            kv_len_max = max_pos + 1u;                                                                                 \
-        }                                                                                                              \
-        threadgroup_barrier(mem_flags::mem_threadgroup);                                                               \
-        if (my_q_row < block_m) {                                                                                      \
-            for (uint d = tid_k; d < u.head_dim; d += tgsize.x) {                                                      \
-                o_tile[my_q_row * MAX_DIM + d] = 0.0f;                                                                 \
-            }                                                                                                          \
-            if (tid_k == 0) {                                                                                          \
-                m_tile[my_q_row] = -INFINITY;                                                                          \
-                l_tile[my_q_row] = 0.0f;                                                                               \
-            }                                                                                                          \
-        }                                                                                                              \
-        if (my_q_row < block_m) {                                                                                      \
-            const uint token_index = u.token_offset + q_start + my_q_row;                                              \
-            const size_t q_base = (size_t)token_index * s.q_stride0 + (size_t)q_head * s.q_stride1;                    \
-            for (uint d = tid_k; d < u.head_dim; d += tgsize.x) {                                                      \
-                q_tile[my_q_row * MAX_DIM + d] = q[q_base + (size_t)d * s.q_stride2];                                  \
-            }                                                                                                          \
-        }                                                                                                              \
-        threadgroup_barrier(mem_flags::mem_threadgroup);                                                               \
-        const uint block_mask = u.block_size - 1u;                                                                     \
-        const uint num_k_blocks = (kv_len_max + BLOCK_N - 1u) / BLOCK_N;                                               \
-        for (uint k_block = 0; k_block < num_k_blocks; ++k_block) {                                                    \
-            const uint k_start = k_block * BLOCK_N;                                                                    \
-            const uint k_end = min(k_start + BLOCK_N, kv_len_max);                                                     \
-            const uint block_n = k_end - k_start;                                                                      \
-            if (block_n == 0) {                                                                                        \
-                continue;                                                                                              \
-            }                                                                                                          \
-            for (uint idx = linear_tid; idx < block_n; idx += total_threads) {                                         \
-                const uint global_k = k_start + idx;                                                                   \
-                const uint logical_block = global_k >> u.block_shift;                                                  \
-                if (logical_block >= u.max_blocks_per_seq) {                                                           \
-                    kv_valid[idx] = 0u;                                                                                \
-                    kv_row_base[idx] = 0u;                                                                             \
-                } else {                                                                                               \
-                    const size_t block_index = (size_t)seq_slot_shared * (size_t)u.block_stride0 +                     \
-                        (size_t)logical_block * (size_t)u.block_stride1;                                               \
-                    const uint block_id = block_table[block_index];                                                    \
-                    if (block_id == 0xFFFFFFFFu) {                                                                     \
-                        kv_valid[idx] = 0u;                                                                            \
-                        kv_row_base[idx] = 0u;                                                                         \
-                    } else {                                                                                           \
-                        const uint offset = global_k & block_mask;                                                     \
-                        kv_valid[idx] = 1u;                                                                            \
-                        kv_row_base[idx] = (ulong)block_id * s.kv_stride0 + (ulong)u.layer_idx * s.kv_stride1 +        \
-                            (ulong)kv_head * s.kv_stride2 + (ulong)offset * s.kv_stride3;                              \
-                    }                                                                                                  \
-                }                                                                                                      \
-            }                                                                                                          \
-            threadgroup_barrier(mem_flags::mem_threadgroup);                                                           \
-            for (uint idx = linear_tid; idx < block_n * u.head_dim; idx += total_threads) {                            \
-                const uint k_local_row = idx / u.head_dim;                                                             \
-                const uint d = idx % u.head_dim;                                                                       \
-                if (k_local_row < block_n && d < u.head_dim) {                                                         \
-                    if (kv_valid[k_local_row] != 0u) {                                                                 \
-                        kv_tile[k_local_row * MAX_DIM + d] = kv_k[kv_row_base[k_local_row] + (ulong)d * s.kv_stride4]; \
-                    } else {                                                                                           \
-                        kv_tile[k_local_row * MAX_DIM + d] = (TILE_T)0;                                                \
-                    }                                                                                                  \
-                }                                                                                                      \
-            }                                                                                                          \
-            threadgroup_barrier(mem_flags::mem_threadgroup);                                                           \
-            if (my_q_row < block_m && tid_k < BLOCK_N) {                                                               \
-                const uint global_k_col = k_start + tid_k;                                                             \
-                float dot = -INFINITY;                                                                                 \
-                if (tid_k < block_n && kv_valid[tid_k] != 0u && global_k_col <= row_pos[my_q_row]) {                   \
-                    dot = 0.0f;                                                                                        \
-                    for (uint d = 0; d < u.head_dim; ++d) {                                                            \
-                        dot += READ_FN(q_tile[my_q_row * MAX_DIM + d]) * READ_FN(kv_tile[tid_k * MAX_DIM + d]);        \
-                    }                                                                                                  \
-                    dot *= u.scale;                                                                                    \
-                }                                                                                                      \
-                s_tile[my_q_row * BLOCK_N + tid_k] = dot;                                                              \
-                r_tile[my_q_row * BLOCK_N + tid_k] = dot;                                                              \
-            }                                                                                                          \
-            threadgroup_barrier(mem_flags::mem_threadgroup);                                                           \
-            for (uint stride = BLOCK_N / 2; stride > 0; stride >>= 1) {                                                \
-                if (my_q_row < block_m && tid_k < stride) {                                                            \
-                    const uint base = my_q_row * BLOCK_N + tid_k;                                                      \
-                    r_tile[base] = max(r_tile[base], r_tile[base + stride]);                                           \
-                }                                                                                                      \
-                threadgroup_barrier(mem_flags::mem_threadgroup);                                                       \
-            }                                                                                                          \
-            if (my_q_row < block_m && tid_k == 0) {                                                                    \
-                block_max[my_q_row] = r_tile[my_q_row * BLOCK_N];                                                      \
-            }                                                                                                          \
-            threadgroup_barrier(mem_flags::mem_threadgroup);                                                           \
-            if (my_q_row < block_m && tid_k < BLOCK_N) {                                                               \
-                float m_block = block_max[my_q_row];                                                                   \
-                float weight = (m_block == -INFINITY) ? 0.0f : exp(s_tile[my_q_row * BLOCK_N + tid_k] - m_block);      \
-                s_tile[my_q_row * BLOCK_N + tid_k] = weight;                                                           \
-                r_tile[my_q_row * BLOCK_N + tid_k] = weight;                                                           \
-            }                                                                                                          \
-            threadgroup_barrier(mem_flags::mem_threadgroup);                                                           \
-            for (uint stride = BLOCK_N / 2; stride > 0; stride >>= 1) {                                                \
-                if (my_q_row < block_m && tid_k < stride) {                                                            \
-                    const uint base = my_q_row * BLOCK_N + tid_k;                                                      \
-                    r_tile[base] += r_tile[base + stride];                                                             \
-                }                                                                                                      \
-                threadgroup_barrier(mem_flags::mem_threadgroup);                                                       \
-            }                                                                                                          \
-            if (my_q_row < block_m && tid_k == 0) {                                                                    \
-                block_sum[my_q_row] = r_tile[my_q_row * BLOCK_N];                                                      \
-                float m_prev = m_tile[my_q_row];                                                                       \
-                float l_prev = l_tile[my_q_row];                                                                       \
-                float m_block = block_max[my_q_row];                                                                   \
-                float exp_prev = 1.0f;                                                                                 \
-                float exp_block = 0.0f;                                                                                \
-                float m_new = m_prev;                                                                                  \
-                float l_new = l_prev;                                                                                  \
-                if (m_block != -INFINITY) {                                                                            \
-                    m_new = max(m_prev, m_block);                                                                      \
-                    exp_prev = (m_prev == -INFINITY) ? 0.0f : exp(m_prev - m_new);                                     \
-                    exp_block = exp(m_block - m_new);                                                                  \
-                    l_new = l_prev * exp_prev + block_sum[my_q_row] * exp_block;                                       \
-                }                                                                                                      \
-                m_tile[my_q_row] = m_new;                                                                              \
-                l_tile[my_q_row] = l_new;                                                                              \
-                exp_prev_tile[my_q_row] = exp_prev;                                                                    \
-                exp_block_tile[my_q_row] = exp_block;                                                                  \
-            }                                                                                                          \
-            threadgroup_barrier(mem_flags::mem_threadgroup);                                                           \
-            for (uint idx = linear_tid; idx < block_n * u.head_dim; idx += total_threads) {                            \
-                const uint v_local_row = idx / u.head_dim;                                                             \
-                const uint d = idx % u.head_dim;                                                                       \
-                if (v_local_row < block_n && d < u.head_dim) {                                                         \
-                    if (kv_valid[v_local_row] != 0u) {                                                                 \
-                        kv_tile[v_local_row * MAX_DIM + d] = kv_v[kv_row_base[v_local_row] + (ulong)d * s.kv_stride4]; \
-                    } else {                                                                                           \
-                        kv_tile[v_local_row * MAX_DIM + d] = (TILE_T)0;                                                \
-                    }                                                                                                  \
-                }                                                                                                      \
-            }                                                                                                          \
-            threadgroup_barrier(mem_flags::mem_threadgroup);                                                           \
-            if (my_q_row < block_m) {                                                                                  \
-                float exp_prev = exp_prev_tile[my_q_row];                                                              \
-                float exp_block = exp_block_tile[my_q_row];                                                            \
-                for (uint d = tid_k; d < u.head_dim; d += tgsize.x) {                                                  \
-                    float acc = 0.0f;                                                                                  \
-                    for (uint j = 0; j < block_n; ++j) {                                                               \
-                        float weight = s_tile[my_q_row * BLOCK_N + j];                                                 \
-                        if (weight != 0.0f) {                                                                          \
-                            acc += weight * READ_FN(kv_tile[j * MAX_DIM + d]);                                         \
-                        }                                                                                              \
-                    }                                                                                                  \
-                    const uint out_idx = my_q_row * MAX_DIM + d;                                                       \
-                    o_tile[out_idx] = o_tile[out_idx] * exp_prev + acc * exp_block;                                    \
-                }                                                                                                      \
-            }                                                                                                          \
-            threadgroup_barrier(mem_flags::mem_threadgroup);                                                           \
-        }                                                                                                              \
-        if (my_q_row < block_m) {                                                                                      \
-            const uint token_index = u.token_offset + q_start + my_q_row;                                              \
-            const size_t out_base = (size_t)token_index * s.out_stride0 + (size_t)q_head * s.out_stride1;              \
-            float inv_l = (l_tile[my_q_row] > 0.0f) ? (1.0f / l_tile[my_q_row]) : 0.0f;                                \
-            for (uint d = tid_k; d < u.head_dim; d += tgsize.x) {                                                      \
-                out[out_base + (size_t)d * s.out_stride2] = WRITE_FN(o_tile[my_q_row * MAX_DIM + d] * inv_l);          \
-            }                                                                                                          \
-        }                                                                                                              \
+// -----------------------------------------------------------------------------
+// Flash Attention (simdgroup_matrix-based, paged KV cache)
+// -----------------------------------------------------------------------------
+
+constant uint FLASH_ATTN_NSG [[function_constant(0)]];
+
+constexpr constant ushort MAX_Q_ROWS = 8;
+
+template <
+    ushort DK, ushort Q_ROWS, ushort C_PER_SG, typename KV_T, float (*READ_KV)(KV_T), typename Q_T,
+    float (*READ_Q)(Q_T), typename OUT_T, OUT_T (*WRITE_OUT)(float)>
+void paged_flash_attention_impl(
+    device const uint *token_meta, device const uint *block_table, device const Q_T *q, device const KV_T *kv_k,
+    device const KV_T *kv_v, device OUT_T *out, constant PagedAttentionUniforms &u, constant PagedAttentionStrides &s,
+    uint3 tgid [[threadgroup_position_in_grid]], ushort tiisg [[thread_index_in_simdgroup]],
+    ushort sgitg [[simdgroup_index_in_threadgroup]], threadgroup half *shared_mem
+) {
+    const uint q_block_idx = tgid.x;
+    const uint q_head = tgid.y;
+
+    if (q_head >= u.num_q_heads)
+        return;
+
+    const uint q_start = q_block_idx * Q_ROWS;
+    if (q_start >= u.token_count)
+        return;
+
+    const uint block_m = min((uint)Q_ROWS, u.token_count - q_start);
+    const uint gqa_group = (u.gqa_group_size == 0u) ? 1u : u.gqa_group_size;
+    const uint kv_head = (gqa_group == 1u) ? q_head : (q_head / gqa_group);
+
+    // --- Threadgroup memory layout ---
+    // sq:       Q_ROWS * DK halfs (query tile, shared across simdgroups)
+    // ss:       NSG * Q_ROWS * C_PER_SG floats (attention scores, per-simdgroup)
+    // sk:       NSG * C_PER_SG * DK halfs (KV scratch, per-simdgroup, reused for K and V)
+    // sm/sl:    NSG * Q_ROWS floats each (per-simdgroup running max/sum)
+    // row_pos:  Q_ROWS uints
+    threadgroup half *sq = shared_mem;
+    threadgroup float *ss_all = (threadgroup float *)(sq + Q_ROWS * DK);
+    threadgroup half *sk_all = (threadgroup half *)(ss_all + FLASH_ATTN_NSG * Q_ROWS * C_PER_SG);
+    threadgroup float *sm = (threadgroup float *)(sk_all + FLASH_ATTN_NSG * C_PER_SG * DK);
+    threadgroup float *sl = sm + FLASH_ATTN_NSG * Q_ROWS;
+
+    // Per-simdgroup pointers
+    threadgroup float *ss = ss_all + sgitg * Q_ROWS * C_PER_SG;
+    threadgroup half *sk = sk_all + sgitg * C_PER_SG * DK;
+
+    // Shared metadata
+    threadgroup uint *row_pos_shared = (threadgroup uint *)(sl + FLASH_ATTN_NSG * Q_ROWS);
+    threadgroup uint *seq_slot_ptr = row_pos_shared + Q_ROWS;
+    threadgroup uint *kv_len_max_ptr = seq_slot_ptr + 1;
+
+    // Per-thread output accumulator in registers
+    // Each thread handles dimensions tiisg, tiisg+32, tiisg+64, tiisg+96 (for DK=128)
+    constexpr ushort D_PER_THREAD = (DK + 31) / 32;
+    float o_reg[MAX_Q_ROWS * D_PER_THREAD];
+    float m_reg[MAX_Q_ROWS];
+    float l_reg[MAX_Q_ROWS];
+    for (ushort r = 0; r < Q_ROWS; ++r) {
+        m_reg[r] = -INFINITY;
+        l_reg[r] = 0.0f;
+        for (ushort di = 0; di < D_PER_THREAD; ++di) {
+            o_reg[r * D_PER_THREAD + di] = 0.0f;
+        }
     }
 
-#define DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(                                                                     \
-    NAME, Q_T, KV_T, READ_Q, READ_KV, WRITE_OUT, MAX_DIM, BLOCK_M, BLOCK_N                                             \
+    // --- Phase 0: Load metadata ---
+    if (sgitg == 0 && tiisg < Q_ROWS) {
+        if (tiisg < block_m) {
+            const uint token_index = u.token_offset + q_start + tiisg;
+            const ulong meta_base = (ulong)token_index * (ulong)u.meta_stride0;
+            row_pos_shared[tiisg] = token_meta[meta_base + (ulong)1u * u.meta_stride1];
+            if (tiisg == 0u) {
+                *seq_slot_ptr = token_meta[meta_base + (ulong)0u * u.meta_stride1];
+            }
+        } else {
+            row_pos_shared[tiisg] = 0u;
+            if (tiisg == 0u) {
+                *seq_slot_ptr = 0u;
+            }
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    if (sgitg == 0 && tiisg == 0) {
+        uint max_pos = 0u;
+        for (uint r = 0; r < block_m; ++r) {
+            max_pos = max(max_pos, row_pos_shared[r]);
+        }
+        *kv_len_max_ptr = max_pos + 1u;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    const uint seq_slot = *seq_slot_ptr;
+    const uint kv_len = *kv_len_max_ptr;
+    const uint block_mask = u.block_size - 1u;
+
+    // --- Phase 1: Load Q into shared memory as half with scale ---
+    for (uint r = sgitg; r < block_m; r += FLASH_ATTN_NSG) {
+        const uint token_index = u.token_offset + q_start + r;
+        const ulong q_base = (ulong)token_index * s.q_stride0 + (ulong)q_head * s.q_stride1;
+        for (uint d = tiisg; d < DK; d += 32) {
+            float qv = READ_Q(q[q_base + (ulong)d * s.q_stride2]) * u.scale;
+            sq[r * DK + d] = (half)qv;
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // --- Phase 2: KV block loop ---
+    const uint total_c = C_PER_SG * FLASH_ATTN_NSG;
+    const uint num_kv_iters = (kv_len + total_c - 1u) / total_c;
+
+    for (uint kv_iter = 0; kv_iter < num_kv_iters; ++kv_iter) {
+        const uint kv_base_pos = kv_iter * total_c + sgitg * C_PER_SG;
+        const uint c_count = min((uint)C_PER_SG, kv_len > kv_base_pos ? kv_len - kv_base_pos : 0u);
+
+        // Load K into sk (per-simdgroup buffer)
+        for (uint ci = 0; ci < c_count; ++ci) {
+            const uint global_kv_pos = kv_base_pos + ci;
+            const uint logical_block = global_kv_pos >> u.block_shift;
+            uint block_id = 0xFFFFFFFFu;
+            if (logical_block < u.max_blocks_per_seq) {
+                const ulong block_index =
+                    (ulong)seq_slot * (ulong)u.block_stride0 + (ulong)logical_block * (ulong)u.block_stride1;
+                block_id = block_table[block_index];
+            }
+            if (block_id != 0xFFFFFFFFu) {
+                const uint offset = global_kv_pos & block_mask;
+                const ulong kv_addr = (ulong)block_id * s.kv_stride0 + (ulong)u.layer_idx * s.kv_stride1 +
+                    (ulong)kv_head * s.kv_stride2 + (ulong)offset * s.kv_stride3;
+                for (uint d = tiisg; d < DK; d += 32) {
+                    sk[ci * DK + d] = (half)READ_KV(kv_k[kv_addr + (ulong)d * s.kv_stride4]);
+                }
+            } else {
+                for (uint d = tiisg; d < DK; d += 32) {
+                    sk[ci * DK + d] = 0.0h;
+                }
+            }
+        }
+        for (uint ci = c_count; ci < C_PER_SG; ++ci) {
+            for (uint d = tiisg; d < DK; d += 32) {
+                sk[ci * DK + d] = 0.0h;
+            }
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        // QK^T via simdgroup_matrix for each 8-row chunk of C
+        for (uint cc = 0; cc < C_PER_SG; cc += 8) {
+            simdgroup_float8x8 mqk(0);
+
+            for (ushort dk = 0; dk < DK; dk += 8) {
+                simdgroup_half8x8 mq;
+                simdgroup_half8x8 mk;
+                simdgroup_load(mq, sq + dk, DK);
+                simdgroup_load(mk, sk + cc * DK + dk, DK, 0, true);
+                simdgroup_multiply_accumulate(mqk, mq, mk, mqk);
+            }
+
+            simdgroup_store(mqk, ss + cc, C_PER_SG);
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        // Online softmax + rescale output registers
+        for (uint r = 0; r < Q_ROWS && r < block_m; ++r) {
+            float row_max_prev = m_reg[r];
+            float row_sum_prev = l_reg[r];
+
+            float local_max = -INFINITY;
+            for (uint c = tiisg; c < c_count; c += 32) {
+                uint global_kv_pos = kv_base_pos + c;
+                float score = ss[r * C_PER_SG + c];
+                if (global_kv_pos <= row_pos_shared[r]) {
+                    local_max = max(local_max, score);
+                }
+            }
+            float block_max_val = simd_max(local_max);
+
+            float new_max = max(row_max_prev, block_max_val);
+            float scale_prev = (row_max_prev == -INFINITY) ? 0.0f : exp(row_max_prev - new_max);
+            float new_sum = row_sum_prev * scale_prev;
+
+            float local_exp_sum = 0.0f;
+            for (uint c = tiisg; c < c_count; c += 32) {
+                uint global_kv_pos = kv_base_pos + c;
+                float score = ss[r * C_PER_SG + c];
+                float w = 0.0f;
+                if (global_kv_pos <= row_pos_shared[r] && new_max != -INFINITY) {
+                    w = exp(score - new_max);
+                }
+                ss[r * C_PER_SG + c] = w;
+                local_exp_sum += w;
+            }
+            new_sum += simd_sum(local_exp_sum);
+
+            // Rescale previous output accumulator in registers
+            for (ushort di = 0; di < D_PER_THREAD; ++di) {
+                o_reg[r * D_PER_THREAD + di] *= scale_prev;
+            }
+
+            m_reg[r] = new_max;
+            l_reg[r] = new_sum;
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        // Load V into sk (reuse K scratch)
+        for (uint ci = 0; ci < c_count; ++ci) {
+            const uint global_kv_pos = kv_base_pos + ci;
+            const uint logical_block = global_kv_pos >> u.block_shift;
+            uint block_id = 0xFFFFFFFFu;
+            if (logical_block < u.max_blocks_per_seq) {
+                const ulong block_index =
+                    (ulong)seq_slot * (ulong)u.block_stride0 + (ulong)logical_block * (ulong)u.block_stride1;
+                block_id = block_table[block_index];
+            }
+            if (block_id != 0xFFFFFFFFu) {
+                const uint offset = global_kv_pos & block_mask;
+                const ulong kv_addr = (ulong)block_id * s.kv_stride0 + (ulong)u.layer_idx * s.kv_stride1 +
+                    (ulong)kv_head * s.kv_stride2 + (ulong)offset * s.kv_stride3;
+                for (uint d = tiisg; d < DK; d += 32) {
+                    sk[ci * DK + d] = (half)READ_KV(kv_v[kv_addr + (ulong)d * s.kv_stride4]);
+                }
+            } else {
+                for (uint d = tiisg; d < DK; d += 32) {
+                    sk[ci * DK + d] = 0.0h;
+                }
+            }
+        }
+        for (uint ci = c_count; ci < C_PER_SG; ++ci) {
+            for (uint d = tiisg; d < DK; d += 32) {
+                sk[ci * DK + d] = 0.0h;
+            }
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        // S × V: per-thread scalar accumulation into registers
+        for (uint r = 0; r < Q_ROWS && r < block_m; ++r) {
+            for (uint c = 0; c < c_count; ++c) {
+                float w = ss[r * C_PER_SG + c];
+                for (ushort di = 0; di < D_PER_THREAD; ++di) {
+                    uint d = tiisg + di * 32;
+                    o_reg[r * D_PER_THREAD + di] += w * (float)sk[c * DK + d];
+                }
+            }
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    // --- Phase 3: Write output ---
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    if (FLASH_ATTN_NSG == 1) {
+        if (sgitg == 0) {
+            for (uint r = 0; r < block_m; ++r) {
+                const uint token_index = u.token_offset + q_start + r;
+                const ulong out_base = (ulong)token_index * s.out_stride0 + (ulong)q_head * s.out_stride1;
+                float inv_sum = l_reg[r] > 0.0f ? (1.0f / l_reg[r]) : 0.0f;
+                for (ushort di = 0; di < D_PER_THREAD; ++di) {
+                    uint d = tiisg + di * 32;
+                    out[out_base + (ulong)d * s.out_stride2] = WRITE_OUT(o_reg[r * D_PER_THREAD + di] * inv_sum);
+                }
+            }
+        }
+    } else {
+        // Cross-simdgroup reduction using threadgroup memory
+        // Reuse sk area (large enough: C_PER_SG * DK * 2 >= Q_ROWS * DK * 4 when C_PER_SG >= Q_ROWS*2)
+        // Actually, use ss area + sk area as a flat float buffer for reduction
+        // We need NSG * Q_ROWS * DK floats, but we have limited tg memory.
+        // Instead, reduce one row at a time using ss (Q_ROWS * C_PER_SG floats >= DK floats when C_PER_SG >= DK/Q_ROWS)
+
+        // Write per-simdgroup max/sum to shared memory
+        if (tiisg < Q_ROWS) {
+            sm[sgitg * Q_ROWS + tiisg] = m_reg[tiisg];
+            sl[sgitg * Q_ROWS + tiisg] = l_reg[tiisg];
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+
+        // For each row, each simdgroup writes its partial output to a shared buffer,
+        // then sg0 reduces and writes final output
+        // Reuse the ss buffer (Q_ROWS * C_PER_SG floats = 8*32 = 256 floats)
+        // We need DK floats per simdgroup = 128 or 64 floats
+        // Process one simdgroup at a time
+        threadgroup float *reduce_buf = ss_all; // Reuse ss_all for reduction
+
+        for (uint r = 0; r < block_m; ++r) {
+            // First, compute the global max for this row
+            float global_max = -INFINITY;
+            if (sgitg == 0) {
+                for (uint sg = 0; sg < FLASH_ATTN_NSG; ++sg) {
+                    global_max = max(global_max, sm[sg * Q_ROWS + r]);
+                }
+            }
+            global_max = simd_broadcast_first(global_max);
+            // Broadcast from sg0 - all threads in sg0 have it, others need it via shared mem
+            if (sgitg == 0 && tiisg == 0) {
+                reduce_buf[0] = global_max;
+            }
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+            global_max = reduce_buf[0];
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+
+            // Each simdgroup writes its corrected output for this row
+            float sg_max = m_reg[r];
+            float corr = (sg_max == -INFINITY) ? 0.0f : exp(sg_max - global_max);
+
+            // Write corrected partial output to reduce_buf at sgitg offset
+            for (ushort di = 0; di < D_PER_THREAD; ++di) {
+                uint d = tiisg + di * 32;
+                reduce_buf[sgitg * DK + d] = o_reg[r * D_PER_THREAD + di] * corr;
+            }
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+
+            // sg0 reduces across all simdgroups and writes output
+            if (sgitg == 0) {
+                float global_sum = 0.0f;
+                for (uint sg = 0; sg < FLASH_ATTN_NSG; ++sg) {
+                    float sg_m = sm[sg * Q_ROWS + r];
+                    float sg_c = (sg_m == -INFINITY) ? 0.0f : exp(sg_m - global_max);
+                    global_sum += sl[sg * Q_ROWS + r] * sg_c;
+                }
+                float inv_sum = global_sum > 0.0f ? (1.0f / global_sum) : 0.0f;
+
+                const uint token_index = u.token_offset + q_start + r;
+                const ulong out_base = (ulong)token_index * s.out_stride0 + (ulong)q_head * s.out_stride1;
+
+                for (ushort di = 0; di < D_PER_THREAD; ++di) {
+                    uint d = tiisg + di * 32;
+                    float val = 0.0f;
+                    for (uint sg = 0; sg < FLASH_ATTN_NSG; ++sg) {
+                        val += reduce_buf[sg * DK + d];
+                    }
+                    out[out_base + (ulong)d * s.out_stride2] = WRITE_OUT(val * inv_sum);
+                }
+            }
+            threadgroup_barrier(mem_flags::mem_threadgroup);
+        }
+    }
+}
+
+// --- Kernel entry points ---
+
+#define DEFINE_PAGED_FLASH_ATTENTION_KERNEL(                                                                           \
+    NAME, DK_VAL, Q_ROWS_VAL, C_VAL, KV_T, READ_KV_FN, Q_T, READ_Q_FN, OUT_T, WRITE_OUT_FN                             \
 )                                                                                                                      \
     kernel void NAME(                                                                                                  \
         device const uint *token_meta [[buffer(0)]], device const uint *block_table [[buffer(1)]],                     \
         device const Q_T *q [[buffer(2)]], device const KV_T *kv_k [[buffer(3)]],                                      \
-        device const KV_T *kv_v [[buffer(4)]], device Q_T *out [[buffer(5)]],                                          \
+        device const KV_T *kv_v [[buffer(4)]], device OUT_T *out [[buffer(5)]],                                        \
         constant PagedAttentionUniforms &u [[buffer(6)]], constant PagedAttentionStrides &s [[buffer(7)]],             \
-        uint3 gid [[threadgroup_position_in_grid]], uint3 tid [[thread_position_in_threadgroup]],                      \
-        uint3 tgsize [[threads_per_threadgroup]]                                                                       \
+        uint3 tgid [[threadgroup_position_in_grid]], ushort tiisg [[thread_index_in_simdgroup]],                       \
+        ushort sgitg [[simdgroup_index_in_threadgroup]], threadgroup half *shared_mem [[threadgroup(0)]]               \
     ) {                                                                                                                \
-        const uint q_block_idx = gid.x;                                                                                \
-        const uint q_head = gid.y;                                                                                     \
-        if (q_head >= u.num_q_heads || u.head_dim == 0u || u.head_dim > MAX_DIM) {                                     \
-            return;                                                                                                    \
-        }                                                                                                              \
-        const uint q_start = q_block_idx * BLOCK_M;                                                                    \
-        if (q_start >= u.token_count) {                                                                                \
-            return;                                                                                                    \
-        }                                                                                                              \
-        const uint block_m = min((uint)BLOCK_M, u.token_count - q_start);                                              \
-        const uint tid_k = tid.x;                                                                                      \
-        const uint tid_q = tid.y;                                                                                      \
-        const uint gqa_group = (u.gqa_group_size == 0u) ? 1u : u.gqa_group_size;                                       \
-        const uint kv_head = (gqa_group == 1u) ? q_head : (q_head / gqa_group);                                        \
-        threadgroup Q_T q_tile[BLOCK_M * MAX_DIM];                                                                     \
-        threadgroup KV_T kv_tile[BLOCK_N * MAX_DIM];                                                                   \
-        threadgroup float s_tile[BLOCK_M * BLOCK_N];                                                                   \
-        threadgroup float r_tile[BLOCK_M * BLOCK_N];                                                                   \
-        threadgroup float o_tile[BLOCK_M * MAX_DIM];                                                                   \
-        threadgroup float m_tile[BLOCK_M];                                                                             \
-        threadgroup float l_tile[BLOCK_M];                                                                             \
-        threadgroup float block_max[BLOCK_M];                                                                          \
-        threadgroup float block_sum[BLOCK_M];                                                                          \
-        threadgroup float exp_prev_tile[BLOCK_M];                                                                      \
-        threadgroup float exp_block_tile[BLOCK_M];                                                                     \
-        threadgroup uint row_pos[BLOCK_M];                                                                             \
-        threadgroup uint seq_slot_shared;                                                                              \
-        threadgroup uint kv_len_max;                                                                                   \
-        threadgroup uint kv_valid[BLOCK_N];                                                                            \
-        threadgroup ulong kv_row_base[BLOCK_N];                                                                        \
-        const uint linear_tid = tid_q * tgsize.x + tid_k;                                                              \
-        const uint total_threads = tgsize.x * tgsize.y;                                                                \
-        const uint my_q_row = tid_q;                                                                                   \
-        if (tid_k == 0 && tid_q < BLOCK_M) {                                                                           \
-            if (tid_q < block_m) {                                                                                     \
-                const uint token_index = u.token_offset + q_start + tid_q;                                             \
-                const size_t meta_base = (size_t)token_index * (size_t)u.meta_stride0;                                 \
-                row_pos[tid_q] = token_meta[meta_base + (size_t)1u * u.meta_stride1];                                  \
-                if (tid_q == 0u) {                                                                                     \
-                    seq_slot_shared = token_meta[meta_base + (size_t)0u * u.meta_stride1];                             \
-                }                                                                                                      \
-            } else {                                                                                                   \
-                row_pos[tid_q] = 0u;                                                                                   \
-                if (tid_q == 0u) {                                                                                     \
-                    seq_slot_shared = 0u;                                                                              \
-                }                                                                                                      \
-            }                                                                                                          \
-        }                                                                                                              \
-        threadgroup_barrier(mem_flags::mem_threadgroup);                                                               \
-        if (tid_k == 0 && tid_q == 0) {                                                                                \
-            uint max_pos = 0u;                                                                                         \
-            for (uint r = 0; r < block_m; ++r) {                                                                       \
-                max_pos = max(max_pos, row_pos[r]);                                                                    \
-            }                                                                                                          \
-            kv_len_max = max_pos + 1u;                                                                                 \
-        }                                                                                                              \
-        threadgroup_barrier(mem_flags::mem_threadgroup);                                                               \
-        if (my_q_row < block_m) {                                                                                      \
-            for (uint d = tid_k; d < u.head_dim; d += tgsize.x) {                                                      \
-                o_tile[my_q_row * MAX_DIM + d] = 0.0f;                                                                 \
-            }                                                                                                          \
-            if (tid_k == 0) {                                                                                          \
-                m_tile[my_q_row] = -INFINITY;                                                                          \
-                l_tile[my_q_row] = 0.0f;                                                                               \
-            }                                                                                                          \
-        }                                                                                                              \
-        if (my_q_row < block_m) {                                                                                      \
-            const uint token_index = u.token_offset + q_start + my_q_row;                                              \
-            const size_t q_base = (size_t)token_index * s.q_stride0 + (size_t)q_head * s.q_stride1;                    \
-            for (uint d = tid_k; d < u.head_dim; d += tgsize.x) {                                                      \
-                q_tile[my_q_row * MAX_DIM + d] = q[q_base + (size_t)d * s.q_stride2];                                  \
-            }                                                                                                          \
-        }                                                                                                              \
-        threadgroup_barrier(mem_flags::mem_threadgroup);                                                               \
-        const uint block_mask = u.block_size - 1u;                                                                     \
-        const uint num_k_blocks = (kv_len_max + BLOCK_N - 1u) / BLOCK_N;                                               \
-        for (uint k_block = 0; k_block < num_k_blocks; ++k_block) {                                                    \
-            const uint k_start = k_block * BLOCK_N;                                                                    \
-            const uint k_end = min(k_start + BLOCK_N, kv_len_max);                                                     \
-            const uint block_n = k_end - k_start;                                                                      \
-            if (block_n == 0) {                                                                                        \
-                continue;                                                                                              \
-            }                                                                                                          \
-            for (uint idx = linear_tid; idx < block_n; idx += total_threads) {                                         \
-                const uint global_k = k_start + idx;                                                                   \
-                const uint logical_block = global_k >> u.block_shift;                                                  \
-                if (logical_block >= u.max_blocks_per_seq) {                                                           \
-                    kv_valid[idx] = 0u;                                                                                \
-                    kv_row_base[idx] = 0u;                                                                             \
-                } else {                                                                                               \
-                    const size_t block_index = (size_t)seq_slot_shared * (size_t)u.block_stride0 +                     \
-                        (size_t)logical_block * (size_t)u.block_stride1;                                               \
-                    const uint block_id = block_table[block_index];                                                    \
-                    if (block_id == 0xFFFFFFFFu) {                                                                     \
-                        kv_valid[idx] = 0u;                                                                            \
-                        kv_row_base[idx] = 0u;                                                                         \
-                    } else {                                                                                           \
-                        const uint offset = global_k & block_mask;                                                     \
-                        kv_valid[idx] = 1u;                                                                            \
-                        kv_row_base[idx] = (ulong)block_id * s.kv_stride0 + (ulong)u.layer_idx * s.kv_stride1 +        \
-                            (ulong)kv_head * s.kv_stride2 + (ulong)offset * s.kv_stride3;                              \
-                    }                                                                                                  \
-                }                                                                                                      \
-            }                                                                                                          \
-            threadgroup_barrier(mem_flags::mem_threadgroup);                                                           \
-            for (uint idx = linear_tid; idx < block_n * u.head_dim; idx += total_threads) {                            \
-                const uint k_local_row = idx / u.head_dim;                                                             \
-                const uint d = idx % u.head_dim;                                                                       \
-                if (k_local_row < block_n && d < u.head_dim) {                                                         \
-                    if (kv_valid[k_local_row] != 0u) {                                                                 \
-                        kv_tile[k_local_row * MAX_DIM + d] = kv_k[kv_row_base[k_local_row] + (ulong)d * s.kv_stride4]; \
-                    } else {                                                                                           \
-                        kv_tile[k_local_row * MAX_DIM + d] = (KV_T)0;                                                  \
-                    }                                                                                                  \
-                }                                                                                                      \
-            }                                                                                                          \
-            threadgroup_barrier(mem_flags::mem_threadgroup);                                                           \
-            if (my_q_row < block_m && tid_k < BLOCK_N) {                                                               \
-                const uint global_k_col = k_start + tid_k;                                                             \
-                float dot = -INFINITY;                                                                                 \
-                if (tid_k < block_n && kv_valid[tid_k] != 0u && global_k_col <= row_pos[my_q_row]) {                   \
-                    dot = 0.0f;                                                                                        \
-                    for (uint d = 0; d < u.head_dim; ++d) {                                                            \
-                        dot += READ_Q(q_tile[my_q_row * MAX_DIM + d]) * READ_KV(kv_tile[tid_k * MAX_DIM + d]);         \
-                    }                                                                                                  \
-                    dot *= u.scale;                                                                                    \
-                }                                                                                                      \
-                s_tile[my_q_row * BLOCK_N + tid_k] = dot;                                                              \
-                r_tile[my_q_row * BLOCK_N + tid_k] = dot;                                                              \
-            }                                                                                                          \
-            threadgroup_barrier(mem_flags::mem_threadgroup);                                                           \
-            for (uint stride = BLOCK_N / 2; stride > 0; stride >>= 1) {                                                \
-                if (my_q_row < block_m && tid_k < stride) {                                                            \
-                    const uint base = my_q_row * BLOCK_N + tid_k;                                                      \
-                    r_tile[base] = max(r_tile[base], r_tile[base + stride]);                                           \
-                }                                                                                                      \
-                threadgroup_barrier(mem_flags::mem_threadgroup);                                                       \
-            }                                                                                                          \
-            if (my_q_row < block_m && tid_k == 0) {                                                                    \
-                block_max[my_q_row] = r_tile[my_q_row * BLOCK_N];                                                      \
-            }                                                                                                          \
-            threadgroup_barrier(mem_flags::mem_threadgroup);                                                           \
-            if (my_q_row < block_m && tid_k < BLOCK_N) {                                                               \
-                float m_block = block_max[my_q_row];                                                                   \
-                float weight = (m_block == -INFINITY) ? 0.0f : exp(s_tile[my_q_row * BLOCK_N + tid_k] - m_block);      \
-                s_tile[my_q_row * BLOCK_N + tid_k] = weight;                                                           \
-                r_tile[my_q_row * BLOCK_N + tid_k] = weight;                                                           \
-            }                                                                                                          \
-            threadgroup_barrier(mem_flags::mem_threadgroup);                                                           \
-            for (uint stride = BLOCK_N / 2; stride > 0; stride >>= 1) {                                                \
-                if (my_q_row < block_m && tid_k < stride) {                                                            \
-                    const uint base = my_q_row * BLOCK_N + tid_k;                                                      \
-                    r_tile[base] += r_tile[base + stride];                                                             \
-                }                                                                                                      \
-                threadgroup_barrier(mem_flags::mem_threadgroup);                                                       \
-            }                                                                                                          \
-            if (my_q_row < block_m && tid_k == 0) {                                                                    \
-                block_sum[my_q_row] = r_tile[my_q_row * BLOCK_N];                                                      \
-                float m_prev = m_tile[my_q_row];                                                                       \
-                float l_prev = l_tile[my_q_row];                                                                       \
-                float m_block = block_max[my_q_row];                                                                   \
-                float exp_prev = 1.0f;                                                                                 \
-                float exp_block = 0.0f;                                                                                \
-                float m_new = m_prev;                                                                                  \
-                float l_new = l_prev;                                                                                  \
-                if (m_block != -INFINITY) {                                                                            \
-                    m_new = max(m_prev, m_block);                                                                      \
-                    exp_prev = (m_prev == -INFINITY) ? 0.0f : exp(m_prev - m_new);                                     \
-                    exp_block = exp(m_block - m_new);                                                                  \
-                    l_new = l_prev * exp_prev + block_sum[my_q_row] * exp_block;                                       \
-                }                                                                                                      \
-                m_tile[my_q_row] = m_new;                                                                              \
-                l_tile[my_q_row] = l_new;                                                                              \
-                exp_prev_tile[my_q_row] = exp_prev;                                                                    \
-                exp_block_tile[my_q_row] = exp_block;                                                                  \
-            }                                                                                                          \
-            threadgroup_barrier(mem_flags::mem_threadgroup);                                                           \
-            for (uint idx = linear_tid; idx < block_n * u.head_dim; idx += total_threads) {                            \
-                const uint v_local_row = idx / u.head_dim;                                                             \
-                const uint d = idx % u.head_dim;                                                                       \
-                if (v_local_row < block_n && d < u.head_dim) {                                                         \
-                    if (kv_valid[v_local_row] != 0u) {                                                                 \
-                        kv_tile[v_local_row * MAX_DIM + d] = kv_v[kv_row_base[v_local_row] + (ulong)d * s.kv_stride4]; \
-                    } else {                                                                                           \
-                        kv_tile[v_local_row * MAX_DIM + d] = (KV_T)0;                                                  \
-                    }                                                                                                  \
-                }                                                                                                      \
-            }                                                                                                          \
-            threadgroup_barrier(mem_flags::mem_threadgroup);                                                           \
-            if (my_q_row < block_m) {                                                                                  \
-                float exp_prev = exp_prev_tile[my_q_row];                                                              \
-                float exp_block = exp_block_tile[my_q_row];                                                            \
-                for (uint d = tid_k; d < u.head_dim; d += tgsize.x) {                                                  \
-                    float acc = 0.0f;                                                                                  \
-                    for (uint j = 0; j < block_n; ++j) {                                                               \
-                        float weight = s_tile[my_q_row * BLOCK_N + j];                                                 \
-                        if (weight != 0.0f) {                                                                          \
-                            acc += weight * READ_KV(kv_tile[j * MAX_DIM + d]);                                         \
-                        }                                                                                              \
-                    }                                                                                                  \
-                    const uint out_idx = my_q_row * MAX_DIM + d;                                                       \
-                    o_tile[out_idx] = o_tile[out_idx] * exp_prev + acc * exp_block;                                    \
-                }                                                                                                      \
-            }                                                                                                          \
-            threadgroup_barrier(mem_flags::mem_threadgroup);                                                           \
-        }                                                                                                              \
-        if (my_q_row < block_m) {                                                                                      \
-            const uint token_index = u.token_offset + q_start + my_q_row;                                              \
-            const size_t out_base = (size_t)token_index * s.out_stride0 + (size_t)q_head * s.out_stride1;              \
-            float inv_l = (l_tile[my_q_row] > 0.0f) ? (1.0f / l_tile[my_q_row]) : 0.0f;                                \
-            for (uint d = tid_k; d < u.head_dim; d += tgsize.x) {                                                      \
-                out[out_base + (size_t)d * s.out_stride2] = WRITE_OUT(o_tile[my_q_row * MAX_DIM + d] * inv_l);         \
-            }                                                                                                          \
-        }                                                                                                              \
+        paged_flash_attention_impl<DK_VAL, Q_ROWS_VAL, C_VAL, KV_T, READ_KV_FN, Q_T, READ_Q_FN, OUT_T, WRITE_OUT_FN>(  \
+            token_meta, block_table, q, kv_k, kv_v, out, u, s, tgid, tiisg, sgitg, shared_mem                          \
+        );                                                                                                             \
     }
 
+// f32 Q/KV/out, DK=128
 DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
-    paged_flash_attention_f32, float, read_float, write_float, float, FLASH_ATTN_MAX_DIM_F32, FLASH_ATTN_BLOCK_M_F32,
-    FLASH_ATTN_BLOCK_N_F32
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
-    paged_flash_attention_f32_wide, float, read_float, write_float, float, FLASH_ATTN_MAX_DIM_F32_WIDE,
-    FLASH_ATTN_BLOCK_M_F32_WIDE, FLASH_ATTN_BLOCK_N_F32_WIDE
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
-    paged_flash_attention_f32_narrow, float, read_float, write_float, float, FLASH_ATTN_MAX_DIM_F32,
-    FLASH_ATTN_BLOCK_M_F32_NARROW, FLASH_ATTN_BLOCK_N_F32_NARROW
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
-    paged_flash_attention_f32_wide_narrow, float, read_float, write_float, float, FLASH_ATTN_MAX_DIM_F32_WIDE,
-    FLASH_ATTN_BLOCK_M_F32_WIDE_NARROW, FLASH_ATTN_BLOCK_N_F32_WIDE_NARROW
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
-    paged_flash_attention_f16, half, read_half, write_half, half, FLASH_ATTN_MAX_DIM_F16, FLASH_ATTN_BLOCK_M_F16,
-    FLASH_ATTN_BLOCK_N_F16
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
-    paged_flash_attention_f16_wide, half, read_half, write_half, half, FLASH_ATTN_MAX_DIM_F16_WIDE,
-    FLASH_ATTN_BLOCK_M_F16_WIDE, FLASH_ATTN_BLOCK_N_F16_WIDE
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
-    paged_flash_attention_f16_narrow, half, read_half, write_half, half, FLASH_ATTN_MAX_DIM_F16,
-    FLASH_ATTN_BLOCK_M_F16_NARROW, FLASH_ATTN_BLOCK_N_F16_NARROW
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
-    paged_flash_attention_f16_wide_narrow, half, read_half, write_half, half, FLASH_ATTN_MAX_DIM_F16_WIDE,
-    FLASH_ATTN_BLOCK_M_F16_WIDE_NARROW, FLASH_ATTN_BLOCK_N_F16_WIDE_NARROW
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
-    paged_flash_attention_bf16, ushort, read_bf16, write_bf16, ushort, FLASH_ATTN_MAX_DIM_BF16, FLASH_ATTN_BLOCK_M_BF16,
-    FLASH_ATTN_BLOCK_N_BF16
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
-    paged_flash_attention_bf16_wide, ushort, read_bf16, write_bf16, ushort, FLASH_ATTN_MAX_DIM_BF16_WIDE,
-    FLASH_ATTN_BLOCK_M_BF16_WIDE, FLASH_ATTN_BLOCK_N_BF16_WIDE
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
-    paged_flash_attention_bf16_narrow, ushort, read_bf16, write_bf16, ushort, FLASH_ATTN_MAX_DIM_BF16,
-    FLASH_ATTN_BLOCK_M_BF16_NARROW, FLASH_ATTN_BLOCK_N_BF16_NARROW
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
-    paged_flash_attention_bf16_wide_narrow, ushort, read_bf16, write_bf16, ushort, FLASH_ATTN_MAX_DIM_BF16_WIDE,
-    FLASH_ATTN_BLOCK_M_BF16_WIDE_NARROW, FLASH_ATTN_BLOCK_N_BF16_WIDE_NARROW
+    paged_flash_attention_f32_128, 128, 8, 32, float, read_float, float, read_float, float, write_float
 )
 
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_f32_kv_f16, float, half, read_float, read_half, write_float, FLASH_ATTN_MAX_DIM_F32,
-    FLASH_ATTN_BLOCK_M_F32, FLASH_ATTN_BLOCK_N_F32
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_f32_kv_f16_wide, float, half, read_float, read_half, write_float, FLASH_ATTN_MAX_DIM_F32_WIDE,
-    FLASH_ATTN_BLOCK_M_F32_WIDE, FLASH_ATTN_BLOCK_N_F32_WIDE
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_f32_kv_f16_narrow, float, half, read_float, read_half, write_float, FLASH_ATTN_MAX_DIM_F32,
-    FLASH_ATTN_BLOCK_M_F32_NARROW, FLASH_ATTN_BLOCK_N_F32_NARROW
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_f32_kv_f16_wide_narrow, float, half, read_float, read_half, write_float,
-    FLASH_ATTN_MAX_DIM_F32_WIDE, FLASH_ATTN_BLOCK_M_F32_WIDE_NARROW, FLASH_ATTN_BLOCK_N_F32_WIDE_NARROW
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_f32_kv_bf16, float, ushort, read_float, read_bf16, write_float, FLASH_ATTN_MAX_DIM_F32,
-    FLASH_ATTN_BLOCK_M_F32, FLASH_ATTN_BLOCK_N_F32
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_f32_kv_bf16_wide, float, ushort, read_float, read_bf16, write_float,
-    FLASH_ATTN_MAX_DIM_F32_WIDE, FLASH_ATTN_BLOCK_M_F32_WIDE, FLASH_ATTN_BLOCK_N_F32_WIDE
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_f32_kv_bf16_narrow, float, ushort, read_float, read_bf16, write_float, FLASH_ATTN_MAX_DIM_F32,
-    FLASH_ATTN_BLOCK_M_F32_NARROW, FLASH_ATTN_BLOCK_N_F32_NARROW
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_f32_kv_bf16_wide_narrow, float, ushort, read_float, read_bf16, write_float,
-    FLASH_ATTN_MAX_DIM_F32_WIDE, FLASH_ATTN_BLOCK_M_F32_WIDE_NARROW, FLASH_ATTN_BLOCK_N_F32_WIDE_NARROW
+// f16 Q/KV/out, DK=128
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f16_128, 128, 8, 32, half, read_half, half, read_half, half, write_half
 )
 
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_f16_kv_f32, half, float, read_half, read_float, write_half, FLASH_ATTN_MAX_DIM_F16,
-    FLASH_ATTN_BLOCK_M_F16, FLASH_ATTN_BLOCK_N_F16
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_f16_kv_f32_wide, half, float, read_half, read_float, write_half, FLASH_ATTN_MAX_DIM_F16_WIDE,
-    FLASH_ATTN_BLOCK_M_F16_WIDE, FLASH_ATTN_BLOCK_N_F16_WIDE
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_f16_kv_f32_narrow, half, float, read_half, read_float, write_half, FLASH_ATTN_MAX_DIM_F16,
-    FLASH_ATTN_BLOCK_M_F16_NARROW, FLASH_ATTN_BLOCK_N_F16_NARROW
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_f16_kv_f32_wide_narrow, half, float, read_half, read_float, write_half,
-    FLASH_ATTN_MAX_DIM_F16_WIDE, FLASH_ATTN_BLOCK_M_F16_WIDE_NARROW, FLASH_ATTN_BLOCK_N_F16_WIDE_NARROW
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_f16_kv_bf16, half, ushort, read_half, read_bf16, write_half, FLASH_ATTN_MAX_DIM_F16,
-    FLASH_ATTN_BLOCK_M_F16, FLASH_ATTN_BLOCK_N_F16
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_f16_kv_bf16_wide, half, ushort, read_half, read_bf16, write_half, FLASH_ATTN_MAX_DIM_F16_WIDE,
-    FLASH_ATTN_BLOCK_M_F16_WIDE, FLASH_ATTN_BLOCK_N_F16_WIDE
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_f16_kv_bf16_narrow, half, ushort, read_half, read_bf16, write_half, FLASH_ATTN_MAX_DIM_F16,
-    FLASH_ATTN_BLOCK_M_F16_NARROW, FLASH_ATTN_BLOCK_N_F16_NARROW
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_f16_kv_bf16_wide_narrow, half, ushort, read_half, read_bf16, write_half,
-    FLASH_ATTN_MAX_DIM_F16_WIDE, FLASH_ATTN_BLOCK_M_F16_WIDE_NARROW, FLASH_ATTN_BLOCK_N_F16_WIDE_NARROW
+// bf16 Q/KV/out, DK=128
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_bf16_128, 128, 8, 32, ushort, read_bf16, ushort, read_bf16, ushort, write_bf16
 )
 
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_bf16_kv_f32, ushort, float, read_bf16, read_float, write_bf16, FLASH_ATTN_MAX_DIM_BF16,
-    FLASH_ATTN_BLOCK_M_BF16, FLASH_ATTN_BLOCK_N_BF16
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_bf16_kv_f32_wide, ushort, float, read_bf16, read_float, write_bf16,
-    FLASH_ATTN_MAX_DIM_BF16_WIDE, FLASH_ATTN_BLOCK_M_BF16_WIDE, FLASH_ATTN_BLOCK_N_BF16_WIDE
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_bf16_kv_f32_narrow, ushort, float, read_bf16, read_float, write_bf16, FLASH_ATTN_MAX_DIM_BF16,
-    FLASH_ATTN_BLOCK_M_BF16_NARROW, FLASH_ATTN_BLOCK_N_BF16_NARROW
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_bf16_kv_f32_wide_narrow, ushort, float, read_bf16, read_float, write_bf16,
-    FLASH_ATTN_MAX_DIM_BF16_WIDE, FLASH_ATTN_BLOCK_M_BF16_WIDE_NARROW, FLASH_ATTN_BLOCK_N_BF16_WIDE_NARROW
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_bf16_kv_f16, ushort, half, read_bf16, read_half, write_bf16, FLASH_ATTN_MAX_DIM_BF16,
-    FLASH_ATTN_BLOCK_M_BF16, FLASH_ATTN_BLOCK_N_BF16
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_bf16_kv_f16_wide, ushort, half, read_bf16, read_half, write_bf16,
-    FLASH_ATTN_MAX_DIM_BF16_WIDE, FLASH_ATTN_BLOCK_M_BF16_WIDE, FLASH_ATTN_BLOCK_N_BF16_WIDE
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_bf16_kv_f16_narrow, ushort, half, read_bf16, read_half, write_bf16, FLASH_ATTN_MAX_DIM_BF16,
-    FLASH_ATTN_BLOCK_M_BF16_NARROW, FLASH_ATTN_BLOCK_N_BF16_NARROW
-)
-DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED(
-    paged_flash_attention_bf16_kv_f16_wide_narrow, ushort, half, read_bf16, read_half, write_bf16,
-    FLASH_ATTN_MAX_DIM_BF16_WIDE, FLASH_ATTN_BLOCK_M_BF16_WIDE_NARROW, FLASH_ATTN_BLOCK_N_BF16_WIDE_NARROW
+// f32 Q/out, f16 KV, DK=128
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f32_kv_f16_128, 128, 8, 32, half, read_half, float, read_float, float, write_float
 )
 
-#undef DEFINE_PAGED_FLASH_ATTENTION_KERNEL_MIXED
+// f32 Q/out, bf16 KV, DK=128
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f32_kv_bf16_128, 128, 8, 32, ushort, read_bf16, float, read_float, float, write_float
+)
+
+// f16 Q/out, f32 KV, DK=128
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f16_kv_f32_128, 128, 8, 32, float, read_float, half, read_half, half, write_half
+)
+
+// f16 Q/out, bf16 KV, DK=128
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f16_kv_bf16_128, 128, 8, 32, ushort, read_bf16, half, read_half, half, write_half
+)
+
+// bf16 Q/out, f32 KV, DK=128
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_bf16_kv_f32_128, 128, 8, 32, float, read_float, ushort, read_bf16, ushort, write_bf16
+)
+
+// bf16 Q/out, f16 KV, DK=128
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_bf16_kv_f16_128, 128, 8, 32, half, read_half, ushort, read_bf16, ushort, write_bf16
+)
+
+// DK=128, C=64 variants (used with NSG=1 for larger KV sequences)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f32_128_c64, 128, 8, 64, float, read_float, float, read_float, float, write_float
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f16_128_c64, 128, 8, 64, half, read_half, half, read_half, half, write_half
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_bf16_128_c64, 128, 8, 64, ushort, read_bf16, ushort, read_bf16, ushort, write_bf16
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f32_kv_f16_128_c64, 128, 8, 64, half, read_half, float, read_float, float, write_float
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f32_kv_bf16_128_c64, 128, 8, 64, ushort, read_bf16, float, read_float, float, write_float
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f16_kv_f32_128_c64, 128, 8, 64, float, read_float, half, read_half, half, write_half
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f16_kv_bf16_128_c64, 128, 8, 64, ushort, read_bf16, half, read_half, half, write_half
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_bf16_kv_f32_128_c64, 128, 8, 64, float, read_float, ushort, read_bf16, ushort, write_bf16
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_bf16_kv_f16_128_c64, 128, 8, 64, half, read_half, ushort, read_bf16, ushort, write_bf16
+)
+
+// DK=64, C=64 variants
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f32_64_c64, 64, 8, 64, float, read_float, float, read_float, float, write_float
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f16_64_c64, 64, 8, 64, half, read_half, half, read_half, half, write_half
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_bf16_64_c64, 64, 8, 64, ushort, read_bf16, ushort, read_bf16, ushort, write_bf16
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f32_kv_f16_64_c64, 64, 8, 64, half, read_half, float, read_float, float, write_float
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f32_kv_bf16_64_c64, 64, 8, 64, ushort, read_bf16, float, read_float, float, write_float
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f16_kv_f32_64_c64, 64, 8, 64, float, read_float, half, read_half, half, write_half
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f16_kv_bf16_64_c64, 64, 8, 64, ushort, read_bf16, half, read_half, half, write_half
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_bf16_kv_f32_64_c64, 64, 8, 64, float, read_float, ushort, read_bf16, ushort, write_bf16
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_bf16_kv_f16_64_c64, 64, 8, 64, half, read_half, ushort, read_bf16, ushort, write_bf16
+)
+
+// DK=64 variants
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f32_64, 64, 8, 32, float, read_float, float, read_float, float, write_float
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f16_64, 64, 8, 32, half, read_half, half, read_half, half, write_half
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_bf16_64, 64, 8, 32, ushort, read_bf16, ushort, read_bf16, ushort, write_bf16
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f32_kv_f16_64, 64, 8, 32, half, read_half, float, read_float, float, write_float
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f32_kv_bf16_64, 64, 8, 32, ushort, read_bf16, float, read_float, float, write_float
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f16_kv_f32_64, 64, 8, 32, float, read_float, half, read_half, half, write_half
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_f16_kv_bf16_64, 64, 8, 32, ushort, read_bf16, half, read_half, half, write_half
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_bf16_kv_f32_64, 64, 8, 32, float, read_float, ushort, read_bf16, ushort, write_bf16
+)
+DEFINE_PAGED_FLASH_ATTENTION_KERNEL(
+    paged_flash_attention_bf16_kv_f16_64, 64, 8, 32, half, read_half, ushort, read_bf16, ushort, write_bf16
+)
 
 #undef DEFINE_PAGED_FLASH_ATTENTION_KERNEL
-#undef PAGED_ATTN_MAX_CHUNKS
-#undef PAGED_ATTN_MAX_DIM
-#undef PAGED_ATTN_SIMD_WIDTH

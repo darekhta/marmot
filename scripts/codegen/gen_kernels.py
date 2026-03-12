@@ -303,6 +303,14 @@ PAGED_ATTENTION_OPS = {
     "paged_attention",
 }
 
+TOPK_OPS = {
+    "topk",
+}
+
+MOE_OPS = {
+    "moe_experts",
+}
+
 VEC_DOT_OPS = {
     "vec_dot",
 }
@@ -546,6 +554,10 @@ def _dispatch_kind(op: str) -> str:
         return "quantization"
     if op in PAGED_ATTENTION_OPS:
         return "paged_attention"
+    if op in TOPK_OPS:
+        return "topk"
+    if op in MOE_OPS:
+        return "moe_experts"
     if op in VEC_DOT_OPS:
         return "vec_dot"
     if op in {"rms_norm", "rms_norm_gemma"}:
@@ -572,6 +584,10 @@ def _args_base(op: str) -> str:
         return "reduction"
     if op in PAGED_ATTENTION_OPS:
         return "paged_attention"
+    if op in TOPK_OPS:
+        return "topk"
+    if op in MOE_OPS:
+        return "moe_experts"
     if op in EMBEDDING_OPS:
         return "embedding"
     if op in TENSOR_OPS:
@@ -667,7 +683,7 @@ def render_query_source(
 MATMUL_KINDS = {"matmul", "qkv"}
 ELEMENTWISE_KINDS = {"binary", "unary", "ternary"}
 REDUCTION_KINDS = {"reduction"}
-NEURAL_KINDS = {"softmax", "paged_attention", "rms_norm", "layernorm", "rope"}
+NEURAL_KINDS = {"softmax", "paged_attention", "rms_norm", "layernorm", "rope", "topk", "moe_experts"}
 MISC_KINDS = {"quantization", "conversion", "embedding", "vec_dot", "tensor_ops"}
 
 

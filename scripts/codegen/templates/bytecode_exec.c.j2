@@ -21,6 +21,8 @@ extern "C" {
 {%- elif kernel.kind == 'ternary' -%}ternary
 {%- elif kernel.kind == 'reduction' -%}reduction
 {%- elif kernel.op == 'softmax' -%}softmax
+{%- elif kernel.op == 'topk' -%}topk
+{%- elif kernel.op == 'moe_experts' -%}moe_experts
 {%- elif kernel.op == 'layernorm' -%}layernorm
 {%- elif kernel.op == 'rms_norm' or kernel.op == 'rms_norm_gemma' -%}rms_norm
 {%- elif kernel.op == 'paged_attention' -%}paged_attention
@@ -224,6 +226,46 @@ static marmot_error_t marmot_{{ backend }}_bc_exec_{{ kernel.name }}(
         .input = marmot_bc_reg(regs, input_idx),
         .output = marmot_bc_reg(regs, output_idx),
         .axis = axis,
+    };
+{% elif kernel.op == 'topk' %}
+    (void)const_pool;
+    uint16_t input_idx = marmot_bc_read_u16(&pc);
+    uint16_t values_out_idx = marmot_bc_read_u16(&pc);
+    uint16_t indices_out_idx = marmot_bc_read_u16(&pc);
+    int32_t axis = (int32_t)marmot_bc_read_u32(&pc);
+    uint32_t k = marmot_bc_read_u32(&pc);
+    marmot_kernel_args_topk_t args = {
+        .ctx = ctx,
+        .input = marmot_bc_reg(regs, input_idx),
+        .values_out = marmot_bc_reg(regs, values_out_idx),
+        .indices_out = marmot_bc_reg(regs, indices_out_idx),
+        .axis = axis,
+        .k = k,
+    };
+{% elif kernel.op == 'moe_experts' %}
+    (void)const_pool;
+    uint16_t hidden_states_idx = marmot_bc_read_u16(&pc);
+    uint16_t gate_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t up_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t down_exps_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_ids_idx = marmot_bc_read_u16(&pc);
+    uint16_t topk_weights_idx = marmot_bc_read_u16(&pc);
+    uint16_t out_idx = marmot_bc_read_u16(&pc);
+    marmot_ffn_type_t ffn_type = (marmot_ffn_type_t)marmot_bc_read_u32(&pc);
+    float weights_scale = marmot_bc_read_f32(&pc);
+    marmot_router_weight_policy_t router_weight_policy = (marmot_router_weight_policy_t)marmot_bc_read_u32(&pc);
+    marmot_kernel_args_moe_experts_t args = {
+        .ctx = ctx,
+        .hidden_states = marmot_bc_reg(regs, hidden_states_idx),
+        .gate_exps = marmot_bc_reg(regs, gate_exps_idx),
+        .up_exps = marmot_bc_reg(regs, up_exps_idx),
+        .down_exps = marmot_bc_reg(regs, down_exps_idx),
+        .topk_ids = marmot_bc_reg(regs, topk_ids_idx),
+        .topk_weights = marmot_bc_reg(regs, topk_weights_idx),
+        .out = marmot_bc_reg(regs, out_idx),
+        .ffn_type = ffn_type,
+        .weights_scale = weights_scale,
+        .router_weight_policy = router_weight_policy,
     };
 {% elif kernel.op == 'layernorm' %}
     (void)const_pool;
@@ -684,6 +726,10 @@ const uint16_t marmot_{{ backend }}_bc_imm_size[MARMOT_{{ backend.upper() }}_BC_
     24,
 {% elif kernel.op == 'softmax' %}
     8,
+{% elif kernel.op == 'topk' %}
+    14,
+{% elif kernel.op == 'moe_experts' %}
+    26,
 {% elif kernel.op == 'layernorm' %}
     14,
 {% elif kernel.op == 'rms_norm' or kernel.op == 'rms_norm_gemma' %}
@@ -747,6 +793,10 @@ const marmot_bc_schema_id_t marmot_{{ backend }}_bc_schema_id[MARMOT_{{ backend.
     MARMOT_BC_SCHEMA_REDUCTION,
 {% elif kernel.op == 'softmax' %}
     MARMOT_BC_SCHEMA_SOFTMAX,
+{% elif kernel.op == 'topk' %}
+    MARMOT_BC_SCHEMA_TOPK,
+{% elif kernel.op == 'moe_experts' %}
+    MARMOT_BC_SCHEMA_MOE_EXPERTS,
 {% elif kernel.op == 'layernorm' %}
     MARMOT_BC_SCHEMA_LAYERNORM,
 {% elif kernel.op == 'rms_norm' or kernel.op == 'rms_norm_gemma' %}

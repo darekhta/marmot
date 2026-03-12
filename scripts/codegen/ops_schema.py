@@ -121,6 +121,37 @@ SCHEMAS: List[OpSchema] = [
         ops={"softmax"},
     ),
 
+    OpSchema(
+        name="topk",
+        args=[
+            ArgField("ctx", "const marmot_context_t *"),
+            ArgField("input", "const marmot_tensor_t *"),
+            ArgField("values_out", "marmot_tensor_t *", is_output=True),
+            ArgField("indices_out", "marmot_tensor_t *", is_output=True),
+            ArgField("axis", "int32_t"),
+            ArgField("k", "uint32_t"),
+        ],
+        ops={"topk"},
+    ),
+
+    OpSchema(
+        name="moe_experts",
+        args=[
+            ArgField("ctx", "const marmot_context_t *"),
+            ArgField("hidden_states", "const marmot_tensor_t *"),
+            ArgField("gate_exps", "const marmot_tensor_t *"),
+            ArgField("up_exps", "const marmot_tensor_t *"),
+            ArgField("down_exps", "const marmot_tensor_t *"),
+            ArgField("topk_ids", "const marmot_tensor_t *"),
+            ArgField("topk_weights", "const marmot_tensor_t *"),
+            ArgField("out", "marmot_tensor_t *", is_output=True),
+            ArgField("ffn_type", "marmot_ffn_type_t"),
+            ArgField("weights_scale", "float"),
+            ArgField("router_weight_policy", "marmot_router_weight_policy_t"),
+        ],
+        ops={"moe_experts"},
+    ),
+
     # Layer normalization
     OpSchema(
         name="layernorm",

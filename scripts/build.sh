@@ -160,7 +160,12 @@ flag_enabled() {
     esac
 }
 
-if flag_enabled "${ENABLE_ACCELERATE:-0}"; then
+accelerate_default=0
+if [[ "$(uname)" == "Darwin" ]]; then
+    accelerate_default=1
+fi
+
+if flag_enabled "${ENABLE_ACCELERATE:-$accelerate_default}"; then
     MESON_OPTS+=("-Denable_apple_accelerate=true")
 else
     MESON_OPTS+=("-Denable_apple_accelerate=false")

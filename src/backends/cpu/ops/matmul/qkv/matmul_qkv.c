@@ -74,6 +74,13 @@ static marmot_error_t cpu_matmul_qkv_run_fallback(
 static marmot_error_t cpu_matmul_qkv_apply_epilogue(
     const void *device_ctx, const marmot_matmul_qkv_desc_t *desc, const cpu_matmul_qkv_dims_t *dims
 );
+static const uint8_t *cpu_matmul_qkv_resolve_quant_weight_bytes(
+    cpu_context_t *cpu_ctx, const marmot_tensor_t *weight, size_t row_bytes, size_t rows
+);
+static marmot_error_t cpu_matmul_qkv_acquire_quant_workspace(
+    cpu_context_t *cpu_ctx, bool use_q8_k_activation, size_t blocks_per_row, cpu_quant_workspace_slot_t **out_slot,
+    marmot_q8_0_block_t **out_activation_blocks_q8_0, marmot_q8_k_block_t **out_activation_blocks_q8_k
+);
 
 // ============================================================================
 // Value load/store helpers
@@ -106,6 +113,60 @@ static inline void cpu_matmul_qkv_store_value(void *data, marmot_dtype_t dtype, 
     default:
         break;
     }
+}
+
+static const uint8_t *cpu_matmul_qkv_resolve_quant_weight_bytes(
+    cpu_context_t *cpu_ctx, const marmot_tensor_t *weight, size_t row_bytes, size_t rows
+) {
+    if (cpu_ctx == nullptr || weight == nullptr || weight->data == nullptr || row_bytes == 0 || rows == 0) {
+        return weight != nullptr ? (const uint8_t *)weight->data : nullptr;
+    }
+    const size_t bytes = row_bytes * rows;
+    const uint8_t *prepacked = cpu_prepacked_weight_lookup(cpu_ctx, weight->data, bytes, row_bytes, rows);
+    if (prepacked != nullptr) {
+        return prepacked;
+    }
+    const uint8_t *pinned = cpu_pinned_weight_cache_lookup(cpu_ctx, weight->data, bytes, row_bytes, rows);
+    if (pinned != nullptr) {
+        return pinned;
+    }
+    return (const uint8_t *)weight->data;
+}
+
+static marmot_error_t cpu_matmul_qkv_acquire_quant_workspace(
+    cpu_context_t *cpu_ctx, bool use_q8_k_activation, size_t blocks_per_row, cpu_quant_workspace_slot_t **out_slot,
+    marmot_q8_0_block_t **out_activation_blocks_q8_0, marmot_q8_k_block_t **out_activation_blocks_q8_k
+) {
+    if (cpu_ctx == nullptr || out_slot == nullptr || out_activation_blocks_q8_0 == nullptr ||
+        out_activation_blocks_q8_k == nullptr) {
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+
+    *out_slot = nullptr;
+    *out_activation_blocks_q8_0 = nullptr;
+    *out_activation_blocks_q8_k = nullptr;
+
+    cpu_quant_workspace_slot_t *slot = cpu_quant_workspace_acquire(cpu_ctx);
+    if (slot == nullptr) {
+        marmot_set_error(MARMOT_ERROR_OUT_OF_MEMORY, "Failed to acquire QKV quant workspace");
+        return MARMOT_ERROR_OUT_OF_MEMORY;
+    }
+
+    const size_t activation_blocks_bytes =
+        blocks_per_row * (use_q8_k_activation ? sizeof(marmot_q8_k_block_t) : sizeof(marmot_q8_0_block_t));
+    if (!cpu_quant_workspace_ensure_buffers(slot, activation_blocks_bytes, 0)) {
+        cpu_quant_workspace_release(slot);
+        marmot_set_error(MARMOT_ERROR_OUT_OF_MEMORY, "Failed to grow QKV quant workspace");
+        return MARMOT_ERROR_OUT_OF_MEMORY;
+    }
+
+    *out_slot = slot;
+    if (use_q8_k_activation) {
+        *out_activation_blocks_q8_k = (marmot_q8_k_block_t *)slot->activation_blocks;
+    } else {
+        *out_activation_blocks_q8_0 = (marmot_q8_0_block_t *)slot->activation_blocks;
+    }
+    return MARMOT_SUCCESS;
 }
 
 // ============================================================================
@@ -730,6 +791,7 @@ static marmot_error_t cpu_matmul_qkv_run_separate_quantized_impl(
         return MARMOT_ERROR_UNSUPPORTED_DTYPE;
     }
 
+    cpu_context_t *cpu_ctx = (cpu_context_t *)device_ctx;
     const cpu_quant_format_info_t *format = kernel->format;
     if (format == nullptr || format->kind != wq->quant_kind) {
         format = cpu_quant_format_info(wq->quant_kind);
@@ -740,9 +802,9 @@ static marmot_error_t cpu_matmul_qkv_run_separate_quantized_impl(
     const bool use_q8_k_activation = format->activation_packer == MARMOT_MATMUL_ACTIVATION_PACKER_Q8_K;
     const size_t blocks_per_row = (K + format->block_values - 1) / format->block_values;
     const size_t row_bytes = format->block_bytes * blocks_per_row;
-    const uint8_t *wq_bytes = (const uint8_t *)wq->data;
-    const uint8_t *wk_bytes = (const uint8_t *)wk->data;
-    const uint8_t *wv_bytes = (const uint8_t *)wv->data;
+    const uint8_t *wq_bytes = cpu_matmul_qkv_resolve_quant_weight_bytes(cpu_ctx, wq, row_bytes, M);
+    const uint8_t *wk_bytes = cpu_matmul_qkv_resolve_quant_weight_bytes(cpu_ctx, wk, row_bytes, M);
+    const uint8_t *wv_bytes = cpu_matmul_qkv_resolve_quant_weight_bytes(cpu_ctx, wv, row_bytes, M);
 
     cpu_matmul_qkv_rope_state_t rope_state = {0};
     const marmot_rope_params_t *rope = desc->rope_params;
@@ -793,20 +855,14 @@ static marmot_error_t cpu_matmul_qkv_run_separate_quantized_impl(
         biases[2] != nullptr ? biases[2]->dtype : dtype,
     };
 
+    cpu_quant_workspace_slot_t *workspace = nullptr;
     marmot_q8_0_block_t *activation_blocks_q8_0 = nullptr;
     marmot_q8_k_block_t *activation_blocks_q8_k = nullptr;
-    if (use_q8_k_activation) {
-        activation_blocks_q8_k = (marmot_q8_k_block_t *)malloc(sizeof(marmot_q8_k_block_t) * blocks_per_row);
-        if (activation_blocks_q8_k == nullptr) {
-            status = MARMOT_ERROR_OUT_OF_MEMORY;
-            goto quant_cleanup;
-        }
-    } else {
-        activation_blocks_q8_0 = (marmot_q8_0_block_t *)malloc(sizeof(marmot_q8_0_block_t) * blocks_per_row);
-        if (activation_blocks_q8_0 == nullptr) {
-            status = MARMOT_ERROR_OUT_OF_MEMORY;
-            goto quant_cleanup;
-        }
+    status = cpu_matmul_qkv_acquire_quant_workspace(
+        cpu_ctx, use_q8_k_activation, blocks_per_row, &workspace, &activation_blocks_q8_0, &activation_blocks_q8_k
+    );
+    if (status != MARMOT_SUCCESS) {
+        goto quant_cleanup;
     }
 
     cpu_matmul_quant_pack_fp32_fn pack_f32_default =
@@ -879,8 +935,7 @@ static marmot_error_t cpu_matmul_qkv_run_separate_quantized_impl(
     }
 
 quant_cleanup:
-    free(activation_blocks_q8_k);
-    free(activation_blocks_q8_0);
+    cpu_quant_workspace_release(workspace);
     cpu_matmul_qkv_row_buffer_cleanup(&v_buf);
     cpu_matmul_qkv_row_buffer_cleanup(&k_buf);
     cpu_matmul_qkv_row_buffer_cleanup(&q_buf);

@@ -1,5 +1,6 @@
 // Test quantized matmul: Q4_0 weights × FP32 activations
 #include "marmot/device.h"
+#include "marmot/ops/matmul.h"
 #include "marmot/ops/unary.h"
 #include "marmot/quant_block.h"
 
@@ -15,6 +16,58 @@
 #include "backend/test_backend_utils.h"
 #include "matmul_quantized_golden_cases.h"
 #include "utils/dtype_ref.h"
+
+#if MARMOT_TEST_HAS_CPU_INTERNALS
+#include "backends/cpu/cpu_backend_internal.h"
+#include "backends/cpu/ops/matmul/quantized/matmul_quant_internal.h"
+#include "backends/cpu/ops/matmul/quantized/matmul_quant_kernels.h"
+
+static void invalidate_pinned_weight_cache_range(cpu_context_t *cpu_ctx, const void *start, size_t length) {
+    assert_non_null(cpu_ctx);
+    assert_non_null(start);
+    assert_true(length != 0);
+
+    const uint8_t *begin = (const uint8_t *)start;
+    const uint8_t *end = begin + length;
+    cpu_packed_weight_cache_t *cache = &cpu_ctx->pinned_weight_cache;
+    pthread_mutex_lock(&cache->mutex);
+    for (size_t i = 0; i < CPU_PACKED_WEIGHT_CACHE_SLOTS; ++i) {
+        cpu_packed_weight_cache_entry_t *entry = &cache->entries[i];
+        if (!entry->valid || entry->src == nullptr) {
+            continue;
+        }
+        const uint8_t *entry_begin = (const uint8_t *)entry->src;
+        const uint8_t *entry_end = entry_begin + entry->bytes;
+        if (end <= entry_begin || begin >= entry_end) {
+            continue;
+        }
+        free(entry->packed);
+        memset(entry, 0, sizeof(*entry));
+    }
+    pthread_mutex_unlock(&cache->mutex);
+}
+
+static bool prepacked_store_has_entry(
+    cpu_context_t *cpu_ctx, const void *src, size_t rows, size_t row_bytes, cpu_packed_weight_layout_t layout
+) {
+    assert_non_null(cpu_ctx);
+    cpu_prepacked_weight_store_t *store = &cpu_ctx->prepacked_weight_store;
+    bool found = false;
+    pthread_mutex_lock(&store->mutex);
+    for (size_t i = 0; i < store->count; ++i) {
+        const cpu_packed_weight_cache_entry_t *entry = &store->entries[i];
+        if (!entry->valid) {
+            continue;
+        }
+        if (entry->src == src && entry->rows == rows && entry->row_bytes == row_bytes && entry->layout == layout) {
+            found = true;
+            break;
+        }
+    }
+    pthread_mutex_unlock(&store->mutex);
+    return found;
+}
+#endif
 
 static void matmul_quantized_expect_relu(float *data, size_t rows, size_t cols, const float *bias) {
     for (size_t r = 0; r < rows; ++r) {
@@ -144,6 +197,896 @@ static void test_matmul_llama_goldens(void **state) {
     }
 #endif
     matmul_llama_goldens_suite(env);
+}
+
+static void test_cpu_dual_quant_matmul_matches_individual(void **state) {
+#if !MARMOT_TEST_HAS_CPU_INTERNALS
+    (void)state;
+    skip();
+#else
+    marmot_test_env_t *env = (marmot_test_env_t *)(*state);
+    marmot_context_t *ctx = env->ctx;
+    bool destroy_ctx = false;
+    if (env->backend != MARMOT_BACKEND_CPU) {
+        ctx = marmot_init(MARMOT_BACKEND_CPU);
+        assert_non_null(ctx);
+        destroy_ctx = true;
+    }
+
+    enum {
+        N = 3,
+        K = 256,
+        M = 5,
+    };
+    float *input_data = (float *)malloc(N * K * sizeof(float));
+    float *gate_data = (float *)malloc(M * K * sizeof(float));
+    float *up_data = (float *)malloc(M * K * sizeof(float));
+    assert_non_null(input_data);
+    assert_non_null(gate_data);
+    assert_non_null(up_data);
+
+    for (size_t i = 0; i < (size_t)N * K; ++i) {
+        input_data[i] = ((float)((int)(i % 29) - 14)) * 0.03125f;
+    }
+    for (size_t i = 0; i < (size_t)M * K; ++i) {
+        gate_data[i] = ((float)((int)((i * 7 + 3) % 41) - 20)) * 0.021f;
+        up_data[i] = ((float)((int)((i * 11 + 5) % 37) - 18)) * 0.017f;
+    }
+
+    const size_t input_shape[] = {N, K};
+    const size_t weight_shape[] = {M, K};
+    const size_t out_shape[] = {N, M};
+
+    marmot_tensor_t *input = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, input_shape, 2, input_data
+    );
+    marmot_tensor_t *gate_src = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, weight_shape, 2, gate_data
+    );
+    marmot_tensor_t *up_src = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, weight_shape, 2, up_data
+    );
+    marmot_tensor_t *gate_q = marmot_tensor_create_quantized(ctx, weight_shape, 2, MARMOT_QUANT_KIND_Q4_K);
+    marmot_tensor_t *up_q = marmot_tensor_create_quantized(ctx, weight_shape, 2, MARMOT_QUANT_KIND_Q4_K);
+    marmot_tensor_t *gate_ref = marmot_tensor_create(ctx, out_shape, 2, MARMOT_DTYPE_FLOAT32);
+    marmot_tensor_t *up_ref = marmot_tensor_create(ctx, out_shape, 2, MARMOT_DTYPE_FLOAT32);
+    marmot_tensor_t *gate_dual = marmot_tensor_create(ctx, out_shape, 2, MARMOT_DTYPE_FLOAT32);
+    marmot_tensor_t *up_dual = marmot_tensor_create(ctx, out_shape, 2, MARMOT_DTYPE_FLOAT32);
+    assert_non_null(gate_q);
+    assert_non_null(up_q);
+    assert_non_null(gate_ref);
+    assert_non_null(up_ref);
+    assert_non_null(gate_dual);
+    assert_non_null(up_dual);
+
+    assert_int_equal(marmot_quantize_q4_k(ctx, gate_src, gate_q), MARMOT_SUCCESS);
+    assert_int_equal(marmot_quantize_q4_k(ctx, up_src, up_q), MARMOT_SUCCESS);
+    assert_int_equal(marmot_linear(ctx, input, gate_q, nullptr, gate_ref), MARMOT_SUCCESS);
+    assert_int_equal(marmot_linear(ctx, input, up_q, nullptr, up_ref), MARMOT_SUCCESS);
+    assert_int_equal(
+        cpu_matmul_quantized_dual_output(ctx->device_ctx, input, gate_q, up_q, gate_dual, up_dual), MARMOT_SUCCESS
+    );
+
+    float gate_ref_data[N * M];
+    float up_ref_data[N * M];
+    float gate_dual_data[N * M];
+    float up_dual_data[N * M];
+    marmot_test_fetch_f32_span(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, gate_ref_data, gate_ref, N * M
+    );
+    marmot_test_fetch_f32_span(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, up_ref_data, up_ref, N * M
+    );
+    marmot_test_fetch_f32_span(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, gate_dual_data, gate_dual, N * M
+    );
+    marmot_test_fetch_f32_span(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, up_dual_data, up_dual, N * M
+    );
+    marmot_test_expect_close_array(gate_dual_data, gate_ref_data, N * M, 1e-6f);
+    marmot_test_expect_close_array(up_dual_data, up_ref_data, N * M, 1e-6f);
+
+    marmot_test_tensor_destroy_all(8, up_dual, gate_dual, up_ref, gate_ref, up_q, gate_q, up_src, gate_src);
+    marmot_tensor_destroy(input);
+    free(up_data);
+    free(gate_data);
+    free(input_data);
+    if (destroy_ctx) {
+        marmot_destroy(ctx);
+    }
+#endif
+}
+
+static void test_cpu_q4_k_small_batch_matches_generic_path(void **state) {
+#if !MARMOT_TEST_HAS_CPU_INTERNALS
+    (void)state;
+    skip();
+#else
+    marmot_test_env_t *env = (marmot_test_env_t *)(*state);
+    marmot_context_t *ctx = env->ctx;
+    bool destroy_ctx = false;
+    if (env->backend != MARMOT_BACKEND_CPU) {
+        ctx = marmot_init(MARMOT_BACKEND_CPU);
+        assert_non_null(ctx);
+        destroy_ctx = true;
+    }
+
+    enum {
+        N_SMALL = 1,
+        N_GENERIC = 5,
+        K = 2048,
+        M = 97,
+    };
+
+    float *input_small_data = (float *)malloc((size_t)N_SMALL * K * sizeof(float));
+    float *input_generic_data = (float *)malloc((size_t)N_GENERIC * K * sizeof(float));
+    float *weight_data = (float *)malloc((size_t)M * K * sizeof(float));
+    assert_non_null(input_small_data);
+    assert_non_null(input_generic_data);
+    assert_non_null(weight_data);
+
+    for (size_t i = 0; i < (size_t)K; ++i) {
+        input_small_data[i] = ((float)((int)((i * 5 + 7) % 31) - 15)) * 0.0625f;
+    }
+    memcpy(input_generic_data, input_small_data, (size_t)K * sizeof(float));
+    for (size_t row = 1; row < N_GENERIC; ++row) {
+        for (size_t col = 0; col < (size_t)K; ++col) {
+            input_generic_data[row * K + col] = ((float)((int)((row * 13 + col * 3) % 37) - 18)) * 0.041f;
+        }
+    }
+    for (size_t i = 0; i < (size_t)M * K; ++i) {
+        weight_data[i] = ((float)((int)((i * 11 + 17) % 43) - 21)) * 0.019f;
+    }
+
+    const size_t small_shape[] = {N_SMALL, K};
+    const size_t generic_shape[] = {N_GENERIC, K};
+    const size_t weight_shape[] = {M, K};
+    const size_t out_small_shape[] = {N_SMALL, M};
+    const size_t out_generic_shape[] = {N_GENERIC, M};
+
+    marmot_tensor_t *input_small = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, small_shape, 2, input_small_data
+    );
+    marmot_tensor_t *input_generic = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, generic_shape, 2, input_generic_data
+    );
+    marmot_tensor_t *weight_src = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, weight_shape, 2, weight_data
+    );
+    marmot_tensor_t *weight_q = marmot_tensor_create_quantized(ctx, weight_shape, 2, MARMOT_QUANT_KIND_Q4_K);
+    marmot_tensor_t *out_small = marmot_tensor_create(ctx, out_small_shape, 2, MARMOT_DTYPE_FLOAT32);
+    marmot_tensor_t *out_generic = marmot_tensor_create(ctx, out_generic_shape, 2, MARMOT_DTYPE_FLOAT32);
+    assert_non_null(weight_q);
+    assert_non_null(out_small);
+    assert_non_null(out_generic);
+
+    assert_int_equal(marmot_quantize_q4_k(ctx, weight_src, weight_q), MARMOT_SUCCESS);
+    assert_int_equal(marmot_linear(ctx, input_generic, weight_q, nullptr, out_generic), MARMOT_SUCCESS);
+    assert_int_equal(marmot_matmul_prepack_quant_weight(ctx, weight_q), MARMOT_SUCCESS);
+    assert_int_equal(marmot_linear(ctx, input_small, weight_q, nullptr, out_small), MARMOT_SUCCESS);
+
+    float out_small_data[M];
+    float out_generic_data[(size_t)N_GENERIC * M];
+    marmot_test_fetch_f32_span(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, out_small_data, out_small, M
+    );
+    marmot_test_fetch_f32_span(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, out_generic_data, out_generic,
+        (size_t)N_GENERIC * M
+    );
+    marmot_test_expect_close_array(out_small_data, out_generic_data, M, 1e-5f);
+
+    marmot_test_tensor_destroy_all(6, out_generic, out_small, weight_q, weight_src, input_generic, input_small);
+    free(weight_data);
+    free(input_generic_data);
+    free(input_small_data);
+    if (destroy_ctx) {
+        marmot_destroy(ctx);
+    }
+#endif
+}
+
+static void test_cpu_q6_k_small_batch_matches_generic_path(void **state) {
+#if !MARMOT_TEST_HAS_CPU_INTERNALS
+    (void)state;
+    skip();
+#else
+    marmot_test_env_t *env = (marmot_test_env_t *)(*state);
+    marmot_context_t *ctx = env->ctx;
+    bool destroy_ctx = false;
+    if (env->backend != MARMOT_BACKEND_CPU) {
+        ctx = marmot_init(MARMOT_BACKEND_CPU);
+        assert_non_null(ctx);
+        destroy_ctx = true;
+    }
+
+    enum {
+        N_SMALL = 1,
+        N_GENERIC = 5,
+        K = 2048,
+        M = 97,
+    };
+
+    float *input_small_data = (float *)malloc((size_t)N_SMALL * K * sizeof(float));
+    float *input_generic_data = (float *)malloc((size_t)N_GENERIC * K * sizeof(float));
+    float *weight_data = (float *)malloc((size_t)M * K * sizeof(float));
+    assert_non_null(input_small_data);
+    assert_non_null(input_generic_data);
+    assert_non_null(weight_data);
+
+    for (size_t i = 0; i < (size_t)K; ++i) {
+        input_small_data[i] = ((float)((int)((i * 5 + 7) % 31) - 15)) * 0.0625f;
+    }
+    memcpy(input_generic_data, input_small_data, (size_t)K * sizeof(float));
+    for (size_t row = 1; row < N_GENERIC; ++row) {
+        for (size_t col = 0; col < (size_t)K; ++col) {
+            input_generic_data[row * K + col] = ((float)((int)((row * 13 + col * 3) % 37) - 18)) * 0.041f;
+        }
+    }
+    for (size_t i = 0; i < (size_t)M * K; ++i) {
+        weight_data[i] = ((float)((int)((i * 11 + 17) % 43) - 21)) * 0.019f;
+    }
+
+    const size_t small_shape[] = {N_SMALL, K};
+    const size_t generic_shape[] = {N_GENERIC, K};
+    const size_t weight_shape[] = {M, K};
+    const size_t out_small_shape[] = {N_SMALL, M};
+    const size_t out_generic_shape[] = {N_GENERIC, M};
+
+    marmot_tensor_t *input_small = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, small_shape, 2, input_small_data
+    );
+    marmot_tensor_t *input_generic = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, generic_shape, 2, input_generic_data
+    );
+    marmot_tensor_t *weight_src = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, weight_shape, 2, weight_data
+    );
+    marmot_tensor_t *weight_q = marmot_tensor_create_quantized(ctx, weight_shape, 2, MARMOT_QUANT_KIND_Q6_K);
+    marmot_tensor_t *out_small = marmot_tensor_create(ctx, out_small_shape, 2, MARMOT_DTYPE_FLOAT32);
+    marmot_tensor_t *out_generic = marmot_tensor_create(ctx, out_generic_shape, 2, MARMOT_DTYPE_FLOAT32);
+    assert_non_null(weight_q);
+    assert_non_null(out_small);
+    assert_non_null(out_generic);
+
+    assert_int_equal(marmot_quantize_q6_k(ctx, weight_src, weight_q), MARMOT_SUCCESS);
+    assert_int_equal(marmot_linear(ctx, input_generic, weight_q, nullptr, out_generic), MARMOT_SUCCESS);
+    assert_int_equal(marmot_matmul_prepack_quant_weight(ctx, weight_q), MARMOT_SUCCESS);
+    assert_int_equal(marmot_linear(ctx, input_small, weight_q, nullptr, out_small), MARMOT_SUCCESS);
+
+    float out_small_data[M];
+    float out_generic_data[(size_t)N_GENERIC * M];
+    marmot_test_fetch_f32_span(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, out_small_data, out_small, M
+    );
+    marmot_test_fetch_f32_span(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, out_generic_data, out_generic,
+        (size_t)N_GENERIC * M
+    );
+    marmot_test_expect_close_array(out_small_data, out_generic_data, M, 1e-5f);
+
+    marmot_test_tensor_destroy_all(6, out_generic, out_small, weight_q, weight_src, input_generic, input_small);
+    free(weight_data);
+    free(input_generic_data);
+    free(input_small_data);
+    if (destroy_ctx) {
+        marmot_destroy(ctx);
+    }
+#endif
+}
+
+static void test_cpu_q6_k_prepacked_large_n1_matches_generic_path(void **state) {
+#if !MARMOT_TEST_HAS_CPU_INTERNALS
+    (void)state;
+    skip();
+#else
+    marmot_test_env_t *env = (marmot_test_env_t *)(*state);
+    marmot_context_t *ctx = env->ctx;
+    bool destroy_ctx = false;
+    if (env->backend != MARMOT_BACKEND_CPU) {
+        ctx = marmot_init(MARMOT_BACKEND_CPU);
+        assert_non_null(ctx);
+        destroy_ctx = true;
+    }
+
+    enum {
+        N_SMALL = 1,
+        N_GENERIC = 5,
+        K = 256,
+        M = 8192,
+    };
+
+    float *input_small_data = (float *)malloc((size_t)N_SMALL * K * sizeof(float));
+    float *input_generic_data = (float *)malloc((size_t)N_GENERIC * K * sizeof(float));
+    float *weight_data = (float *)malloc((size_t)M * K * sizeof(float));
+    float *out_generic_data = (float *)malloc((size_t)N_GENERIC * M * sizeof(float));
+    float *out_small_data = (float *)malloc((size_t)N_SMALL * M * sizeof(float));
+    assert_non_null(input_small_data);
+    assert_non_null(input_generic_data);
+    assert_non_null(weight_data);
+    assert_non_null(out_generic_data);
+    assert_non_null(out_small_data);
+
+    for (size_t i = 0; i < (size_t)K; ++i) {
+        input_small_data[i] = ((float)((int)((i * 7 + 5) % 41) - 20)) * 0.046875f;
+    }
+    memcpy(input_generic_data, input_small_data, (size_t)K * sizeof(float));
+    for (size_t row = 1; row < N_GENERIC; ++row) {
+        for (size_t col = 0; col < (size_t)K; ++col) {
+            input_generic_data[row * K + col] = ((float)((int)((row * 17 + col * 9) % 53) - 26)) * 0.03125f;
+        }
+    }
+    for (size_t i = 0; i < (size_t)M * K; ++i) {
+        weight_data[i] = ((float)((int)((i * 13 + 23) % 61) - 30)) * 0.015625f;
+    }
+
+    const size_t small_shape[] = {N_SMALL, K};
+    const size_t generic_shape[] = {N_GENERIC, K};
+    const size_t weight_shape[] = {M, K};
+    const size_t out_small_shape[] = {N_SMALL, M};
+    const size_t out_generic_shape[] = {N_GENERIC, M};
+
+    marmot_tensor_t *input_small = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, small_shape, 2, input_small_data
+    );
+    marmot_tensor_t *input_generic = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, generic_shape, 2, input_generic_data
+    );
+    marmot_tensor_t *weight_src = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, weight_shape, 2, weight_data
+    );
+    marmot_tensor_t *weight_q = marmot_tensor_create_quantized(ctx, weight_shape, 2, MARMOT_QUANT_KIND_Q6_K);
+    marmot_tensor_t *out_small = marmot_tensor_create(ctx, out_small_shape, 2, MARMOT_DTYPE_FLOAT32);
+    marmot_tensor_t *out_generic = marmot_tensor_create(ctx, out_generic_shape, 2, MARMOT_DTYPE_FLOAT32);
+    assert_non_null(weight_q);
+    assert_non_null(out_small);
+    assert_non_null(out_generic);
+
+    assert_int_equal(marmot_quantize_q6_k(ctx, weight_src, weight_q), MARMOT_SUCCESS);
+    assert_int_equal(marmot_linear(ctx, input_generic, weight_q, nullptr, out_generic), MARMOT_SUCCESS);
+    assert_int_equal(marmot_matmul_prepack_quant_weight(ctx, weight_q), MARMOT_SUCCESS);
+    assert_int_equal(marmot_linear(ctx, input_small, weight_q, nullptr, out_small), MARMOT_SUCCESS);
+
+    marmot_test_fetch_f32_span(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, out_small_data, out_small, (size_t)N_SMALL * M
+    );
+    marmot_test_fetch_f32_span(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, out_generic_data, out_generic,
+        (size_t)N_GENERIC * M
+    );
+    marmot_test_expect_close_array(out_small_data, out_generic_data, (size_t)N_SMALL * M, 1e-4f);
+
+    marmot_test_tensor_destroy_all(6, out_generic, out_small, weight_q, weight_src, input_generic, input_small);
+    free(out_small_data);
+    free(out_generic_data);
+    free(weight_data);
+    free(input_generic_data);
+    free(input_small_data);
+    if (destroy_ctx) {
+        marmot_destroy(ctx);
+    }
+#endif
+}
+
+static void test_cpu_q6_k_dotprod_kernel_registers_2row_vecdot(void **state) {
+#if !MARMOT_TEST_HAS_CPU_INTERNALS
+    (void)state;
+    skip();
+#else
+    marmot_test_env_t *env = (marmot_test_env_t *)(*state);
+    marmot_context_t *ctx = env->ctx;
+    bool destroy_ctx = false;
+    if (env->backend != MARMOT_BACKEND_CPU) {
+        ctx = marmot_init(MARMOT_BACKEND_CPU);
+        assert_non_null(ctx);
+        destroy_ctx = true;
+    }
+
+    const cpu_matmul_quant_kernel_t *kernel = cpu_matmul_quant_select_kernel(ctx->device_ctx, MARMOT_QUANT_KIND_Q6_K);
+    assert_non_null(kernel);
+#if MARMOT_ENABLE_NEON && defined(__aarch64__) && defined(__ARM_FEATURE_DOTPROD)
+    assert_non_null(kernel->ops.dot_q8_k);
+    assert_non_null(kernel->ops.dot_q8_k_2rows);
+#else
+    (void)kernel;
+#endif
+
+    if (destroy_ctx) {
+        marmot_destroy(ctx);
+    }
+#endif
+}
+
+static void test_cpu_prepacked_quant_weight_pins_raw_cache_entry(void **state) {
+#if !MARMOT_TEST_HAS_CPU_INTERNALS
+    (void)state;
+    skip();
+#else
+    marmot_test_env_t *env = (marmot_test_env_t *)(*state);
+    marmot_context_t *ctx = env->ctx;
+    bool destroy_ctx = false;
+    if (env->backend != MARMOT_BACKEND_CPU) {
+        ctx = marmot_init(MARMOT_BACKEND_CPU);
+        assert_non_null(ctx);
+        destroy_ctx = true;
+    }
+
+    enum {
+        K = 256,
+        M = 8,
+        THRASH_ENTRIES = 160,
+    };
+
+    float weight_data[(size_t)M * K];
+    for (size_t i = 0; i < (size_t)M * K; ++i) {
+        weight_data[i] = ((float)((int)((i * 7 + 19) % 41) - 20)) * 0.03125f;
+    }
+
+    const size_t weight_shape[] = {M, K};
+    marmot_tensor_t *weight_src = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, weight_shape, 2, weight_data
+    );
+    marmot_tensor_t *weight_q = marmot_tensor_create_quantized(ctx, weight_shape, 2, MARMOT_QUANT_KIND_Q6_K);
+    assert_non_null(weight_src);
+    assert_non_null(weight_q);
+    assert_int_equal(marmot_quantize_q6_k(ctx, weight_src, weight_q), MARMOT_SUCCESS);
+    assert_int_equal(marmot_matmul_prepack_quant_weight(ctx, weight_q), MARMOT_SUCCESS);
+
+    const size_t rows = weight_q->shape.shape[0];
+    const size_t bytes = marmot_tensor_quant_storage_bytes(weight_q);
+    const size_t row_bytes = bytes / rows;
+    cpu_context_t *cpu_ctx = (cpu_context_t *)ctx->device_ctx;
+    const uint8_t *pinned = cpu_pinned_weight_cache_lookup(cpu_ctx, weight_q->data, bytes, row_bytes, rows);
+    const uint8_t *prepacked = cpu_prepacked_weight_lookup(cpu_ctx, weight_q->data, bytes, row_bytes, rows);
+    assert_non_null(pinned);
+    assert_non_null(prepacked);
+
+    uint8_t **thrash = (uint8_t **)calloc(THRASH_ENTRIES, sizeof(*thrash));
+    assert_non_null(thrash);
+    for (size_t i = 0; i < THRASH_ENTRIES; ++i) {
+        thrash[i] = (uint8_t *)marmot_aligned_alloc(64, bytes);
+        assert_non_null(thrash[i]);
+        memset(thrash[i], (int)(i & 0xFF), bytes);
+        assert_non_null(cpu_packed_weight_cache_get(cpu_ctx, thrash[i], bytes, row_bytes, rows));
+    }
+
+    const uint8_t *pinned_after = cpu_pinned_weight_cache_lookup(cpu_ctx, weight_q->data, bytes, row_bytes, rows);
+    const uint8_t *prepacked_after = cpu_prepacked_weight_lookup(cpu_ctx, weight_q->data, bytes, row_bytes, rows);
+    assert_ptr_equal(pinned_after, pinned);
+    assert_ptr_equal(prepacked_after, prepacked);
+
+    for (size_t i = 0; i < THRASH_ENTRIES; ++i) {
+        free(thrash[i]);
+    }
+    free(thrash);
+    marmot_test_tensor_destroy_all(2, weight_q, weight_src);
+    if (destroy_ctx) {
+        marmot_destroy(ctx);
+    }
+#endif
+}
+
+static void test_cpu_q6_k_prepacked_large_n1_uses_decoded_row_panel(void **state) {
+#if !MARMOT_TEST_HAS_CPU_INTERNALS
+    (void)state;
+    skip();
+#else
+    marmot_test_env_t *env = (marmot_test_env_t *)(*state);
+    marmot_context_t *ctx = env->ctx;
+    bool destroy_ctx = false;
+    if (env->backend != MARMOT_BACKEND_CPU) {
+        ctx = marmot_init(MARMOT_BACKEND_CPU);
+        assert_non_null(ctx);
+        destroy_ctx = true;
+    }
+
+    enum {
+        K = 256,
+        M = 8192,
+    };
+
+    float *weight_data = (float *)malloc((size_t)M * K * sizeof(float));
+    assert_non_null(weight_data);
+    for (size_t i = 0; i < (size_t)M * K; ++i) {
+        weight_data[i] = ((float)((int)((i * 13 + 29) % 59) - 29)) * 0.015625f;
+    }
+
+    const size_t weight_shape[] = {M, K};
+    marmot_tensor_t *weight_src = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, weight_shape, 2, weight_data
+    );
+    marmot_tensor_t *weight_q = marmot_tensor_create_quantized(ctx, weight_shape, 2, MARMOT_QUANT_KIND_Q6_K);
+    assert_non_null(weight_src);
+    assert_non_null(weight_q);
+    assert_int_equal(marmot_quantize_q6_k(ctx, weight_src, weight_q), MARMOT_SUCCESS);
+    assert_int_equal(marmot_matmul_prepack_quant_weight(ctx, weight_q), MARMOT_SUCCESS);
+
+    const marmot_quant_kind_traits_t *traits = marmot_get_quant_kind_traits(weight_q->quant_kind);
+    assert_non_null(traits);
+    const size_t blocks_per_row = ((size_t)K + traits->block_values - 1) / traits->block_values;
+    const size_t row_bytes = blocks_per_row * (traits->header_bytes + traits->payload_bytes);
+
+    cpu_context_t *cpu_ctx = (cpu_context_t *)ctx->device_ctx;
+    assert_true(prepacked_store_has_entry(
+        cpu_ctx, weight_q->data, (size_t)M, row_bytes, CPU_PACKED_WEIGHT_LAYOUT_Q6_K_ROW_PANEL_DECODED
+    ));
+
+    marmot_test_tensor_destroy_all(2, weight_q, weight_src);
+    free(weight_data);
+    if (destroy_ctx) {
+        marmot_destroy(ctx);
+    }
+#endif
+}
+
+static void test_cpu_q6_k_output_projection_hint_n4_matches_generic_path(void **state) {
+#if !MARMOT_TEST_HAS_CPU_INTERNALS
+    (void)state;
+    skip();
+#else
+    marmot_test_env_t *env = (marmot_test_env_t *)(*state);
+    marmot_context_t *ctx = env->ctx;
+    bool destroy_ctx = false;
+    if (env->backend != MARMOT_BACKEND_CPU) {
+        ctx = marmot_init(MARMOT_BACKEND_CPU);
+        assert_non_null(ctx);
+        destroy_ctx = true;
+    }
+
+    enum {
+        N = 4,
+        K = 256,
+        M = 32768,
+    };
+
+    float *input_data = (float *)malloc((size_t)N * K * sizeof(float));
+    float *weight_data = (float *)malloc((size_t)M * K * sizeof(float));
+    float *out_generic_data = (float *)malloc((size_t)N * M * sizeof(float));
+    float *out_hint_data = (float *)malloc((size_t)N * M * sizeof(float));
+    assert_non_null(input_data);
+    assert_non_null(weight_data);
+    assert_non_null(out_generic_data);
+    assert_non_null(out_hint_data);
+
+    for (size_t i = 0; i < (size_t)N * K; ++i) {
+        input_data[i] = ((float)((int)((i * 5 + 7) % 31) - 15)) * 0.0625f;
+    }
+    for (size_t i = 0; i < (size_t)M * K; ++i) {
+        weight_data[i] = ((float)((int)((i * 13 + 29) % 59) - 29)) * 0.015625f;
+    }
+
+    const size_t input_shape[] = {N, K};
+    const size_t weight_shape[] = {M, K};
+    const size_t output_shape[] = {N, M};
+    marmot_tensor_t *input = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, input_shape, 2, input_data
+    );
+    marmot_tensor_t *weight_src = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, weight_shape, 2, weight_data
+    );
+    marmot_tensor_t *weight_q = marmot_tensor_create_quantized(ctx, weight_shape, 2, MARMOT_QUANT_KIND_Q6_K);
+    marmot_tensor_t *out_generic = marmot_tensor_create(ctx, output_shape, 2, MARMOT_DTYPE_FLOAT32);
+    marmot_tensor_t *out_hint = marmot_tensor_create(ctx, output_shape, 2, MARMOT_DTYPE_FLOAT32);
+    assert_non_null(weight_q);
+    assert_non_null(out_generic);
+    assert_non_null(out_hint);
+
+    assert_int_equal(marmot_quantize_q6_k(ctx, weight_src, weight_q), MARMOT_SUCCESS);
+    assert_int_equal(marmot_linear(ctx, input, weight_q, nullptr, out_generic), MARMOT_SUCCESS);
+    assert_int_equal(
+        cpu_matmul_quantized_with_hints(
+            ctx->device_ctx, input, weight_q, nullptr, out_hint, CPU_QUANT_MATMUL_HINT_OUTPUT_PROJECTION
+        ),
+        MARMOT_SUCCESS
+    );
+
+    marmot_test_fetch_f32_span(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, out_generic_data, out_generic, (size_t)N * M
+    );
+    marmot_test_fetch_f32_span(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, out_hint_data, out_hint, (size_t)N * M
+    );
+    marmot_test_expect_close_array(out_hint_data, out_generic_data, (size_t)N * M, 1e-4f);
+
+    const marmot_quant_kind_traits_t *traits = marmot_get_quant_kind_traits(weight_q->quant_kind);
+    assert_non_null(traits);
+    const size_t blocks_per_row = ((size_t)K + traits->block_values - 1) / traits->block_values;
+    const size_t row_bytes = blocks_per_row * (traits->header_bytes + traits->payload_bytes);
+
+    cpu_context_t *cpu_ctx = (cpu_context_t *)ctx->device_ctx;
+    bool found_decoded = false;
+    cpu_packed_weight_cache_t *cache = &cpu_ctx->packed_weight_cache;
+    pthread_mutex_lock(&cache->mutex);
+    for (size_t i = 0; i < CPU_PACKED_WEIGHT_CACHE_SLOTS; ++i) {
+        const cpu_packed_weight_cache_entry_t *entry = &cache->entries[i];
+        if (!entry->valid) {
+            continue;
+        }
+        if (entry->src == weight_q->data && entry->rows == (size_t)M && entry->row_bytes == row_bytes &&
+            entry->layout == CPU_PACKED_WEIGHT_LAYOUT_Q6_K_ROW_PANEL_DECODED) {
+            found_decoded = true;
+            break;
+        }
+    }
+    pthread_mutex_unlock(&cache->mutex);
+    assert_true(found_decoded);
+
+    marmot_test_tensor_destroy_all(5, out_hint, out_generic, weight_q, weight_src, input);
+    free(out_hint_data);
+    free(out_generic_data);
+    free(weight_data);
+    free(input_data);
+    if (destroy_ctx) {
+        marmot_destroy(ctx);
+    }
+#endif
+}
+
+static void test_cpu_q4_k_prepacked_n8_matches_generic_path(void **state) {
+#if !MARMOT_TEST_HAS_CPU_INTERNALS
+    (void)state;
+    skip();
+#else
+    marmot_test_env_t *env = (marmot_test_env_t *)(*state);
+    marmot_context_t *ctx = env->ctx;
+    bool destroy_ctx = false;
+    if (env->backend != MARMOT_BACKEND_CPU) {
+        ctx = marmot_init(MARMOT_BACKEND_CPU);
+        assert_non_null(ctx);
+        destroy_ctx = true;
+    }
+
+    enum {
+        N_SMALL = 8,
+        N_GENERIC = 9,
+        K = 2048,
+        M = 97,
+    };
+
+    float *input_small_data = (float *)malloc((size_t)N_SMALL * K * sizeof(float));
+    float *input_generic_data = (float *)malloc((size_t)N_GENERIC * K * sizeof(float));
+    float *weight_data = (float *)malloc((size_t)M * K * sizeof(float));
+    assert_non_null(input_small_data);
+    assert_non_null(input_generic_data);
+    assert_non_null(weight_data);
+
+    for (size_t row = 0; row < N_SMALL; ++row) {
+        for (size_t col = 0; col < (size_t)K; ++col) {
+            input_small_data[row * K + col] = ((float)((int)((row * 17 + col * 5 + 3) % 53) - 26)) * 0.03125f;
+        }
+    }
+    memcpy(input_generic_data, input_small_data, (size_t)N_SMALL * K * sizeof(float));
+    for (size_t col = 0; col < (size_t)K; ++col) {
+        input_generic_data[(size_t)N_SMALL * K + col] = ((float)((int)((col * 7 + 11) % 41) - 20)) * 0.0275f;
+    }
+    for (size_t i = 0; i < (size_t)M * K; ++i) {
+        weight_data[i] = ((float)((int)((i * 13 + 19) % 47) - 23)) * 0.017f;
+    }
+
+    const size_t small_shape[] = {N_SMALL, K};
+    const size_t generic_shape[] = {N_GENERIC, K};
+    const size_t weight_shape[] = {M, K};
+    const size_t out_small_shape[] = {N_SMALL, M};
+    const size_t out_generic_shape[] = {N_GENERIC, M};
+
+    marmot_tensor_t *input_small = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, small_shape, 2, input_small_data
+    );
+    marmot_tensor_t *input_generic = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, generic_shape, 2, input_generic_data
+    );
+    marmot_tensor_t *weight_src = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, weight_shape, 2, weight_data
+    );
+    marmot_tensor_t *weight_q = marmot_tensor_create_quantized(ctx, weight_shape, 2, MARMOT_QUANT_KIND_Q4_K);
+    marmot_tensor_t *out_small = marmot_tensor_create(ctx, out_small_shape, 2, MARMOT_DTYPE_FLOAT32);
+    marmot_tensor_t *out_generic = marmot_tensor_create(ctx, out_generic_shape, 2, MARMOT_DTYPE_FLOAT32);
+    assert_non_null(weight_q);
+    assert_non_null(out_small);
+    assert_non_null(out_generic);
+
+    assert_int_equal(marmot_quantize_q4_k(ctx, weight_src, weight_q), MARMOT_SUCCESS);
+    assert_int_equal(marmot_linear(ctx, input_generic, weight_q, nullptr, out_generic), MARMOT_SUCCESS);
+    assert_int_equal(marmot_matmul_prepack_quant_weight(ctx, weight_q), MARMOT_SUCCESS);
+    assert_int_equal(marmot_linear(ctx, input_small, weight_q, nullptr, out_small), MARMOT_SUCCESS);
+
+    float out_small_data[(size_t)N_SMALL * M];
+    float out_generic_data[(size_t)N_GENERIC * M];
+    marmot_test_fetch_f32_span(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, out_small_data, out_small, (size_t)N_SMALL * M
+    );
+    marmot_test_fetch_f32_span(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, out_generic_data, out_generic,
+        (size_t)N_GENERIC * M
+    );
+    marmot_test_expect_close_array(out_small_data, out_generic_data, (size_t)N_SMALL * M, 1e-5f);
+
+    marmot_test_tensor_destroy_all(6, out_generic, out_small, weight_q, weight_src, input_generic, input_small);
+    free(weight_data);
+    free(input_generic_data);
+    free(input_small_data);
+    if (destroy_ctx) {
+        marmot_destroy(ctx);
+    }
+#endif
+}
+
+static void test_cpu_q4_k_prepacked_bank_reuses_slice_range(void **state) {
+#if !MARMOT_TEST_HAS_CPU_INTERNALS
+    (void)state;
+    skip();
+#else
+    marmot_test_env_t *env = (marmot_test_env_t *)(*state);
+    marmot_context_t *ctx = env->ctx;
+    bool destroy_ctx = false;
+    if (env->backend != MARMOT_BACKEND_CPU) {
+        ctx = marmot_init(MARMOT_BACKEND_CPU);
+        assert_non_null(ctx);
+        destroy_ctx = true;
+    }
+
+    enum {
+        N = 4,
+        K = 256,
+        ROWS_PER_EXPERT = 16384,
+        EXPERTS = 2,
+        TOTAL_ROWS = ROWS_PER_EXPERT * EXPERTS,
+    };
+
+    float *input_data = (float *)malloc((size_t)N * K * sizeof(float));
+    float *weight_data = (float *)malloc((size_t)TOTAL_ROWS * K * sizeof(float));
+    assert_non_null(input_data);
+    assert_non_null(weight_data);
+
+    for (size_t i = 0; i < (size_t)N * K; ++i) {
+        input_data[i] = ((float)((int)((i * 11 + 5) % 41) - 20)) * 0.03125f;
+    }
+    for (size_t i = 0; i < (size_t)TOTAL_ROWS * K; ++i) {
+        weight_data[i] = ((float)((int)((i * 7 + 13) % 61) - 30)) * 0.015625f;
+    }
+
+    const size_t input_shape[] = {N, K};
+    const size_t weight_shape[] = {TOTAL_ROWS, K};
+    const size_t output_shape[] = {N, ROWS_PER_EXPERT};
+    marmot_tensor_t *input = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, input_shape, 2, input_data
+    );
+    marmot_tensor_t *weight_src = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, weight_shape, 2, weight_data
+    );
+    marmot_tensor_t *weight_q = marmot_tensor_create_quantized(ctx, weight_shape, 2, MARMOT_QUANT_KIND_Q4_K);
+    marmot_tensor_t *out = marmot_tensor_create(ctx, output_shape, 2, MARMOT_DTYPE_FLOAT32);
+    assert_non_null(weight_q);
+    assert_non_null(out);
+
+    assert_int_equal(marmot_quantize_q4_k(ctx, weight_src, weight_q), MARMOT_SUCCESS);
+    assert_int_equal(marmot_matmul_prepack_quant_weight(ctx, weight_q), MARMOT_SUCCESS);
+
+    const marmot_quant_kind_traits_t *traits = marmot_get_quant_kind_traits(weight_q->quant_kind);
+    assert_non_null(traits);
+    const size_t blocks_per_row = ((size_t)K + traits->block_values - 1) / traits->block_values;
+    const size_t row_bytes = blocks_per_row * (traits->header_bytes + traits->payload_bytes);
+    const size_t slice_offset = (size_t)ROWS_PER_EXPERT * row_bytes;
+
+    marmot_tensor_t weight_slice = *weight_q;
+    weight_slice.shape.ndim = 2;
+    weight_slice.shape.shape[0] = ROWS_PER_EXPERT;
+    weight_slice.shape.shape[1] = K;
+    weight_slice.shape.strides[0] = K;
+    weight_slice.shape.strides[1] = 1;
+    weight_slice.data = (uint8_t *)weight_q->data + slice_offset;
+    weight_slice.capacity_bytes = (size_t)ROWS_PER_EXPERT * row_bytes;
+    weight_slice.owns_data = false;
+
+    assert_int_equal(marmot_linear(ctx, input, &weight_slice, nullptr, out), MARMOT_SUCCESS);
+
+    cpu_context_t *cpu_ctx = (cpu_context_t *)ctx->device_ctx;
+    assert_true(prepacked_store_has_entry(
+        cpu_ctx, weight_q->data, (size_t)TOTAL_ROWS, row_bytes, CPU_PACKED_WEIGHT_LAYOUT_Q4_K_ROW_PANEL_DECODED
+    ));
+    assert_false(prepacked_store_has_entry(
+        cpu_ctx, weight_slice.data, (size_t)ROWS_PER_EXPERT, row_bytes, CPU_PACKED_WEIGHT_LAYOUT_Q4_K_ROW_PANEL_DECODED
+    ));
+
+    marmot_test_tensor_destroy_all(4, out, weight_q, weight_src, input);
+    free(weight_data);
+    free(input_data);
+    if (destroy_ctx) {
+        marmot_destroy(ctx);
+    }
+#endif
+}
+
+static void test_cpu_q4_k_prepacked_raw_bank_reuses_slice_range(void **state) {
+#if !MARMOT_TEST_HAS_CPU_INTERNALS
+    (void)state;
+    skip();
+#else
+    marmot_test_env_t *env = (marmot_test_env_t *)(*state);
+    marmot_context_t *ctx = env->ctx;
+    bool destroy_ctx = false;
+    if (env->backend != MARMOT_BACKEND_CPU) {
+        ctx = marmot_init(MARMOT_BACKEND_CPU);
+        assert_non_null(ctx);
+        destroy_ctx = true;
+    }
+
+    enum {
+        N = 4,
+        K = 256,
+        ROWS_PER_EXPERT = 512,
+        EXPERTS = 2,
+        TOTAL_ROWS = ROWS_PER_EXPERT * EXPERTS,
+    };
+
+    float *input_data = (float *)malloc((size_t)N * K * sizeof(float));
+    float *weight_data = (float *)malloc((size_t)TOTAL_ROWS * K * sizeof(float));
+    assert_non_null(input_data);
+    assert_non_null(weight_data);
+
+    for (size_t i = 0; i < (size_t)N * K; ++i) {
+        input_data[i] = ((float)((int)((i * 17 + 9) % 43) - 21)) * 0.03125f;
+    }
+    for (size_t i = 0; i < (size_t)TOTAL_ROWS * K; ++i) {
+        weight_data[i] = ((float)((int)((i * 5 + 7) % 59) - 29)) * 0.015625f;
+    }
+
+    const size_t input_shape[] = {N, K};
+    const size_t weight_shape[] = {TOTAL_ROWS, K};
+    const size_t output_shape[] = {N, ROWS_PER_EXPERT};
+    marmot_tensor_t *input = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, input_shape, 2, input_data
+    );
+    marmot_tensor_t *weight_src = marmot_test_tensor_from_array(
+        &(marmot_test_env_t){.backend = MARMOT_BACKEND_CPU, .ctx = ctx}, weight_shape, 2, weight_data
+    );
+    marmot_tensor_t *weight_q = marmot_tensor_create_quantized(ctx, weight_shape, 2, MARMOT_QUANT_KIND_Q4_K);
+    marmot_tensor_t *out = marmot_tensor_create(ctx, output_shape, 2, MARMOT_DTYPE_FLOAT32);
+    assert_non_null(weight_q);
+    assert_non_null(out);
+
+    assert_int_equal(marmot_quantize_q4_k(ctx, weight_src, weight_q), MARMOT_SUCCESS);
+    assert_int_equal(marmot_matmul_prepack_quant_weight(ctx, weight_q), MARMOT_SUCCESS);
+
+    const marmot_quant_kind_traits_t *traits = marmot_get_quant_kind_traits(weight_q->quant_kind);
+    assert_non_null(traits);
+    const size_t blocks_per_row = ((size_t)K + traits->block_values - 1) / traits->block_values;
+    const size_t row_bytes = blocks_per_row * (traits->header_bytes + traits->payload_bytes);
+    const size_t total_bytes = (size_t)TOTAL_ROWS * row_bytes;
+    const size_t slice_offset = (size_t)ROWS_PER_EXPERT * row_bytes;
+
+    cpu_context_t *cpu_ctx = (cpu_context_t *)ctx->device_ctx;
+    invalidate_pinned_weight_cache_range(cpu_ctx, weight_q->data, total_bytes);
+
+    marmot_tensor_t weight_slice = *weight_q;
+    weight_slice.shape.ndim = 2;
+    weight_slice.shape.shape[0] = ROWS_PER_EXPERT;
+    weight_slice.shape.shape[1] = K;
+    weight_slice.shape.strides[0] = K;
+    weight_slice.shape.strides[1] = 1;
+    weight_slice.data = (uint8_t *)weight_q->data + slice_offset;
+    weight_slice.capacity_bytes = (size_t)ROWS_PER_EXPERT * row_bytes;
+    weight_slice.owns_data = false;
+
+    assert_int_equal(marmot_linear(ctx, input, &weight_slice, nullptr, out), MARMOT_SUCCESS);
+
+    bool found_slice = false;
+    const cpu_packed_weight_view_t bank_view = cpu_prepacked_weight_lookup_packed_range(
+        cpu_ctx, weight_q->data, (size_t)TOTAL_ROWS, row_bytes, 0, 0, 0, CPU_PACKED_WEIGHT_LAYOUT_RAW
+    );
+    assert_true(bank_view.data != nullptr && bank_view.data != (const uint8_t *)weight_q->data);
+    found_slice = prepacked_store_has_entry(
+        cpu_ctx, weight_slice.data, (size_t)ROWS_PER_EXPERT, row_bytes, CPU_PACKED_WEIGHT_LAYOUT_RAW
+    );
+    assert_false(found_slice);
+
+    marmot_test_tensor_destroy_all(4, out, weight_q, weight_src, input);
+    free(weight_data);
+    free(input_data);
+    if (destroy_ctx) {
+        marmot_destroy(ctx);
+    }
+#endif
 }
 
 static inline float rand_uniform_open(void) {
@@ -1714,6 +2657,43 @@ int main(void) {
         ),
         cmocka_unit_test_setup_teardown(
             test_llama_ref_quant_parity_q8_0, marmot_test_backend_setup, marmot_test_backend_teardown
+        ),
+        cmocka_unit_test_setup_teardown(
+            test_cpu_dual_quant_matmul_matches_individual, marmot_test_backend_setup, marmot_test_backend_teardown
+        ),
+        cmocka_unit_test_setup_teardown(
+            test_cpu_q4_k_small_batch_matches_generic_path, marmot_test_backend_setup, marmot_test_backend_teardown
+        ),
+        cmocka_unit_test_setup_teardown(
+            test_cpu_q6_k_small_batch_matches_generic_path, marmot_test_backend_setup, marmot_test_backend_teardown
+        ),
+        cmocka_unit_test_setup_teardown(
+            test_cpu_q6_k_prepacked_large_n1_matches_generic_path, marmot_test_backend_setup,
+            marmot_test_backend_teardown
+        ),
+        cmocka_unit_test_setup_teardown(
+            test_cpu_q6_k_dotprod_kernel_registers_2row_vecdot, marmot_test_backend_setup, marmot_test_backend_teardown
+        ),
+        cmocka_unit_test_setup_teardown(
+            test_cpu_prepacked_quant_weight_pins_raw_cache_entry, marmot_test_backend_setup,
+            marmot_test_backend_teardown
+        ),
+        cmocka_unit_test_setup_teardown(
+            test_cpu_q6_k_prepacked_large_n1_uses_decoded_row_panel, marmot_test_backend_setup,
+            marmot_test_backend_teardown
+        ),
+        cmocka_unit_test_setup_teardown(
+            test_cpu_q6_k_output_projection_hint_n4_matches_generic_path, marmot_test_backend_setup,
+            marmot_test_backend_teardown
+        ),
+        cmocka_unit_test_setup_teardown(
+            test_cpu_q4_k_prepacked_n8_matches_generic_path, marmot_test_backend_setup, marmot_test_backend_teardown
+        ),
+        cmocka_unit_test_setup_teardown(
+            test_cpu_q4_k_prepacked_bank_reuses_slice_range, marmot_test_backend_setup, marmot_test_backend_teardown
+        ),
+        cmocka_unit_test_setup_teardown(
+            test_cpu_q4_k_prepacked_raw_bank_reuses_slice_range, marmot_test_backend_setup, marmot_test_backend_teardown
         ),
         cmocka_unit_test_setup_teardown(
             test_matmul_quantized_epilogue_bias_relu_f32, marmot_test_backend_setup, marmot_test_backend_teardown

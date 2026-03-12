@@ -9,6 +9,16 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "core/context/context_internal.h"
+
+static marmot_error_t
+marmot_bench_apply_cpu_thread_override(const marmot_bench_model_config_t *config, marmot_context_t *ctx) {
+    if (config == nullptr || ctx == nullptr || config->backend != MARMOT_BACKEND_CPU || config->n_threads == 0) {
+        return MARMOT_SUCCESS;
+    }
+    return marmot_context_set_thread_count(ctx, config->n_threads);
+}
+
 void marmot_bench_model_config_init(marmot_bench_model_config_t *config) {
     config->model_path = nullptr;
     config->ctx_size = 4096;
@@ -20,6 +30,7 @@ void marmot_bench_model_config_init(marmot_bench_model_config_t *config) {
     config->kv_type_v = MARMOT_DTYPE_FLOAT16;
     config->gpu_layers = 99; // Default: offload all layers
     config->flash_attn = true;
+    config->create_engine = true;
     config->n_threads = 4;
     config->backend = MARMOT_BACKEND_METAL;
 }
@@ -48,6 +59,13 @@ marmot_error_t marmot_bench_model_load(const marmot_bench_model_config_t *config
         return MARMOT_ERROR_BACKEND_INIT_FAILED;
     }
 
+    marmot_error_t thread_err = marmot_bench_apply_cpu_thread_override(config, out->ctx);
+    if (thread_err != MARMOT_SUCCESS) {
+        marmot_destroy(out->ctx);
+        out->ctx = nullptr;
+        return thread_err;
+    }
+
     // Load the GGUF model
     marmot_model_options_t model_opts;
     marmot_error_t err = marmot_model_options_init(&model_opts);
@@ -74,6 +92,11 @@ marmot_error_t marmot_bench_model_load(const marmot_bench_model_config_t *config
         out->model = nullptr;
         out->ctx = nullptr;
         return err;
+    }
+
+    if (!config->create_engine) {
+        out->loaded = true;
+        return MARMOT_SUCCESS;
     }
 
     // Create serving engine for benchmarking

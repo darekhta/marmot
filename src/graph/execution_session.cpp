@@ -7,6 +7,7 @@
 #include <cstdlib>
 #include <cstring>
 
+#include "fast_exec.hpp"
 #include "graph_executor.hpp"
 #include "tensor_alloc.hpp"
 
@@ -549,6 +550,47 @@ marmot_error_t ExecutionSession::execute(
 
     Executor executor(impl_, this);
     return executor.execute_bound(ctx, table_.bindings());
+}
+
+marmot_error_t ExecutionSession::execute_with_fast_plan(
+    const marmot_context_t *ctx, std::span<const marmot_tensor_t *const> inputs,
+    std::span<marmot_tensor_t *const> outputs, const FastPlan *plan, FastExecProfile *profile
+) {
+    if (ctx == nullptr || plan == nullptr) {
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    if (inputs.size() != runtime_input_ids_.size() || outputs.size() != graph_output_ids_.size()) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Input/Output count mismatch");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+
+    for (const marmot_tensor_t *input : inputs) {
+        if (input == nullptr) {
+            marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null graph input");
+            return MARMOT_ERROR_INVALID_ARGUMENT;
+        }
+    }
+    for (marmot_tensor_t *output : outputs) {
+        if (output == nullptr) {
+            marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null graph output");
+            return MARMOT_ERROR_INVALID_ARGUMENT;
+        }
+    }
+
+    bind_runtime_inputs(inputs);
+    bind_graph_outputs(outputs);
+
+    marmot_error_t alias_status = apply_view_aliases(ctx);
+    if (alias_status != MARMOT_SUCCESS) {
+        return alias_status;
+    }
+
+    if (FastExec::supports(ctx, *plan)) {
+        return FastExec::execute(impl_, this, *plan, ctx, table_.bindings(), profile);
+    }
+
+    Executor executor(impl_, this);
+    return executor.execute_bound(ctx, table_.bindings(), plan, profile);
 }
 
 } // namespace marmot::graph

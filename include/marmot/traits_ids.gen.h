@@ -60,6 +60,7 @@ typedef enum {
     MARMOT_OP_MIN = 529,
     MARMOT_OP_MISH = 906,
     MARMOT_OP_MOD = 264,
+    MARMOT_OP_MOE_EXPERTS = 263,
     MARMOT_OP_MUL = 753,
     MARMOT_OP_NEG = 197,
     MARMOT_OP_PAGED_ATTENTION = 503,
@@ -98,6 +99,7 @@ typedef enum {
     MARMOT_OP_SUB = 855,
     MARMOT_OP_SWIGLU = 331,
     MARMOT_OP_TANH = 958,
+    MARMOT_OP_TOPK = 901,
     MARMOT_OP_TRANSPOSE = 839,
     MARMOT_OP_VEC_DOT = 407,
     MARMOT_OP_VIEW = 502,
@@ -652,6 +654,34 @@ typedef enum {
     MARMOT_KERNEL_CPU_MATMUL_BF16_SCALAR_NN = 14903,
     MARMOT_KERNEL_CPU_MATMUL_FP8_E4M3_SCALAR_NN = 49021,
     MARMOT_KERNEL_CPU_MATMUL_FP8_E5M2_SCALAR_NN = 11289,
+    MARMOT_KERNEL_CPU_TOPK_F32_SCALAR = 13096,
+    MARMOT_KERNEL_CPU_TOPK_F16_SCALAR = 47192,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_F32_SCALAR = 17464,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_F16_SCALAR = 31864,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q4_0_SCALAR = 55144,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q4_1_SCALAR = 48681,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q5_0_SCALAR = 25719,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q5_1_SCALAR = 23223,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q8_0_SCALAR = 14278,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q8_1_SCALAR = 32819,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q2_K_SCALAR = 10121,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q3_K_SCALAR = 27140,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q4_K_SCALAR = 21715,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q5_K_SCALAR = 21799,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q6_K_SCALAR = 52836,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q8_K_SCALAR = 48719,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q4_0_F16_SCALAR = 34968,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q4_1_F16_SCALAR = 29540,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q5_0_F16_SCALAR = 41687,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q5_1_F16_SCALAR = 52943,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q8_0_F16_SCALAR = 37077,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q8_1_F16_SCALAR = 20574,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q2_K_F16_SCALAR = 23020,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q3_K_F16_SCALAR = 48316,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q4_K_F16_SCALAR = 59824,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q5_K_F16_SCALAR = 41769,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q6_K_F16_SCALAR = 16802,
+    MARMOT_KERNEL_CPU_MOE_EXPERTS_Q8_K_F16_SCALAR = 36710,
     MARMOT_KERNEL_CPU_LAYERNORM_F16_ACCELERATE = 29919,
     MARMOT_KERNEL_CPU_LAYERNORM_F16_NEON = 13284,
     MARMOT_KERNEL_CPU_LAYERNORM_F16_AVX2 = 25849,
@@ -1953,6 +1983,34 @@ typedef enum {
     MARMOT_KERNEL_METAL_MATMUL_Q8_K_F16_BIAS_RELU_NT = 2624,
     MARMOT_KERNEL_METAL_MATMUL_Q8_K_F16_BIAS_GELU_NT = 7698,
     MARMOT_KERNEL_METAL_MATMUL_Q8_K_F16_BIAS_SILU_NT = 1647,
+    MARMOT_KERNEL_METAL_TOPK_F32 = 8792,
+    MARMOT_KERNEL_METAL_TOPK_F16 = 6545,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_F32 = 8971,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_F16 = 7318,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q4_0 = 3433,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q4_1 = 2290,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q5_0 = 1665,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q5_1 = 8743,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q8_0 = 6001,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q8_1 = 9221,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q2_K = 4293,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q3_K = 5885,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q4_K = 7391,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q5_K = 2521,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q6_K = 4326,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q8_K = 7959,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q4_0_F16 = 5131,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q4_1_F16 = 6719,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q5_0_F16 = 8893,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q5_1_F16 = 7032,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q8_0_F16 = 5291,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q8_1_F16 = 5934,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q2_K_F16 = 4574,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q3_K_F16 = 1027,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q4_K_F16 = 5635,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q5_K_F16 = 5358,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q6_K_F16 = 3560,
+    MARMOT_KERNEL_METAL_MOE_EXPERTS_Q8_K_F16 = 1031,
     MARMOT_KERNEL_METAL_LAYERNORM_F32 = 7685,
     MARMOT_KERNEL_METAL_LAYERNORM_F16 = 7132,
     MARMOT_KERNEL_METAL_LAYERNORM_BF16 = 2533,
@@ -2138,6 +2196,8 @@ static inline const char *marmot_op_id_to_string(marmot_op_id_t op) {
         return "mish";
     case MARMOT_OP_MOD:
         return "mod";
+    case MARMOT_OP_MOE_EXPERTS:
+        return "moe_experts";
     case MARMOT_OP_MUL:
         return "mul";
     case MARMOT_OP_NEG:
@@ -2214,6 +2274,8 @@ static inline const char *marmot_op_id_to_string(marmot_op_id_t op) {
         return "swiglu";
     case MARMOT_OP_TANH:
         return "tanh";
+    case MARMOT_OP_TOPK:
+        return "topk";
     case MARMOT_OP_TRANSPOSE:
         return "transpose";
     case MARMOT_OP_VEC_DOT:
@@ -2366,6 +2428,9 @@ static inline marmot_op_id_t marmot_string_to_op_id(const char *name) {
     if (strcmp(name, "mod") == 0) {
         return MARMOT_OP_MOD;
     }
+    if (strcmp(name, "moe_experts") == 0) {
+        return MARMOT_OP_MOE_EXPERTS;
+    }
     if (strcmp(name, "mul") == 0) {
         return MARMOT_OP_MUL;
     }
@@ -2479,6 +2544,9 @@ static inline marmot_op_id_t marmot_string_to_op_id(const char *name) {
     }
     if (strcmp(name, "tanh") == 0) {
         return MARMOT_OP_TANH;
+    }
+    if (strcmp(name, "topk") == 0) {
+        return MARMOT_OP_TOPK;
     }
     if (strcmp(name, "transpose") == 0) {
         return MARMOT_OP_TRANSPOSE;
@@ -3629,6 +3697,62 @@ static inline const char *marmot_kernel_id_to_string(marmot_kernel_id_t kernel) 
         return "matmul_fp8_e4m3_scalar_nn";
     case MARMOT_KERNEL_CPU_MATMUL_FP8_E5M2_SCALAR_NN:
         return "matmul_fp8_e5m2_scalar_nn";
+    case MARMOT_KERNEL_CPU_TOPK_F32_SCALAR:
+        return "topk_f32_scalar";
+    case MARMOT_KERNEL_CPU_TOPK_F16_SCALAR:
+        return "topk_f16_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_F32_SCALAR:
+        return "moe_experts_f32_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_F16_SCALAR:
+        return "moe_experts_f16_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q4_0_SCALAR:
+        return "moe_experts_q4_0_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q4_1_SCALAR:
+        return "moe_experts_q4_1_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q5_0_SCALAR:
+        return "moe_experts_q5_0_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q5_1_SCALAR:
+        return "moe_experts_q5_1_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q8_0_SCALAR:
+        return "moe_experts_q8_0_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q8_1_SCALAR:
+        return "moe_experts_q8_1_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q2_K_SCALAR:
+        return "moe_experts_q2_k_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q3_K_SCALAR:
+        return "moe_experts_q3_k_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q4_K_SCALAR:
+        return "moe_experts_q4_k_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q5_K_SCALAR:
+        return "moe_experts_q5_k_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q6_K_SCALAR:
+        return "moe_experts_q6_k_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q8_K_SCALAR:
+        return "moe_experts_q8_k_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q4_0_F16_SCALAR:
+        return "moe_experts_q4_0_f16_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q4_1_F16_SCALAR:
+        return "moe_experts_q4_1_f16_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q5_0_F16_SCALAR:
+        return "moe_experts_q5_0_f16_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q5_1_F16_SCALAR:
+        return "moe_experts_q5_1_f16_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q8_0_F16_SCALAR:
+        return "moe_experts_q8_0_f16_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q8_1_F16_SCALAR:
+        return "moe_experts_q8_1_f16_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q2_K_F16_SCALAR:
+        return "moe_experts_q2_k_f16_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q3_K_F16_SCALAR:
+        return "moe_experts_q3_k_f16_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q4_K_F16_SCALAR:
+        return "moe_experts_q4_k_f16_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q5_K_F16_SCALAR:
+        return "moe_experts_q5_k_f16_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q6_K_F16_SCALAR:
+        return "moe_experts_q6_k_f16_scalar";
+    case MARMOT_KERNEL_CPU_MOE_EXPERTS_Q8_K_F16_SCALAR:
+        return "moe_experts_q8_k_f16_scalar";
     case MARMOT_KERNEL_CPU_LAYERNORM_F16_ACCELERATE:
         return "layernorm_f16_accelerate";
     case MARMOT_KERNEL_CPU_LAYERNORM_F16_NEON:
@@ -6231,6 +6355,62 @@ static inline const char *marmot_kernel_id_to_string(marmot_kernel_id_t kernel) 
         return "matmul_q8_k_f16_bias_gelu_nt";
     case MARMOT_KERNEL_METAL_MATMUL_Q8_K_F16_BIAS_SILU_NT:
         return "matmul_q8_k_f16_bias_silu_nt";
+    case MARMOT_KERNEL_METAL_TOPK_F32:
+        return "topk_f32";
+    case MARMOT_KERNEL_METAL_TOPK_F16:
+        return "topk_f16";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_F32:
+        return "moe_experts_f32";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_F16:
+        return "moe_experts_f16";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q4_0:
+        return "moe_experts_q4_0";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q4_1:
+        return "moe_experts_q4_1";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q5_0:
+        return "moe_experts_q5_0";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q5_1:
+        return "moe_experts_q5_1";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q8_0:
+        return "moe_experts_q8_0";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q8_1:
+        return "moe_experts_q8_1";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q2_K:
+        return "moe_experts_q2_k";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q3_K:
+        return "moe_experts_q3_k";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q4_K:
+        return "moe_experts_q4_k";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q5_K:
+        return "moe_experts_q5_k";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q6_K:
+        return "moe_experts_q6_k";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q8_K:
+        return "moe_experts_q8_k";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q4_0_F16:
+        return "moe_experts_q4_0_f16";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q4_1_F16:
+        return "moe_experts_q4_1_f16";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q5_0_F16:
+        return "moe_experts_q5_0_f16";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q5_1_F16:
+        return "moe_experts_q5_1_f16";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q8_0_F16:
+        return "moe_experts_q8_0_f16";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q8_1_F16:
+        return "moe_experts_q8_1_f16";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q2_K_F16:
+        return "moe_experts_q2_k_f16";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q3_K_F16:
+        return "moe_experts_q3_k_f16";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q4_K_F16:
+        return "moe_experts_q4_k_f16";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q5_K_F16:
+        return "moe_experts_q5_k_f16";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q6_K_F16:
+        return "moe_experts_q6_k_f16";
+    case MARMOT_KERNEL_METAL_MOE_EXPERTS_Q8_K_F16:
+        return "moe_experts_q8_k_f16";
     case MARMOT_KERNEL_METAL_LAYERNORM_F32:
         return "layernorm_f32";
     case MARMOT_KERNEL_METAL_LAYERNORM_F16:

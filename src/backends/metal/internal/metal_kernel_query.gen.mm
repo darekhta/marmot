@@ -260,7 +260,7 @@ static const marmot_kernel_match_t marmot_metal_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_RELU_F32,
-        .op_index = 526,
+        .op_index = 552,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -276,7 +276,7 @@ static const marmot_kernel_match_t marmot_metal_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_RELU_F16,
-        .op_index = 525,
+        .op_index = 551,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -292,7 +292,7 @@ static const marmot_kernel_match_t marmot_metal_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_RELU_BF16,
-        .op_index = 524,
+        .op_index = 550,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -309,7 +309,7 @@ static const marmot_kernel_match_t marmot_metal_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_RELU_FP8_E4M3,
-        .op_index = 527,
+        .op_index = 553,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -327,7 +327,7 @@ static const marmot_kernel_match_t marmot_metal_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_RELU_FP8_E5M2,
-        .op_index = 528,
+        .op_index = 554,
     },
 #endif
 };
@@ -518,7 +518,7 @@ static const marmot_kernel_match_t marmot_metal_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SILU_F32,
-        .op_index = 567,
+        .op_index = 593,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -534,7 +534,7 @@ static const marmot_kernel_match_t marmot_metal_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SILU_F16,
-        .op_index = 566,
+        .op_index = 592,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -550,7 +550,7 @@ static const marmot_kernel_match_t marmot_metal_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SILU_BF16,
-        .op_index = 565,
+        .op_index = 591,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -567,7 +567,7 @@ static const marmot_kernel_match_t marmot_metal_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SILU_FP8_E4M3,
-        .op_index = 568,
+        .op_index = 594,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -585,7 +585,7 @@ static const marmot_kernel_match_t marmot_metal_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SILU_FP8_E5M2,
-        .op_index = 569,
+        .op_index = 595,
     },
 #endif
 };
@@ -604,7 +604,7 @@ static const marmot_kernel_match_t marmot_metal_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SIGMOID_F32,
-        .op_index = 550,
+        .op_index = 576,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -620,7 +620,7 @@ static const marmot_kernel_match_t marmot_metal_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SIGMOID_F16,
-        .op_index = 549,
+        .op_index = 575,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -636,7 +636,7 @@ static const marmot_kernel_match_t marmot_metal_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SIGMOID_BF16,
-        .op_index = 548,
+        .op_index = 574,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -653,7 +653,7 @@ static const marmot_kernel_match_t marmot_metal_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SIGMOID_FP8_E4M3,
-        .op_index = 551,
+        .op_index = 577,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -671,7 +671,7 @@ static const marmot_kernel_match_t marmot_metal_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SIGMOID_FP8_E5M2,
-        .op_index = 552,
+        .op_index = 578,
     },
 #endif
 };
@@ -690,7 +690,7 @@ static const marmot_kernel_match_t marmot_metal_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TANH_ACT_F32,
-        .op_index = 599,
+        .op_index = 625,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -706,7 +706,7 @@ static const marmot_kernel_match_t marmot_metal_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TANH_ACT_F16,
-        .op_index = 598,
+        .op_index = 624,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -722,7 +722,7 @@ static const marmot_kernel_match_t marmot_metal_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TANH_ACT_BF16,
-        .op_index = 597,
+        .op_index = 623,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -739,7 +739,7 @@ static const marmot_kernel_match_t marmot_metal_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TANH_ACT_FP8_E4M3,
-        .op_index = 600,
+        .op_index = 626,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -757,7 +757,7 @@ static const marmot_kernel_match_t marmot_metal_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TANH_ACT_FP8_E5M2,
-        .op_index = 601,
+        .op_index = 627,
     },
 #endif
 };
@@ -776,7 +776,7 @@ static const marmot_kernel_match_t marmot_metal_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SQRT_F32,
-        .op_index = 577,
+        .op_index = 603,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -792,7 +792,7 @@ static const marmot_kernel_match_t marmot_metal_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SQRT_F16,
-        .op_index = 576,
+        .op_index = 602,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -808,7 +808,7 @@ static const marmot_kernel_match_t marmot_metal_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SQRT_BF16,
-        .op_index = 575,
+        .op_index = 601,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -825,7 +825,7 @@ static const marmot_kernel_match_t marmot_metal_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SQRT_FP8_E4M3,
-        .op_index = 578,
+        .op_index = 604,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -843,7 +843,7 @@ static const marmot_kernel_match_t marmot_metal_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SQRT_FP8_E5M2,
-        .op_index = 579,
+        .op_index = 605,
     },
 #endif
 };
@@ -1206,7 +1206,7 @@ static const marmot_kernel_match_t marmot_metal_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SELU_F32,
-        .op_index = 545,
+        .op_index = 571,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -1222,7 +1222,7 @@ static const marmot_kernel_match_t marmot_metal_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SELU_F16,
-        .op_index = 544,
+        .op_index = 570,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -1238,7 +1238,7 @@ static const marmot_kernel_match_t marmot_metal_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SELU_BF16,
-        .op_index = 543,
+        .op_index = 569,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -1255,7 +1255,7 @@ static const marmot_kernel_match_t marmot_metal_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SELU_FP8_E4M3,
-        .op_index = 546,
+        .op_index = 572,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -1273,7 +1273,7 @@ static const marmot_kernel_match_t marmot_metal_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SELU_FP8_E5M2,
-        .op_index = 547,
+        .op_index = 573,
     },
 #endif
 };
@@ -1378,7 +1378,7 @@ static const marmot_kernel_match_t marmot_metal_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_PRELU_F32,
-        .op_index = 446,
+        .op_index = 472,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -1394,7 +1394,7 @@ static const marmot_kernel_match_t marmot_metal_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_PRELU_F16,
-        .op_index = 445,
+        .op_index = 471,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -1410,7 +1410,7 @@ static const marmot_kernel_match_t marmot_metal_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_PRELU_BF16,
-        .op_index = 444,
+        .op_index = 470,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -1427,7 +1427,7 @@ static const marmot_kernel_match_t marmot_metal_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_PRELU_FP8_E4M3,
-        .op_index = 447,
+        .op_index = 473,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -1445,7 +1445,7 @@ static const marmot_kernel_match_t marmot_metal_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_PRELU_FP8_E5M2,
-        .op_index = 448,
+        .op_index = 474,
     },
 #endif
 };
@@ -1662,7 +1662,7 @@ static const marmot_kernel_match_t marmot_metal_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SIGN_F32,
-        .op_index = 555,
+        .op_index = 581,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -1678,7 +1678,7 @@ static const marmot_kernel_match_t marmot_metal_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SIGN_F16,
-        .op_index = 554,
+        .op_index = 580,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -1694,7 +1694,7 @@ static const marmot_kernel_match_t marmot_metal_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SIGN_BF16,
-        .op_index = 553,
+        .op_index = 579,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -1711,7 +1711,7 @@ static const marmot_kernel_match_t marmot_metal_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SIGN_FP8_E4M3,
-        .op_index = 556,
+        .op_index = 582,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -1729,7 +1729,7 @@ static const marmot_kernel_match_t marmot_metal_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SIGN_FP8_E5M2,
-        .op_index = 557,
+        .op_index = 583,
     },
 #endif
     {
@@ -1746,7 +1746,7 @@ static const marmot_kernel_match_t marmot_metal_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SIGN_I32,
-        .op_index = 559,
+        .op_index = 585,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -1762,7 +1762,7 @@ static const marmot_kernel_match_t marmot_metal_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SIGN_I16,
-        .op_index = 558,
+        .op_index = 584,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -1778,7 +1778,7 @@ static const marmot_kernel_match_t marmot_metal_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SIGN_I8,
-        .op_index = 560,
+        .op_index = 586,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -1794,7 +1794,7 @@ static const marmot_kernel_match_t marmot_metal_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SIGN_U8,
-        .op_index = 564,
+        .op_index = 590,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -1810,7 +1810,7 @@ static const marmot_kernel_match_t marmot_metal_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SIGN_U16,
-        .op_index = 561,
+        .op_index = 587,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -1826,7 +1826,7 @@ static const marmot_kernel_match_t marmot_metal_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SIGN_U32,
-        .op_index = 562,
+        .op_index = 588,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -1842,7 +1842,7 @@ static const marmot_kernel_match_t marmot_metal_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SIGN_U64,
-        .op_index = 563,
+        .op_index = 589,
     },
 };
 static const marmot_kernel_match_t marmot_metal_neg_cases[] = {
@@ -1860,7 +1860,7 @@ static const marmot_kernel_match_t marmot_metal_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_NEG_F32,
-        .op_index = 417,
+        .op_index = 443,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -1876,7 +1876,7 @@ static const marmot_kernel_match_t marmot_metal_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_NEG_F16,
-        .op_index = 416,
+        .op_index = 442,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -1892,7 +1892,7 @@ static const marmot_kernel_match_t marmot_metal_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_NEG_BF16,
-        .op_index = 415,
+        .op_index = 441,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -1909,7 +1909,7 @@ static const marmot_kernel_match_t marmot_metal_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_NEG_FP8_E4M3,
-        .op_index = 418,
+        .op_index = 444,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -1927,7 +1927,7 @@ static const marmot_kernel_match_t marmot_metal_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_NEG_FP8_E5M2,
-        .op_index = 419,
+        .op_index = 445,
     },
 #endif
     {
@@ -1944,7 +1944,7 @@ static const marmot_kernel_match_t marmot_metal_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_NEG_I32,
-        .op_index = 421,
+        .op_index = 447,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -1960,7 +1960,7 @@ static const marmot_kernel_match_t marmot_metal_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_NEG_I16,
-        .op_index = 420,
+        .op_index = 446,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -1976,7 +1976,7 @@ static const marmot_kernel_match_t marmot_metal_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_NEG_I8,
-        .op_index = 422,
+        .op_index = 448,
     },
 };
 static const marmot_kernel_match_t marmot_metal_bitwise_not_cases[] = {
@@ -2448,7 +2448,7 @@ static const marmot_kernel_match_t marmot_metal_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_MUL_F32,
-        .op_index = 405,
+        .op_index = 431,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -2464,7 +2464,7 @@ static const marmot_kernel_match_t marmot_metal_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_MUL_F16,
-        .op_index = 404,
+        .op_index = 430,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -2480,7 +2480,7 @@ static const marmot_kernel_match_t marmot_metal_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_MUL_BF16,
-        .op_index = 403,
+        .op_index = 429,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -2497,7 +2497,7 @@ static const marmot_kernel_match_t marmot_metal_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_MUL_FP8_E4M3,
-        .op_index = 406,
+        .op_index = 432,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -2515,7 +2515,7 @@ static const marmot_kernel_match_t marmot_metal_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_MUL_FP8_E5M2,
-        .op_index = 407,
+        .op_index = 433,
     },
 #endif
     {
@@ -2532,7 +2532,7 @@ static const marmot_kernel_match_t marmot_metal_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_MUL_I32,
-        .op_index = 409,
+        .op_index = 435,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -2548,7 +2548,7 @@ static const marmot_kernel_match_t marmot_metal_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_MUL_I16,
-        .op_index = 408,
+        .op_index = 434,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -2564,7 +2564,7 @@ static const marmot_kernel_match_t marmot_metal_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_MUL_I8,
-        .op_index = 410,
+        .op_index = 436,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -2580,7 +2580,7 @@ static const marmot_kernel_match_t marmot_metal_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_MUL_U8,
-        .op_index = 414,
+        .op_index = 440,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -2596,7 +2596,7 @@ static const marmot_kernel_match_t marmot_metal_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_MUL_U16,
-        .op_index = 411,
+        .op_index = 437,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -2612,7 +2612,7 @@ static const marmot_kernel_match_t marmot_metal_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_MUL_U32,
-        .op_index = 412,
+        .op_index = 438,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -2628,7 +2628,7 @@ static const marmot_kernel_match_t marmot_metal_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_MUL_U64,
-        .op_index = 413,
+        .op_index = 439,
     },
 };
 static const marmot_kernel_match_t marmot_metal_sub_cases[] = {
@@ -2646,7 +2646,7 @@ static const marmot_kernel_match_t marmot_metal_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SUB_F32,
-        .op_index = 582,
+        .op_index = 608,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -2662,7 +2662,7 @@ static const marmot_kernel_match_t marmot_metal_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SUB_F16,
-        .op_index = 581,
+        .op_index = 607,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -2678,7 +2678,7 @@ static const marmot_kernel_match_t marmot_metal_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SUB_BF16,
-        .op_index = 580,
+        .op_index = 606,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -2695,7 +2695,7 @@ static const marmot_kernel_match_t marmot_metal_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SUB_FP8_E4M3,
-        .op_index = 583,
+        .op_index = 609,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -2713,7 +2713,7 @@ static const marmot_kernel_match_t marmot_metal_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SUB_FP8_E5M2,
-        .op_index = 584,
+        .op_index = 610,
     },
 #endif
     {
@@ -2730,7 +2730,7 @@ static const marmot_kernel_match_t marmot_metal_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SUB_I32,
-        .op_index = 586,
+        .op_index = 612,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -2746,7 +2746,7 @@ static const marmot_kernel_match_t marmot_metal_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SUB_I16,
-        .op_index = 585,
+        .op_index = 611,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -2762,7 +2762,7 @@ static const marmot_kernel_match_t marmot_metal_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SUB_I8,
-        .op_index = 587,
+        .op_index = 613,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -2778,7 +2778,7 @@ static const marmot_kernel_match_t marmot_metal_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SUB_U8,
-        .op_index = 591,
+        .op_index = 617,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -2794,7 +2794,7 @@ static const marmot_kernel_match_t marmot_metal_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SUB_U16,
-        .op_index = 588,
+        .op_index = 614,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -2810,7 +2810,7 @@ static const marmot_kernel_match_t marmot_metal_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SUB_U32,
-        .op_index = 589,
+        .op_index = 615,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -2826,7 +2826,7 @@ static const marmot_kernel_match_t marmot_metal_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SUB_U64,
-        .op_index = 590,
+        .op_index = 616,
     },
 };
 static const marmot_kernel_match_t marmot_metal_div_cases[] = {
@@ -3438,7 +3438,7 @@ static const marmot_kernel_match_t marmot_metal_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_POW_F32,
-        .op_index = 434,
+        .op_index = 460,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -3454,7 +3454,7 @@ static const marmot_kernel_match_t marmot_metal_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_POW_F16,
-        .op_index = 433,
+        .op_index = 459,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -3470,7 +3470,7 @@ static const marmot_kernel_match_t marmot_metal_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_POW_BF16,
-        .op_index = 432,
+        .op_index = 458,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -3487,7 +3487,7 @@ static const marmot_kernel_match_t marmot_metal_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_POW_FP8_E4M3,
-        .op_index = 435,
+        .op_index = 461,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -3505,7 +3505,7 @@ static const marmot_kernel_match_t marmot_metal_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_POW_FP8_E5M2,
-        .op_index = 436,
+        .op_index = 462,
     },
 #endif
     {
@@ -3522,7 +3522,7 @@ static const marmot_kernel_match_t marmot_metal_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_POW_I32,
-        .op_index = 438,
+        .op_index = 464,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -3538,7 +3538,7 @@ static const marmot_kernel_match_t marmot_metal_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_POW_I16,
-        .op_index = 437,
+        .op_index = 463,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -3554,7 +3554,7 @@ static const marmot_kernel_match_t marmot_metal_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_POW_I8,
-        .op_index = 439,
+        .op_index = 465,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -3570,7 +3570,7 @@ static const marmot_kernel_match_t marmot_metal_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_POW_U8,
-        .op_index = 443,
+        .op_index = 469,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -3586,7 +3586,7 @@ static const marmot_kernel_match_t marmot_metal_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_POW_U16,
-        .op_index = 440,
+        .op_index = 466,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -3602,7 +3602,7 @@ static const marmot_kernel_match_t marmot_metal_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_POW_U32,
-        .op_index = 441,
+        .op_index = 467,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -3618,7 +3618,7 @@ static const marmot_kernel_match_t marmot_metal_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_POW_U64,
-        .op_index = 442,
+        .op_index = 468,
     },
 };
 static const marmot_kernel_match_t marmot_metal_mod_cases[] = {
@@ -3834,7 +3834,7 @@ static const marmot_kernel_match_t marmot_metal_swiglu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SWIGLU_F32,
-        .op_index = 594,
+        .op_index = 620,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -3850,7 +3850,7 @@ static const marmot_kernel_match_t marmot_metal_swiglu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SWIGLU_F16,
-        .op_index = 593,
+        .op_index = 619,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -3866,7 +3866,7 @@ static const marmot_kernel_match_t marmot_metal_swiglu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SWIGLU_BF16,
-        .op_index = 592,
+        .op_index = 618,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -3883,7 +3883,7 @@ static const marmot_kernel_match_t marmot_metal_swiglu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SWIGLU_FP8_E4M3,
-        .op_index = 595,
+        .op_index = 621,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -3901,7 +3901,7 @@ static const marmot_kernel_match_t marmot_metal_swiglu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SWIGLU_FP8_E5M2,
-        .op_index = 596,
+        .op_index = 622,
     },
 #endif
 };
@@ -8275,7 +8275,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_F16,
-        .op_index = 481,
+        .op_index = 507,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8291,7 +8291,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_F32,
-        .op_index = 483,
+        .op_index = 509,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8307,7 +8307,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_BF16,
-        .op_index = 479,
+        .op_index = 505,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8323,7 +8323,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_F16_PACKED,
-        .op_index = 482,
+        .op_index = 508,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8339,7 +8339,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_F32_PACKED,
-        .op_index = 484,
+        .op_index = 510,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8355,7 +8355,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_BF16_PACKED,
-        .op_index = 480,
+        .op_index = 506,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8371,7 +8371,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q4_0_F32,
-        .op_index = 490,
+        .op_index = 516,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8387,7 +8387,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q4_0_F16,
-        .op_index = 489,
+        .op_index = 515,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8403,7 +8403,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q4_1_F32,
-        .op_index = 492,
+        .op_index = 518,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8419,7 +8419,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q4_1_F16,
-        .op_index = 491,
+        .op_index = 517,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8435,7 +8435,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q5_0_F32,
-        .op_index = 496,
+        .op_index = 522,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8451,7 +8451,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q5_0_F16,
-        .op_index = 495,
+        .op_index = 521,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8467,7 +8467,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q5_1_F32,
-        .op_index = 498,
+        .op_index = 524,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8483,7 +8483,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q5_1_F16,
-        .op_index = 497,
+        .op_index = 523,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8499,7 +8499,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q8_0_F32,
-        .op_index = 504,
+        .op_index = 530,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8515,7 +8515,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q8_0_F16,
-        .op_index = 503,
+        .op_index = 529,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8531,7 +8531,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q8_1_F32,
-        .op_index = 506,
+        .op_index = 532,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8547,7 +8547,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q8_1_F16,
-        .op_index = 505,
+        .op_index = 531,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8563,7 +8563,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q2_K_F32,
-        .op_index = 486,
+        .op_index = 512,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8579,7 +8579,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q2_K_F16,
-        .op_index = 485,
+        .op_index = 511,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8595,7 +8595,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q3_K_F32,
-        .op_index = 488,
+        .op_index = 514,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8611,7 +8611,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q3_K_F16,
-        .op_index = 487,
+        .op_index = 513,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8627,7 +8627,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q4_K_F32,
-        .op_index = 494,
+        .op_index = 520,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8643,7 +8643,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q4_K_F16,
-        .op_index = 493,
+        .op_index = 519,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8659,7 +8659,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q5_K_F32,
-        .op_index = 500,
+        .op_index = 526,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8675,7 +8675,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q5_K_F16,
-        .op_index = 499,
+        .op_index = 525,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8691,7 +8691,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q6_K_F32,
-        .op_index = 502,
+        .op_index = 528,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8707,7 +8707,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q6_K_F16,
-        .op_index = 501,
+        .op_index = 527,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8723,7 +8723,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q8_K_F32,
-        .op_index = 508,
+        .op_index = 534,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8739,7 +8739,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_ROPE_Q8_K_F16,
-        .op_index = 507,
+        .op_index = 533,
     },
 };
 static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
@@ -8757,7 +8757,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_F16,
-        .op_index = 451,
+        .op_index = 477,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8773,7 +8773,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_F32,
-        .op_index = 453,
+        .op_index = 479,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8789,7 +8789,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_BF16,
-        .op_index = 449,
+        .op_index = 475,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8805,7 +8805,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_F16_PACKED,
-        .op_index = 452,
+        .op_index = 478,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8821,7 +8821,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_F32_PACKED,
-        .op_index = 454,
+        .op_index = 480,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8837,7 +8837,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_BF16_PACKED,
-        .op_index = 450,
+        .op_index = 476,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8853,7 +8853,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q4_0_F32,
-        .op_index = 460,
+        .op_index = 486,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8869,7 +8869,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q4_0_F16,
-        .op_index = 459,
+        .op_index = 485,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8885,7 +8885,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q4_1_F32,
-        .op_index = 462,
+        .op_index = 488,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8901,7 +8901,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q4_1_F16,
-        .op_index = 461,
+        .op_index = 487,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8917,7 +8917,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q5_0_F32,
-        .op_index = 466,
+        .op_index = 492,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8933,7 +8933,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q5_0_F16,
-        .op_index = 465,
+        .op_index = 491,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8949,7 +8949,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q5_1_F32,
-        .op_index = 468,
+        .op_index = 494,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8965,7 +8965,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q5_1_F16,
-        .op_index = 467,
+        .op_index = 493,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8981,7 +8981,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q8_0_F32,
-        .op_index = 474,
+        .op_index = 500,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -8997,7 +8997,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q8_0_F16,
-        .op_index = 473,
+        .op_index = 499,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9013,7 +9013,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q8_1_F32,
-        .op_index = 476,
+        .op_index = 502,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9029,7 +9029,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q8_1_F16,
-        .op_index = 475,
+        .op_index = 501,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9045,7 +9045,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q2_K_F32,
-        .op_index = 456,
+        .op_index = 482,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9061,7 +9061,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q2_K_F16,
-        .op_index = 455,
+        .op_index = 481,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9077,7 +9077,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q3_K_F32,
-        .op_index = 458,
+        .op_index = 484,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9093,7 +9093,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q3_K_F16,
-        .op_index = 457,
+        .op_index = 483,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9109,7 +9109,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q4_K_F32,
-        .op_index = 464,
+        .op_index = 490,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9125,7 +9125,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q4_K_F16,
-        .op_index = 463,
+        .op_index = 489,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9141,7 +9141,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q5_K_F32,
-        .op_index = 470,
+        .op_index = 496,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9157,7 +9157,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q5_K_F16,
-        .op_index = 469,
+        .op_index = 495,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9173,7 +9173,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q6_K_F32,
-        .op_index = 472,
+        .op_index = 498,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9189,7 +9189,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q6_K_F16,
-        .op_index = 471,
+        .op_index = 497,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9205,7 +9205,7 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q8_K_F32,
-        .op_index = 478,
+        .op_index = 504,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9221,7 +9221,459 @@ static const marmot_kernel_match_t marmot_metal_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QKV_PROJECTION_Q8_K_F16,
-        .op_index = 477,
+        .op_index = 503,
+    },
+};
+static const marmot_kernel_match_t marmot_metal_topk_cases[] = {
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_NONE),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_TOPK_F32,
+        .op_index = 645,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_NONE),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_TOPK_F16,
+        .op_index = 644,
+    },
+};
+static const marmot_kernel_match_t marmot_metal_moe_experts_cases[] = {
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_NONE),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_F32,
+        .op_index = 404,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_NONE),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_F16,
+        .op_index = 403,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q4_0),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q4_0,
+        .op_index = 409,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q4_1),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q4_1,
+        .op_index = 411,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q5_0),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q5_0,
+        .op_index = 415,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q5_1),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q5_1,
+        .op_index = 417,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q8_0),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q8_0,
+        .op_index = 423,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q8_1),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q8_1,
+        .op_index = 425,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q2_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q2_K,
+        .op_index = 405,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q3_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q3_K,
+        .op_index = 407,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q4_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q4_K,
+        .op_index = 413,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q5_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q5_K,
+        .op_index = 419,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q6_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q6_K,
+        .op_index = 421,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q8_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q8_K,
+        .op_index = 427,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q4_0),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q4_0_F16,
+        .op_index = 410,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q4_1),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q4_1_F16,
+        .op_index = 412,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q5_0),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q5_0_F16,
+        .op_index = 416,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q5_1),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q5_1_F16,
+        .op_index = 418,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q8_0),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q8_0_F16,
+        .op_index = 424,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q8_1),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q8_1_F16,
+        .op_index = 426,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q2_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q2_K_F16,
+        .op_index = 406,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q3_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q3_K_F16,
+        .op_index = 408,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q4_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q4_K_F16,
+        .op_index = 414,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q5_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q5_K_F16,
+        .op_index = 420,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q6_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q6_K_F16,
+        .op_index = 422,
+    },
+    {
+        .profile = MARMOT_PROFILE_INVALID,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q8_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_METAL_MOE_EXPERTS_Q8_K_F16,
+        .op_index = 428,
     },
 };
 static const marmot_kernel_match_t marmot_metal_layernorm_cases[] = {
@@ -9409,7 +9861,7 @@ static const marmot_kernel_match_t marmot_metal_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_RMS_NORM_F32,
-        .op_index = 531,
+        .op_index = 557,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9425,7 +9877,7 @@ static const marmot_kernel_match_t marmot_metal_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_RMS_NORM_F16,
-        .op_index = 530,
+        .op_index = 556,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9441,7 +9893,7 @@ static const marmot_kernel_match_t marmot_metal_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_RMS_NORM_BF16,
-        .op_index = 529,
+        .op_index = 555,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -9458,7 +9910,7 @@ static const marmot_kernel_match_t marmot_metal_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_RMS_NORM_FP8_E4M3,
-        .op_index = 532,
+        .op_index = 558,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -9476,7 +9928,7 @@ static const marmot_kernel_match_t marmot_metal_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_RMS_NORM_FP8_E5M2,
-        .op_index = 533,
+        .op_index = 559,
     },
 #endif
 };
@@ -9495,7 +9947,7 @@ static const marmot_kernel_match_t marmot_metal_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_RMS_NORM_GEMMA_F32,
-        .op_index = 536,
+        .op_index = 562,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9511,7 +9963,7 @@ static const marmot_kernel_match_t marmot_metal_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_RMS_NORM_GEMMA_F16,
-        .op_index = 535,
+        .op_index = 561,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9527,7 +9979,7 @@ static const marmot_kernel_match_t marmot_metal_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_RMS_NORM_GEMMA_BF16,
-        .op_index = 534,
+        .op_index = 560,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -9544,7 +9996,7 @@ static const marmot_kernel_match_t marmot_metal_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_RMS_NORM_GEMMA_FP8_E4M3,
-        .op_index = 537,
+        .op_index = 563,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -9562,7 +10014,7 @@ static const marmot_kernel_match_t marmot_metal_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_RMS_NORM_GEMMA_FP8_E5M2,
-        .op_index = 538,
+        .op_index = 564,
     },
 #endif
 };
@@ -9581,7 +10033,7 @@ static const marmot_kernel_match_t marmot_metal_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_PAGED_ATTENTION_F16_KV_F16,
-        .op_index = 427,
+        .op_index = 453,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9597,7 +10049,7 @@ static const marmot_kernel_match_t marmot_metal_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_PAGED_ATTENTION_F16_KV_BF16,
-        .op_index = 426,
+        .op_index = 452,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9613,7 +10065,7 @@ static const marmot_kernel_match_t marmot_metal_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_PAGED_ATTENTION_F16_KV_F32,
-        .op_index = 428,
+        .op_index = 454,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9629,7 +10081,7 @@ static const marmot_kernel_match_t marmot_metal_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_PAGED_ATTENTION_BF16_KV_F16,
-        .op_index = 424,
+        .op_index = 450,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9645,7 +10097,7 @@ static const marmot_kernel_match_t marmot_metal_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_PAGED_ATTENTION_BF16_KV_BF16,
-        .op_index = 423,
+        .op_index = 449,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9661,7 +10113,7 @@ static const marmot_kernel_match_t marmot_metal_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_PAGED_ATTENTION_BF16_KV_F32,
-        .op_index = 425,
+        .op_index = 451,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9677,7 +10129,7 @@ static const marmot_kernel_match_t marmot_metal_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_PAGED_ATTENTION_F32_KV_F16,
-        .op_index = 430,
+        .op_index = 456,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9693,7 +10145,7 @@ static const marmot_kernel_match_t marmot_metal_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_PAGED_ATTENTION_F32_KV_BF16,
-        .op_index = 429,
+        .op_index = 455,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9709,7 +10161,7 @@ static const marmot_kernel_match_t marmot_metal_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_PAGED_ATTENTION_F32_KV_F32,
-        .op_index = 431,
+        .op_index = 457,
     },
 };
 static const marmot_kernel_match_t marmot_metal_quantize_cases[] = {
@@ -9727,7 +10179,7 @@ static const marmot_kernel_match_t marmot_metal_quantize_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QUANTIZE_GENERIC_METAL,
-        .op_index = 510,
+        .op_index = 536,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -9748,7 +10200,7 @@ static const marmot_kernel_match_t marmot_metal_quantize_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_QUANTIZE_BLOCK_METAL,
-        .op_index = 509,
+        .op_index = 535,
     },
 };
 static const marmot_kernel_match_t marmot_metal_dequantize_cases[] = {
@@ -9833,7 +10285,7 @@ static const marmot_kernel_match_t marmot_metal_reduction_sum_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_REDUCTION_SUM,
-        .op_index = 522,
+        .op_index = 548,
     },
 };
 static const marmot_kernel_match_t marmot_metal_reduction_mean_cases[] = {
@@ -9853,7 +10305,7 @@ static const marmot_kernel_match_t marmot_metal_reduction_mean_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_REDUCTION_MEAN,
-        .op_index = 516,
+        .op_index = 542,
     },
 };
 static const marmot_kernel_match_t marmot_metal_reduction_max_cases[] = {
@@ -9881,7 +10333,7 @@ static const marmot_kernel_match_t marmot_metal_reduction_max_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_REDUCTION_MAX,
-        .op_index = 515,
+        .op_index = 541,
     },
 };
 static const marmot_kernel_match_t marmot_metal_reduction_min_cases[] = {
@@ -9909,7 +10361,7 @@ static const marmot_kernel_match_t marmot_metal_reduction_min_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_REDUCTION_MIN,
-        .op_index = 517,
+        .op_index = 543,
     },
 };
 static const marmot_kernel_match_t marmot_metal_reduction_variance_cases[] = {
@@ -9929,7 +10381,7 @@ static const marmot_kernel_match_t marmot_metal_reduction_variance_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_REDUCTION_VARIANCE,
-        .op_index = 523,
+        .op_index = 549,
     },
 };
 static const marmot_kernel_match_t marmot_metal_reduction_std_cases[] = {
@@ -9949,7 +10401,7 @@ static const marmot_kernel_match_t marmot_metal_reduction_std_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_REDUCTION_STD,
-        .op_index = 521,
+        .op_index = 547,
     },
 };
 static const marmot_kernel_match_t marmot_metal_reduction_norm_l1_cases[] = {
@@ -9969,7 +10421,7 @@ static const marmot_kernel_match_t marmot_metal_reduction_norm_l1_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_REDUCTION_NORM_L1,
-        .op_index = 518,
+        .op_index = 544,
     },
 };
 static const marmot_kernel_match_t marmot_metal_reduction_norm_l2_cases[] = {
@@ -9989,7 +10441,7 @@ static const marmot_kernel_match_t marmot_metal_reduction_norm_l2_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_REDUCTION_NORM_L2,
-        .op_index = 519,
+        .op_index = 545,
     },
 };
 static const marmot_kernel_match_t marmot_metal_reduction_prod_cases[] = {
@@ -10017,7 +10469,7 @@ static const marmot_kernel_match_t marmot_metal_reduction_prod_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_REDUCTION_PROD,
-        .op_index = 520,
+        .op_index = 546,
     },
 };
 static const marmot_kernel_match_t marmot_metal_reduction_argmax_cases[] = {
@@ -10045,7 +10497,7 @@ static const marmot_kernel_match_t marmot_metal_reduction_argmax_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_REDUCTION_ARGMAX,
-        .op_index = 513,
+        .op_index = 539,
     },
 };
 static const marmot_kernel_match_t marmot_metal_reduction_argmin_cases[] = {
@@ -10073,7 +10525,7 @@ static const marmot_kernel_match_t marmot_metal_reduction_argmin_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_REDUCTION_ARGMIN,
-        .op_index = 514,
+        .op_index = 540,
     },
 };
 static const marmot_kernel_match_t marmot_metal_reduction_any_cases[] = {
@@ -10101,7 +10553,7 @@ static const marmot_kernel_match_t marmot_metal_reduction_any_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_REDUCTION_ANY,
-        .op_index = 512,
+        .op_index = 538,
     },
 };
 static const marmot_kernel_match_t marmot_metal_reduction_all_cases[] = {
@@ -10129,7 +10581,7 @@ static const marmot_kernel_match_t marmot_metal_reduction_all_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_REDUCTION_ALL,
-        .op_index = 511,
+        .op_index = 537,
     },
 };
 static const marmot_kernel_match_t marmot_metal_rope_cases[] = {
@@ -10147,7 +10599,7 @@ static const marmot_kernel_match_t marmot_metal_rope_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_ROPE_F16,
-        .op_index = 540,
+        .op_index = 566,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -10163,7 +10615,7 @@ static const marmot_kernel_match_t marmot_metal_rope_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_ROPE_BF16,
-        .op_index = 539,
+        .op_index = 565,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -10179,7 +10631,7 @@ static const marmot_kernel_match_t marmot_metal_rope_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_ROPE_F32,
-        .op_index = 541,
+        .op_index = 567,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -10196,7 +10648,7 @@ static const marmot_kernel_match_t marmot_metal_rope_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_ROPE_FP8,
-        .op_index = 542,
+        .op_index = 568,
     },
 #endif
 };
@@ -10215,7 +10667,7 @@ static const marmot_kernel_match_t marmot_metal_softmax_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SOFTMAX_F32,
-        .op_index = 572,
+        .op_index = 598,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -10231,7 +10683,7 @@ static const marmot_kernel_match_t marmot_metal_softmax_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SOFTMAX_F16,
-        .op_index = 571,
+        .op_index = 597,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -10247,7 +10699,7 @@ static const marmot_kernel_match_t marmot_metal_softmax_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SOFTMAX_BF16,
-        .op_index = 570,
+        .op_index = 596,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -10264,7 +10716,7 @@ static const marmot_kernel_match_t marmot_metal_softmax_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SOFTMAX_FP8_E4M3,
-        .op_index = 573,
+        .op_index = 599,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -10282,7 +10734,7 @@ static const marmot_kernel_match_t marmot_metal_softmax_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_SOFTMAX_FP8_E5M2,
-        .op_index = 574,
+        .op_index = 600,
     },
 #endif
 };
@@ -10311,7 +10763,7 @@ static const marmot_kernel_match_t marmot_metal_contiguous_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TENSOR_CONTIGUOUS_GENERIC,
-        .op_index = 605,
+        .op_index = 631,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -10328,7 +10780,7 @@ static const marmot_kernel_match_t marmot_metal_contiguous_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TENSOR_CONTIGUOUS_FP8,
-        .op_index = 604,
+        .op_index = 630,
     },
 #endif
 };
@@ -10357,7 +10809,7 @@ static const marmot_kernel_match_t marmot_metal_reshape_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TENSOR_RESHAPE_GENERIC,
-        .op_index = 609,
+        .op_index = 635,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -10374,7 +10826,7 @@ static const marmot_kernel_match_t marmot_metal_reshape_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TENSOR_RESHAPE_FP8,
-        .op_index = 608,
+        .op_index = 634,
     },
 #endif
 };
@@ -10403,7 +10855,7 @@ static const marmot_kernel_match_t marmot_metal_transpose_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TENSOR_TRANSPOSE_GENERIC,
-        .op_index = 615,
+        .op_index = 641,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -10420,7 +10872,7 @@ static const marmot_kernel_match_t marmot_metal_transpose_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TENSOR_TRANSPOSE_FP8,
-        .op_index = 614,
+        .op_index = 640,
     },
 #endif
 };
@@ -10449,7 +10901,7 @@ static const marmot_kernel_match_t marmot_metal_concat_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TENSOR_CONCAT_GENERIC,
-        .op_index = 603,
+        .op_index = 629,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -10466,7 +10918,7 @@ static const marmot_kernel_match_t marmot_metal_concat_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TENSOR_CONCAT_FP8,
-        .op_index = 602,
+        .op_index = 628,
     },
 #endif
 };
@@ -10495,7 +10947,7 @@ static const marmot_kernel_match_t marmot_metal_slice_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TENSOR_SLICE_GENERIC,
-        .op_index = 613,
+        .op_index = 639,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -10512,7 +10964,7 @@ static const marmot_kernel_match_t marmot_metal_slice_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TENSOR_SLICE_FP8,
-        .op_index = 612,
+        .op_index = 638,
     },
 #endif
 };
@@ -10541,7 +10993,7 @@ static const marmot_kernel_match_t marmot_metal_view_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TENSOR_VIEW_GENERIC,
-        .op_index = 617,
+        .op_index = 643,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -10558,7 +11010,7 @@ static const marmot_kernel_match_t marmot_metal_view_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TENSOR_VIEW_FP8,
-        .op_index = 616,
+        .op_index = 642,
     },
 #endif
 };
@@ -10587,7 +11039,7 @@ static const marmot_kernel_match_t marmot_metal_gather_rows_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TENSOR_GATHER_ROWS_GENERIC,
-        .op_index = 607,
+        .op_index = 633,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -10604,7 +11056,7 @@ static const marmot_kernel_match_t marmot_metal_gather_rows_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TENSOR_GATHER_ROWS_FP8,
-        .op_index = 606,
+        .op_index = 632,
     },
 #endif
 };
@@ -10633,7 +11085,7 @@ static const marmot_kernel_match_t marmot_metal_scatter_u64_to_i32_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TENSOR_SCATTER_U64_TO_I32_GENERIC,
-        .op_index = 611,
+        .op_index = 637,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -10650,7 +11102,7 @@ static const marmot_kernel_match_t marmot_metal_scatter_u64_to_i32_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_TENSOR_SCATTER_U64_TO_I32_FP8,
-        .op_index = 610,
+        .op_index = 636,
     },
 #endif
 };
@@ -10709,7 +11161,7 @@ static const marmot_kernel_match_t marmot_metal_where_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_WHERE_METAL,
-        .op_index = 631,
+        .op_index = 659,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -10726,7 +11178,7 @@ static const marmot_kernel_match_t marmot_metal_where_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_WHERE_FP8_METAL,
-        .op_index = 630,
+        .op_index = 658,
     },
 #endif
 };
@@ -10745,7 +11197,7 @@ static const marmot_kernel_match_t marmot_metal_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_VEC_DOT_Q4_0_Q8_0,
-        .op_index = 620,
+        .op_index = 648,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -10761,7 +11213,7 @@ static const marmot_kernel_match_t marmot_metal_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_VEC_DOT_Q4_1_Q8_0,
-        .op_index = 621,
+        .op_index = 649,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -10777,7 +11229,7 @@ static const marmot_kernel_match_t marmot_metal_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_VEC_DOT_Q5_0_Q8_0,
-        .op_index = 623,
+        .op_index = 651,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -10793,7 +11245,7 @@ static const marmot_kernel_match_t marmot_metal_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_VEC_DOT_Q5_1_Q8_0,
-        .op_index = 624,
+        .op_index = 652,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -10809,7 +11261,7 @@ static const marmot_kernel_match_t marmot_metal_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_VEC_DOT_Q8_0_Q8_0,
-        .op_index = 627,
+        .op_index = 655,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -10825,7 +11277,7 @@ static const marmot_kernel_match_t marmot_metal_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_VEC_DOT_Q8_1_Q8_0,
-        .op_index = 628,
+        .op_index = 656,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -10841,7 +11293,7 @@ static const marmot_kernel_match_t marmot_metal_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_VEC_DOT_Q2_K_Q8_K,
-        .op_index = 618,
+        .op_index = 646,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -10857,7 +11309,7 @@ static const marmot_kernel_match_t marmot_metal_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_VEC_DOT_Q3_K_Q8_K,
-        .op_index = 619,
+        .op_index = 647,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -10873,7 +11325,7 @@ static const marmot_kernel_match_t marmot_metal_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_VEC_DOT_Q4_K_Q8_K,
-        .op_index = 622,
+        .op_index = 650,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -10889,7 +11341,7 @@ static const marmot_kernel_match_t marmot_metal_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_VEC_DOT_Q5_K_Q8_K,
-        .op_index = 625,
+        .op_index = 653,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -10905,7 +11357,7 @@ static const marmot_kernel_match_t marmot_metal_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_VEC_DOT_Q6_K_Q8_K,
-        .op_index = 626,
+        .op_index = 654,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -10921,7 +11373,7 @@ static const marmot_kernel_match_t marmot_metal_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_METAL_VEC_DOT_Q8_K_Q8_K,
-        .op_index = 629,
+        .op_index = 657,
     },
 };
 
@@ -11105,6 +11557,12 @@ marmot_metal_query_kernel(const marmot_op_signature_t *sig, const marmot_device_
     case MARMOT_OP_QKV_PROJECTION:
         return marmot_select_kernel_case(
             sig, caps, marmot_metal_qkv_projection_cases, MARMOT_ARRAY_LEN(marmot_metal_qkv_projection_cases)
+        );
+    case MARMOT_OP_TOPK:
+        return marmot_select_kernel_case(sig, caps, marmot_metal_topk_cases, MARMOT_ARRAY_LEN(marmot_metal_topk_cases));
+    case MARMOT_OP_MOE_EXPERTS:
+        return marmot_select_kernel_case(
+            sig, caps, marmot_metal_moe_experts_cases, MARMOT_ARRAY_LEN(marmot_metal_moe_experts_cases)
         );
     case MARMOT_OP_LAYERNORM:
         return marmot_select_kernel_case(

@@ -13,6 +13,8 @@ void marmot_bench_llm_params_init(marmot_bench_llm_params_t *params) {
     params->n_gen = 128;
     params->n_depth = 0;
     params->n_seqs = 1;
+    params->warmup_runs = 1;
+    params->mode = MARMOT_BENCH_LLM_MODE_DIRECT;
 }
 
 static uint64_t get_time_ns(void) {
@@ -34,6 +36,13 @@ typedef struct {
     size_t count;
 } token_capture_t;
 
+typedef struct {
+    marmot_llm_token_callback_t inner_cb;
+    void *inner_user_data;
+    size_t total_tokens;
+    size_t step_tokens;
+} bench_token_observer_t;
+
 static void capture_token(void *user_data, marmot_token_id_t token_id) {
     token_capture_t *capture = (token_capture_t *)user_data;
     if (capture == nullptr || capture->tokens == nullptr) {
@@ -41,6 +50,32 @@ static void capture_token(void *user_data, marmot_token_id_t token_id) {
     }
     if (capture->count < capture->capacity) {
         capture->tokens[capture->count++] = token_id;
+    }
+}
+
+static void observe_token(void *user_data, marmot_token_id_t token_id) {
+    bench_token_observer_t *observer = (bench_token_observer_t *)user_data;
+    if (observer == nullptr) {
+        return;
+    }
+    observer->total_tokens++;
+    observer->step_tokens++;
+    if (observer->inner_cb != nullptr) {
+        observer->inner_cb(observer->inner_user_data, token_id);
+    }
+}
+
+static void prepare_bench_generate_options(
+    const marmot_llm_generate_options_t *src, marmot_llm_generate_options_t *dst, bench_token_observer_t *observer
+) {
+    *dst = *src;
+    *observer = (bench_token_observer_t){
+        .inner_cb = src->on_token,
+        .inner_user_data = src->user_data,
+    };
+    if (src->max_new_tokens > 0) {
+        dst->on_token = observe_token;
+        dst->user_data = observer;
     }
 }
 
@@ -62,9 +97,13 @@ static marmot_error_t run_serving_request(
     timing->decode_start_ns = 0;
     timing->end_ns = timing->start_ns;
 
+    marmot_llm_generate_options_t bench_gen_opts;
+    bench_token_observer_t token_observer = {0};
+    prepare_bench_generate_options(gen_opts, &bench_gen_opts, &token_observer);
+
     marmot_request_id_t request_id = 0;
     marmot_error_t err =
-        marmot_serving_engine_submit(engine, prompt_tokens, prompt_len, gen_opts, sampling_opts, &request_id);
+        marmot_serving_engine_submit(engine, prompt_tokens, prompt_len, &bench_gen_opts, sampling_opts, &request_id);
     if (err != MARMOT_SUCCESS) {
         return err;
     }
@@ -77,6 +116,8 @@ static marmot_error_t run_serving_request(
 
     for (size_t step = 0; step < max_steps; ++step) {
         size_t steps_done = 0;
+        token_observer.step_tokens = 0;
+        const uint64_t step_start_ns = get_time_ns();
         err = marmot_serving_engine_step(engine, 1, &steps_done);
         if (err != MARMOT_SUCCESS) {
             (void)marmot_serving_engine_request_release(engine, request_id);
@@ -84,8 +125,9 @@ static marmot_error_t run_serving_request(
         }
 
         marmot_llm_request_state_t state = marmot_serving_engine_request_state(engine, request_id);
-        if (state == MARMOT_LLM_REQUEST_STATE_DECODING && timing->decode_start_ns == 0) {
-            timing->decode_start_ns = get_time_ns();
+        if (timing->decode_start_ns == 0 &&
+            (state == MARMOT_LLM_REQUEST_STATE_DECODING || token_observer.step_tokens > 0)) {
+            timing->decode_start_ns = step_start_ns;
         }
         if (state == MARMOT_LLM_REQUEST_STATE_FAILED || state == MARMOT_LLM_REQUEST_STATE_CANCELED) {
             (void)marmot_serving_engine_request_release(engine, request_id);
@@ -94,7 +136,7 @@ static marmot_error_t run_serving_request(
         if (state == MARMOT_LLM_REQUEST_STATE_DONE || state == MARMOT_LLM_REQUEST_STATE_INVALID) {
             timing->end_ns = get_time_ns();
             if (timing->decode_start_ns == 0) {
-                timing->decode_start_ns = timing->end_ns;
+                timing->decode_start_ns = (prompt_len == 0 && gen_opts->max_new_tokens > 0) ? timing->start_ns : timing->end_ns;
             }
             return MARMOT_SUCCESS;
         }
@@ -120,6 +162,10 @@ static marmot_error_t run_serving_requests(
     timing->decode_start_ns = 0;
     timing->end_ns = timing->start_ns;
 
+    marmot_llm_generate_options_t bench_gen_opts;
+    bench_token_observer_t token_observer = {0};
+    prepare_bench_generate_options(gen_opts, &bench_gen_opts, &token_observer);
+
     marmot_request_id_t *request_ids = malloc(num_requests * sizeof(*request_ids));
     if (request_ids == nullptr) {
         return MARMOT_ERROR_OUT_OF_MEMORY;
@@ -129,7 +175,7 @@ static marmot_error_t run_serving_requests(
     marmot_error_t err = MARMOT_SUCCESS;
     for (; submitted < num_requests; ++submitted) {
         marmot_request_id_t request_id = 0;
-        err = marmot_serving_engine_submit(engine, prompt_tokens, prompt_len, gen_opts, sampling_opts, &request_id);
+        err = marmot_serving_engine_submit(engine, prompt_tokens, prompt_len, &bench_gen_opts, sampling_opts, &request_id);
         if (err != MARMOT_SUCCESS) {
             break;
         }
@@ -151,6 +197,8 @@ static marmot_error_t run_serving_requests(
 
     for (size_t step = 0; step < max_steps; ++step) {
         size_t steps_done = 0;
+        token_observer.step_tokens = 0;
+        const uint64_t step_start_ns = get_time_ns();
         err = marmot_serving_engine_step(engine, 1, &steps_done);
         if (err != MARMOT_SUCCESS) {
             for (size_t i = 0; i < num_requests; ++i) {
@@ -180,13 +228,13 @@ static marmot_error_t run_serving_requests(
             }
         }
 
-        if (any_decoding && timing->decode_start_ns == 0) {
-            timing->decode_start_ns = get_time_ns();
+        if (timing->decode_start_ns == 0 && (any_decoding || token_observer.step_tokens > 0)) {
+            timing->decode_start_ns = step_start_ns;
         }
         if (all_done) {
             timing->end_ns = get_time_ns();
             if (timing->decode_start_ns == 0) {
-                timing->decode_start_ns = timing->end_ns;
+                timing->decode_start_ns = (prompt_len == 0 && gen_opts->max_new_tokens > 0) ? timing->start_ns : timing->end_ns;
             }
             for (size_t i = 0; i < num_requests; ++i) {
                 (void)marmot_serving_engine_request_release(engine, request_ids[i]);
@@ -218,7 +266,7 @@ static marmot_error_t prefill_depth(
     return run_serving_request(engine, depth_tokens, depth_len, gen_opts, sampling_opts, &timing);
 }
 
-marmot_error_t marmot_bench_llm_run(
+marmot_error_t marmot_bench_llm_run_serving(
     const marmot_bench_model_t *model, const marmot_bench_llm_params_t *params, size_t repetitions,
     marmot_bench_llm_result_t *result
 ) {
@@ -237,6 +285,7 @@ marmot_error_t marmot_bench_llm_run(
     result->n_gen = params->n_gen;
     result->n_depth = params->n_depth;
     result->n_seqs = params->n_seqs;
+    result->mode = params->mode;
 
     marmot_serving_engine_t *engine = (marmot_serving_engine_t *)model->engine;
 
@@ -295,7 +344,8 @@ marmot_error_t marmot_bench_llm_run(
 
     marmot_error_t err = MARMOT_SUCCESS;
 
-    for (size_t rep = 0; rep < repetitions; rep++) {
+    const size_t total_runs = params->warmup_runs + repetitions;
+    for (size_t run = 0; run < total_runs; run++) {
         // Benchmark prompt processing (prefill).
         if (params->n_prompt > 0 && pp_times_us != nullptr) {
             if (params->n_depth > 0 && prompt_tokens != nullptr) {
@@ -326,8 +376,11 @@ marmot_error_t marmot_bench_llm_run(
                 goto cleanup;
             }
 
-            pp_times_us[rep] = (double)(timing.end_ns - timing.start_ns) / 1000.0;
-            if (rep == 0 && params->n_gen == 0) {
+            if (run >= params->warmup_runs) {
+                const size_t rep = run - params->warmup_runs;
+                pp_times_us[rep] = (double)(timing.end_ns - timing.start_ns) / 1000.0;
+            }
+            if (run == params->warmup_runs && params->n_gen == 0) {
                 result->ttft_ns = (double)(timing.decode_start_ns - timing.start_ns);
             }
         }
@@ -375,8 +428,11 @@ marmot_error_t marmot_bench_llm_run(
                 goto cleanup;
             }
 
-            tg_times_us[rep] = (double)(timing.end_ns - timing.decode_start_ns) / 1000.0;
-            if (rep == 0) {
+            if (run >= params->warmup_runs) {
+                const size_t rep = run - params->warmup_runs;
+                tg_times_us[rep] = (double)(timing.end_ns - timing.decode_start_ns) / 1000.0;
+            }
+            if (run == params->warmup_runs) {
                 result->ttft_ns = (double)(timing.decode_start_ns - timing.start_ns);
             }
         }
@@ -410,6 +466,25 @@ cleanup:
     return err;
 }
 
+marmot_error_t marmot_bench_llm_run(
+    const marmot_bench_model_t *model, const marmot_bench_llm_params_t *params, size_t repetitions,
+    marmot_bench_llm_result_t *result
+) {
+    if (params == nullptr) {
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+
+    switch (params->mode) {
+    case MARMOT_BENCH_LLM_MODE_DIRECT:
+        return marmot_bench_llm_run_direct(model, params, repetitions, result);
+    case MARMOT_BENCH_LLM_MODE_SERVING:
+        return marmot_bench_llm_run_serving(model, params, repetitions, result);
+    }
+
+    marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "unknown LLM benchmark mode");
+    return MARMOT_ERROR_INVALID_ARGUMENT;
+}
+
 marmot_error_t marmot_bench_llm_run_pp(
     const marmot_bench_model_t *model, const marmot_bench_llm_params_t *params, size_t repetitions,
     marmot_bench_llm_result_t *result
@@ -437,17 +512,20 @@ const char *marmot_bench_llm_result_str(const marmot_bench_llm_result_t *result)
 
     if (result->n_prompt > 0 && result->n_gen > 0) {
         snprintf(
-            llm_result_buffer, sizeof(llm_result_buffer), "seqs%zu pp%zu @ %.1f t/s, tg%zu @ %.1f t/s", result->n_seqs,
-            result->n_prompt, result->pp_tokens_per_sec, result->n_gen, result->tg_tokens_per_sec
+            llm_result_buffer, sizeof(llm_result_buffer), "%s seqs%zu pp%zu @ %.1f t/s, tg%zu @ %.1f t/s",
+            result->mode == MARMOT_BENCH_LLM_MODE_DIRECT ? "direct" : "serving", result->n_seqs, result->n_prompt,
+            result->pp_tokens_per_sec, result->n_gen, result->tg_tokens_per_sec
         );
     } else if (result->n_prompt > 0) {
         snprintf(
-            llm_result_buffer, sizeof(llm_result_buffer), "seqs%zu pp%zu @ %.1f t/s", result->n_seqs, result->n_prompt,
+            llm_result_buffer, sizeof(llm_result_buffer), "%s seqs%zu pp%zu @ %.1f t/s",
+            result->mode == MARMOT_BENCH_LLM_MODE_DIRECT ? "direct" : "serving", result->n_seqs, result->n_prompt,
             result->pp_tokens_per_sec
         );
     } else if (result->n_gen > 0) {
         snprintf(
-            llm_result_buffer, sizeof(llm_result_buffer), "seqs%zu tg%zu @ %.1f t/s", result->n_seqs, result->n_gen,
+            llm_result_buffer, sizeof(llm_result_buffer), "%s seqs%zu tg%zu @ %.1f t/s",
+            result->mode == MARMOT_BENCH_LLM_MODE_DIRECT ? "direct" : "serving", result->n_seqs, result->n_gen,
             result->tg_tokens_per_sec
         );
     } else {

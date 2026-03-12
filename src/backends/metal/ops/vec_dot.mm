@@ -105,7 +105,17 @@ static const char *kernel_name_for_vec_dot(marmot_quant_kind_t weight_kind, marm
     return traits != nullptr ? traits->kernel_name : nullptr;
 }
 
-static bool metal_nocopy_ok(const void *ptr) {
+#if defined(__has_feature)
+#if __has_feature(address_sanitizer)
+#define MARMOT_METAL_VEC_DOT_ASAN 1
+#else
+#define MARMOT_METAL_VEC_DOT_ASAN 0
+#endif
+#else
+#define MARMOT_METAL_VEC_DOT_ASAN 0
+#endif
+
+[[maybe_unused]] static bool metal_nocopy_ok(const void *ptr) {
     if (ptr == nullptr) {
         return false;
     }
@@ -114,6 +124,35 @@ static bool metal_nocopy_ok(const void *ptr) {
         return false;
     }
     return ((uintptr_t)ptr % page_size) == 0;
+}
+
+static id<MTLBuffer> metal_vec_dot_make_input_buffer(metal_context_t *ctx, const void *data, size_t bytes) {
+    if (ctx == nullptr || data == nullptr || bytes == 0) {
+        return nil;
+    }
+
+#if !MARMOT_METAL_VEC_DOT_ASAN
+    if (metal_nocopy_ok(data)) {
+        id<MTLBuffer> buffer = [ctx->device newBufferWithBytesNoCopy:(void *)data
+                                                              length:bytes
+                                                             options:MTLResourceStorageModeShared
+                                                         deallocator:nil];
+        if (buffer != nil) {
+            return buffer;
+        }
+    }
+
+    id<MTLBuffer> buffer = [ctx->device newBufferWithBytes:data length:bytes options:MTLResourceStorageModeShared];
+    if (buffer != nil) {
+        return buffer;
+    }
+#endif
+
+    id<MTLBuffer> copy_buffer = [ctx->device newBufferWithLength:bytes options:MTLResourceStorageModeShared];
+    if (copy_buffer != nil) {
+        memcpy([copy_buffer contents], data, bytes);
+    }
+    return copy_buffer;
 }
 
 static marmot_error_t metal_vec_dot_launch(
@@ -132,53 +171,23 @@ static marmot_error_t metal_vec_dot_launch(
         return MARMOT_ERROR_INVALID_ARGUMENT;
     }
 
-    id<MTLBuffer> bufferWeights = nil;
-    if (metal_nocopy_ok(weights)) {
-        bufferWeights = [ctx->device newBufferWithBytesNoCopy:(void *)weights
-                                                       length:weights_bytes
-                                                      options:MTLResourceStorageModeShared
-                                                  deallocator:nil];
-    }
-    if (bufferWeights == nil) {
-        bufferWeights = [ctx->device newBufferWithBytes:weights
-                                                 length:weights_bytes
-                                                options:MTLResourceStorageModeShared];
-    }
-
-    id<MTLBuffer> bufferActivations = nil;
-    if (metal_nocopy_ok(activations)) {
-        bufferActivations = [ctx->device newBufferWithBytesNoCopy:(void *)activations
-                                                           length:activations_bytes
-                                                          options:MTLResourceStorageModeShared
-                                                      deallocator:nil];
-    }
-    if (bufferActivations == nil) {
-        bufferActivations = [ctx->device newBufferWithBytes:activations
-                                                     length:activations_bytes
-                                                    options:MTLResourceStorageModeShared];
-    }
+    id<MTLBuffer> bufferWeights = metal_vec_dot_make_input_buffer(ctx, weights, weights_bytes);
+    id<MTLBuffer> bufferActivations = metal_vec_dot_make_input_buffer(ctx, activations, activations_bytes);
     size_t partial_bytes = num_blocks * sizeof(float);
-    float *partials_host = nullptr;
     id<MTLBuffer> bufferPartials = nil;
     if (partial_bytes > 0) {
-        partials_host = (float *)malloc(partial_bytes);
-        if (partials_host != nullptr) {
-            memset(partials_host, 0, partial_bytes);
-            bufferPartials = [ctx->device newBufferWithBytesNoCopy:partials_host
-                                                            length:partial_bytes
-                                                           options:MTLResourceStorageModeShared
-                                                       deallocator:nil];
+        bufferPartials = [ctx->device newBufferWithLength:partial_bytes options:MTLResourceStorageModeShared];
+        if (bufferPartials != nil) {
+            memset([bufferPartials contents], 0, partial_bytes);
         }
     }
-    if (bufferWeights == nil || bufferActivations == nil ||
-        (partial_bytes > 0 && (partials_host == nullptr || bufferPartials == nil))) {
+    if (bufferWeights == nil || bufferActivations == nil || (partial_bytes > 0 && bufferPartials == nil)) {
         if (bufferWeights != nil)
             [bufferWeights release];
         if (bufferActivations != nil)
             [bufferActivations release];
         if (bufferPartials != nil)
             [bufferPartials release];
-        free(partials_host);
         return MARMOT_ERROR_OUT_OF_MEMORY;
     }
 
@@ -188,7 +197,6 @@ static marmot_error_t metal_vec_dot_launch(
         [bufferActivations release];
         if (bufferPartials != nil)
             [bufferPartials release];
-        free(partials_host);
         return MARMOT_ERROR_BACKEND_INIT_FAILED;
     }
 
@@ -199,7 +207,6 @@ static marmot_error_t metal_vec_dot_launch(
         [bufferActivations release];
         if (bufferPartials != nil)
             [bufferPartials release];
-        free(partials_host);
         return MARMOT_ERROR_BACKEND_INIT_FAILED;
     }
 
@@ -221,9 +228,10 @@ static marmot_error_t metal_vec_dot_launch(
     metal_command_stream_flush(ctx, true);
 
     float value = 0.0f;
-    if (partials_host != nullptr) {
+    if (bufferPartials != nil) {
+        const float *partials = (const float *)[bufferPartials contents];
         for (size_t i = 0; i < num_blocks; ++i) {
-            value += partials_host[i];
+            value += partials[i];
         }
     }
     *result = value;
@@ -233,7 +241,6 @@ static marmot_error_t metal_vec_dot_launch(
     [bufferActivations release];
     if (bufferPartials != nil)
         [bufferPartials release];
-    free(partials_host);
 
     return MARMOT_SUCCESS;
 }

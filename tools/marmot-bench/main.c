@@ -31,6 +31,8 @@ typedef struct {
     marmot_dtype_t kv_type_v;
     bool flash_attn;
     size_t repetitions;
+    size_t llm_warmup_runs;
+    marmot_bench_llm_mode_t llm_mode;
 
     // Flags
     bool progress;
@@ -55,6 +57,8 @@ static void cli_config_init(cli_config_t *cfg) {
     cfg->kv_type_v = MARMOT_DTYPE_FLOAT16;
     cfg->flash_attn = true;
     cfg->repetitions = 5;
+    cfg->llm_warmup_runs = 1;
+    cfg->llm_mode = MARMOT_BENCH_LLM_MODE_DIRECT;
     cfg->progress = false;
     cfg->no_warmup = false;
     cfg->list_devices = false;
@@ -94,6 +98,21 @@ static int parse_size_t_arg(const char *arg, size_t *out) {
     return 0;
 }
 
+static const char *llm_mode_str(marmot_bench_llm_mode_t mode) {
+    return mode == MARMOT_BENCH_LLM_MODE_DIRECT ? "direct" : "serving";
+}
+
+static const char *llm_backend_str(marmot_backend_type_t backend) {
+    switch (backend) {
+    case MARMOT_BACKEND_CPU:
+        return "cpu";
+    case MARMOT_BACKEND_METAL:
+        return "metal";
+    default:
+        return "unknown";
+    }
+}
+
 static void print_usage(const char *prog) {
     fprintf(stderr, "Usage: %s [options]\n", prog);
     fprintf(stderr, "\nMarmot Benchmark Suite\n\n");
@@ -110,6 +129,7 @@ static void print_usage(const char *prog) {
     fprintf(stderr, "  -B, --batch-size <n,...>    Batch sizes (default: 512)\n");
     fprintf(stderr, "  -t, --threads <n,...>       Thread counts (default: 4)\n");
     fprintf(stderr, "  --concurrency <n>           Concurrent requests per run (default: 1)\n");
+    fprintf(stderr, "  --llm-mode <direct|serving> LLM benchmark mode (default: direct)\n");
     fprintf(stderr, "  --max-seqs <n>              Serving engine max_seqs (default: concurrency)\n");
     fprintf(stderr, "  --max-batch-seqs <n>        Serving engine max_batch_seqs (default: concurrency)\n");
     fprintf(stderr, "  -ctk <f16|f32|q8_0>         K cache type (default: f16)\n");
@@ -142,7 +162,8 @@ static void print_usage(const char *prog) {
     fprintf(stderr, "\nExamples:\n");
     fprintf(stderr, "  %s                                    Run kernel benchmarks, CPU vs Metal\n", prog);
     fprintf(stderr, "  %s -b metal -c micro                  Run micro benchmarks on Metal only\n", prog);
-    fprintf(stderr, "  %s -m model.gguf -p 512 -g 128        Run LLM benchmark\n", prog);
+    fprintf(stderr, "  %s -m model.gguf -p 512 -g 128        Run direct LLM benchmark\n", prog);
+    fprintf(stderr, "  %s -m model.gguf --llm-mode serving   Run serving-engine LLM benchmark\n", prog);
     fprintf(stderr, "  %s -m model.gguf -p 256,512,1024      Sweep prompt sizes\n", prog);
     fprintf(stderr, "  %s -F csv -o results.csv              Export results to CSV\n", prog);
 }
@@ -284,14 +305,19 @@ static int run_llm_benchmarks(cli_config_t *cfg) {
 
     // Print header for console/markdown output
     if (cfg->bench_config.output_format == MARMOT_BENCH_OUTPUT_CONSOLE) {
-        fprintf(out, "%-40s %8s %8s %8s %12s %12s\n", "model", "ctx", "pp", "tg", "pp t/s", "tg t/s");
-        fprintf(out, "%-40s %8s %8s %8s %12s %12s\n", "----------------------------------------", "--------", "--------",
-                "--------", "------------", "------------");
+        fprintf(out, "%-40s %-8s %8s %8s %8s %12s %12s\n", "model", "mode", "ctx", "pp", "tg", "pp t/s", "tg t/s");
+        fprintf(
+            out, "%-40s %-8s %8s %8s %8s %12s %12s\n", "----------------------------------------", "--------",
+            "--------", "--------", "--------", "------------", "------------"
+        );
     } else if (cfg->bench_config.output_format == MARMOT_BENCH_OUTPUT_MARKDOWN) {
-        fprintf(out, "| model | ctx | pp | tg | pp t/s | tg t/s |\n");
-        fprintf(out, "|-------|-----|----|----|--------|--------|\n");
+        fprintf(out, "| model | mode | ctx | pp | tg | pp t/s | tg t/s |\n");
+        fprintf(out, "|-------|------|-----|----|----|--------|--------|\n");
     } else if (cfg->bench_config.output_format == MARMOT_BENCH_OUTPUT_CSV) {
-        fprintf(out, "model,ctx_size,batch_size,threads,n_prompt,n_gen,n_depth,pp_tokens_sec,tg_tokens_sec,pp_mean_us,tg_mean_us\n"
+        fprintf(
+            out,
+            "model,backend,llm_mode,ctx_size,batch_size,threads,n_prompt,n_gen,n_depth,n_seqs,max_seqs,"
+            "max_batch_seqs,pp_tokens_sec,tg_tokens_sec,ttft_ns,pp_mean_us,tg_mean_us\n"
         );
     }
 
@@ -303,6 +329,11 @@ static int run_llm_benchmarks(cli_config_t *cfg) {
         if (cfg->progress) {
             fprintf(stderr, "marmot-bench: config %zu/%zu: ctx=%zu, pp=%zu, tg=%zu\n", i + 1, grid.count, gc->ctx_size,
                     gc->n_prompt, gc->n_gen);
+        }
+        if (cfg->llm_mode == MARMOT_BENCH_LLM_MODE_DIRECT && cfg->concurrency != 1) {
+            fprintf(stderr, "Invalid config: direct LLM benchmark requires --concurrency 1\n");
+            ret = 1;
+            continue;
         }
 
         // Load model with this configuration
@@ -317,6 +348,7 @@ static int run_llm_benchmarks(cli_config_t *cfg) {
         model_cfg.kv_type_k = cfg->kv_type_k;
         model_cfg.kv_type_v = cfg->kv_type_v;
         model_cfg.flash_attn = cfg->flash_attn;
+        model_cfg.create_engine = cfg->llm_mode == MARMOT_BENCH_LLM_MODE_SERVING;
 
         if (cfg->concurrency == 0) {
             fprintf(stderr, "Invalid concurrency: must be > 0\n");
@@ -352,6 +384,8 @@ static int run_llm_benchmarks(cli_config_t *cfg) {
         llm_params.n_gen = gc->n_gen;
         llm_params.n_depth = gc->n_depth;
         llm_params.n_seqs = cfg->concurrency;
+        llm_params.warmup_runs = cfg->no_warmup ? 0 : cfg->llm_warmup_runs;
+        llm_params.mode = cfg->llm_mode;
 
         marmot_bench_llm_result_t result;
         err = marmot_bench_llm_run(&model, &llm_params, cfg->repetitions, &result);
@@ -362,39 +396,59 @@ static int run_llm_benchmarks(cli_config_t *cfg) {
 
             switch (cfg->bench_config.output_format) {
             case MARMOT_BENCH_OUTPUT_CONSOLE:
-                fprintf(out, "%-40s %8zu %8zu %8zu %12.1f %12.1f\n", model_name, gc->ctx_size, gc->n_prompt, gc->n_gen,
-                        result.pp_tokens_per_sec, result.tg_tokens_per_sec);
+                fprintf(
+                    out, "%-40s %-8s %8zu %8zu %8zu %12.1f %12.1f\n", model_name,
+                    llm_mode_str(result.mode), gc->ctx_size, gc->n_prompt, gc->n_gen, result.pp_tokens_per_sec,
+                    result.tg_tokens_per_sec
+                );
                 break;
             case MARMOT_BENCH_OUTPUT_MARKDOWN:
-                fprintf(out, "| %s | %zu | %zu | %zu | %.1f | %.1f |\n", model_name, gc->ctx_size, gc->n_prompt,
-                        gc->n_gen, result.pp_tokens_per_sec, result.tg_tokens_per_sec);
+                fprintf(
+                    out, "| %s | %s | %zu | %zu | %zu | %.1f | %.1f |\n", model_name, llm_mode_str(result.mode),
+                    gc->ctx_size, gc->n_prompt, gc->n_gen, result.pp_tokens_per_sec, result.tg_tokens_per_sec
+                );
                 break;
             case MARMOT_BENCH_OUTPUT_CSV:
-                fprintf(out, "%s,%zu,%zu,%zu,%zu,%zu,%zu,%.2f,%.2f,%.3f,%.3f\n", cfg->model_path, gc->ctx_size,
-                        gc->batch_size, gc->n_threads, gc->n_prompt, gc->n_gen, gc->n_depth, result.pp_tokens_per_sec,
-                        result.tg_tokens_per_sec, result.pp_stats.mean_us, result.tg_stats.mean_us);
+                fprintf(
+                    out,
+                    "%s,%s,%s,%zu,%zu,%zu,%zu,%zu,%zu,%zu,%zu,%zu,%.2f,%.2f,%.3f,%.3f,%.3f\n", cfg->model_path,
+                    llm_backend_str(model_cfg.backend), llm_mode_str(result.mode), gc->ctx_size, gc->batch_size,
+                    gc->n_threads, gc->n_prompt, gc->n_gen, gc->n_depth, llm_params.n_seqs, model_cfg.max_seqs,
+                    model_cfg.max_batch_seqs, result.pp_tokens_per_sec, result.tg_tokens_per_sec, result.ttft_ns,
+                    result.pp_stats.mean_us, result.tg_stats.mean_us
+                );
                 break;
             case MARMOT_BENCH_OUTPUT_JSON:
             case MARMOT_BENCH_OUTPUT_JSONL:
                 fprintf(out,
-                        "{\"model\":\"%s\",\"ctx_size\":%zu,\"batch_size\":%zu,\"n_prompt\":%zu,"
-                        "\"n_gen\":%zu,\"n_depth\":%zu,\"pp_tokens_sec\":%.2f,\"tg_tokens_sec\":%.2f,"
-                        "\"pp_mean_us\":%.3f,\"tg_mean_us\":%.3f}\n",
-                        cfg->model_path, gc->ctx_size, gc->batch_size, gc->n_prompt, gc->n_gen, gc->n_depth,
-                        result.pp_tokens_per_sec, result.tg_tokens_per_sec, result.pp_stats.mean_us,
-                        result.tg_stats.mean_us);
+                        "{\"model\":\"%s\",\"backend\":\"%s\",\"llm_mode\":\"%s\",\"ctx_size\":%zu,"
+                        "\"batch_size\":%zu,\"threads\":%zu,\"n_prompt\":%zu,\"n_gen\":%zu,\"n_depth\":%zu,"
+                        "\"n_seqs\":%zu,\"max_seqs\":%zu,\"max_batch_seqs\":%zu,\"pp_tokens_sec\":%.2f,"
+                        "\"tg_tokens_sec\":%.2f,\"ttft_ns\":%.3f,\"pp_mean_us\":%.3f,\"tg_mean_us\":%.3f}\n",
+                        cfg->model_path, llm_backend_str(model_cfg.backend), llm_mode_str(result.mode), gc->ctx_size,
+                        gc->batch_size, gc->n_threads, gc->n_prompt, gc->n_gen, gc->n_depth, llm_params.n_seqs,
+                        model_cfg.max_seqs, model_cfg.max_batch_seqs, result.pp_tokens_per_sec,
+                        result.tg_tokens_per_sec, result.ttft_ns, result.pp_stats.mean_us, result.tg_stats.mean_us);
                 break;
             case MARMOT_BENCH_OUTPUT_SQL:
                 fprintf(out,
-                        "INSERT INTO llm_bench (model, ctx_size, batch_size, n_prompt, n_gen, n_depth, "
-                        "pp_tokens_sec, tg_tokens_sec) VALUES ('%s', %zu, %zu, %zu, %zu, %zu, %.2f, %.2f);\n",
-                        cfg->model_path, gc->ctx_size, gc->batch_size, gc->n_prompt, gc->n_gen, gc->n_depth,
-                        result.pp_tokens_per_sec, result.tg_tokens_per_sec);
+                        "INSERT INTO llm_bench (model, backend, llm_mode, ctx_size, batch_size, threads, n_prompt, "
+                        "n_gen, n_depth, n_seqs, max_seqs, max_batch_seqs, pp_tokens_sec, tg_tokens_sec, ttft_ns) "
+                        "VALUES ('%s', '%s', '%s', %zu, %zu, %zu, %zu, %zu, %zu, %zu, %zu, %zu, %.2f, %.2f, %.3f);\n",
+                        cfg->model_path, llm_backend_str(model_cfg.backend), llm_mode_str(result.mode), gc->ctx_size,
+                        gc->batch_size, gc->n_threads, gc->n_prompt, gc->n_gen, gc->n_depth, llm_params.n_seqs,
+                        model_cfg.max_seqs, model_cfg.max_batch_seqs, result.pp_tokens_per_sec,
+                        result.tg_tokens_per_sec, result.ttft_ns);
                 break;
             }
             fflush(out);
         } else {
-            fprintf(stderr, "Benchmark failed for config %zu: %s\n", i, marmot_error_string(err));
+            const char *detail = marmot_get_last_error_detail();
+            if (detail != nullptr && detail[0] != '\0') {
+                fprintf(stderr, "Benchmark failed for config %zu: %s (%s)\n", i, marmot_error_string(err), detail);
+            } else {
+                fprintf(stderr, "Benchmark failed for config %zu: %s\n", i, marmot_error_string(err));
+            }
             ret = 1;
         }
 
@@ -426,6 +480,7 @@ int main(int argc, char *argv[]) {
         {"threads", required_argument, 0, 't'},
         {"flash-attn", required_argument, 0, 'a'},
         {"concurrency", required_argument, 0, 1200},
+        {"llm-mode", required_argument, 0, 1203},
         {"max-seqs", required_argument, 0, 1201},
         {"max-batch-seqs", required_argument, 0, 1202},
         {"repetitions", required_argument, 0, 'r'},
@@ -525,6 +580,16 @@ int main(int argc, char *argv[]) {
                 return 1;
             }
             break;
+        case 1203: // --llm-mode
+            if (strcmp(optarg, "direct") == 0) {
+                cfg.llm_mode = MARMOT_BENCH_LLM_MODE_DIRECT;
+            } else if (strcmp(optarg, "serving") == 0) {
+                cfg.llm_mode = MARMOT_BENCH_LLM_MODE_SERVING;
+            } else {
+                fprintf(stderr, "Unknown LLM mode: %s\n", optarg);
+                return 1;
+            }
+            break;
         case 1201: // --max-seqs
             if (parse_size_t_arg(optarg, &cfg.max_seqs) != 0) {
                 fprintf(stderr, "Invalid max_seqs: %s\n", optarg);
@@ -560,6 +625,7 @@ int main(int argc, char *argv[]) {
             break;
         case 'w':
             cfg.bench_config.warmup_iterations = (uint32_t)atoi(optarg);
+            cfg.llm_warmup_runs = (size_t)atoi(optarg);
             break;
         case 'n':
             cfg.bench_config.measure_iterations = (uint32_t)atoi(optarg);

@@ -447,6 +447,57 @@ marmot_error_t Graph::finalize_impl(Impl &impl, marmot_backend_type_t backend, b
             }
             break;
         }
+        case MARMOT_BC_SCHEMA_TOPK: {
+            if (node.inputs.empty() || node.outputs.size() < 2) {
+                if (emit_errors) {
+                    marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "TopK node missing inputs or outputs");
+                }
+                return MARMOT_ERROR_INVALID_ARGUMENT;
+            }
+            const auto &values_desc = impl.values[node.outputs[0]].desc;
+            if (values_desc.ndim != 2 || values_desc.shape[1] > UINT32_MAX) {
+                if (emit_errors) {
+                    marmot_set_error(MARMOT_ERROR_DIMENSION_MISMATCH, "TopK output shape mismatch");
+                }
+                return MARMOT_ERROR_DIMENSION_MISMATCH;
+            }
+            const uint32_t axis = UINT32_MAX;
+            const uint32_t k = (uint32_t)values_desc.shape[1];
+            if (!bc_emit_reg(builder, node.inputs[0], value_count) ||
+                !bc_emit_reg(builder, node.outputs[0], value_count) ||
+                !bc_emit_reg(builder, node.outputs[1], value_count) || !marmot_bc_builder_emit_u32(builder, axis) ||
+                !marmot_bc_builder_emit_u32(builder, k)) {
+                if (emit_errors) {
+                    marmot_set_error(MARMOT_ERROR_OUT_OF_MEMORY, "Failed to encode TopK bytecode");
+                }
+                return MARMOT_ERROR_OUT_OF_MEMORY;
+            }
+            break;
+        }
+        case MARMOT_BC_SCHEMA_MOE_EXPERTS: {
+            if (node.inputs.size() < 6 || node.outputs.empty()) {
+                if (emit_errors) {
+                    marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "MoE experts node missing inputs or outputs");
+                }
+                return MARMOT_ERROR_INVALID_ARGUMENT;
+            }
+            if (!bc_emit_reg(builder, node.inputs[0], value_count) ||
+                !bc_emit_reg(builder, node.inputs[1], value_count) ||
+                !bc_emit_reg(builder, node.inputs[2], value_count) ||
+                !bc_emit_reg(builder, node.inputs[3], value_count) ||
+                !bc_emit_reg(builder, node.inputs[4], value_count) ||
+                !bc_emit_reg(builder, node.inputs[5], value_count) ||
+                !bc_emit_reg(builder, node.outputs[0], value_count) ||
+                !marmot_bc_builder_emit_u32(builder, (uint32_t)node.moe_ffn_type) ||
+                !marmot_bc_builder_emit_f32(builder, node.moe_weights_scale) ||
+                !marmot_bc_builder_emit_u32(builder, (uint32_t)node.moe_router_weight_policy)) {
+                if (emit_errors) {
+                    marmot_set_error(MARMOT_ERROR_OUT_OF_MEMORY, "Failed to encode MoE experts bytecode");
+                }
+                return MARMOT_ERROR_OUT_OF_MEMORY;
+            }
+            break;
+        }
         case MARMOT_BC_SCHEMA_LAYERNORM: {
             if (node.inputs.size() < 2 || node.outputs.empty()) {
                 if (emit_errors) {
@@ -2026,6 +2077,108 @@ void Graph::set_last_node_paged_attention_layer(uint32_t layer_idx) {
     if (!impl_->nodes.empty()) {
         impl_->nodes.back().paged_attention_layer_idx = layer_idx;
     }
+}
+
+[[nodiscard]] marmot_error_t Graph::set_last_node_fast_hint_checked(
+    marmot_fast_stage_hint_t stage_hint, marmot_fast_node_role_t role, uint32_t block_id
+) {
+    if (impl_ == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_OPERATION, "Graph implementation is not initialized");
+        return MARMOT_ERROR_INVALID_OPERATION;
+    }
+    if (impl_->finalized) {
+        marmot_set_error(MARMOT_ERROR_INVALID_OPERATION, "Graph is already finalized");
+        return MARMOT_ERROR_INVALID_OPERATION;
+    }
+    if (impl_->nodes.empty()) {
+        marmot_set_error(MARMOT_ERROR_INVALID_OPERATION, "Graph has no nodes");
+        return MARMOT_ERROR_INVALID_OPERATION;
+    }
+    if (stage_hint >= MARMOT_FAST_STAGE_HINT_COUNT || role >= MARMOT_FAST_NODE_ROLE_COUNT ||
+        (stage_hint == MARMOT_FAST_STAGE_HINT_NONE) != (role == MARMOT_FAST_NODE_ROLE_NONE)) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Invalid fast-path node hint");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+
+    GraphNode &node = impl_->nodes.back();
+    node.fast_stage_hint = stage_hint;
+    node.fast_node_role = role;
+    node.fast_block_id = block_id;
+    return MARMOT_SUCCESS;
+}
+
+[[nodiscard]] marmot_error_t Graph::set_last_node_moe_params_checked(
+    marmot_ffn_type_t ffn_type, float weights_scale, marmot_router_weight_policy_t router_weight_policy
+) {
+    if (impl_ == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_OPERATION, "Graph implementation is not initialized");
+        return MARMOT_ERROR_INVALID_OPERATION;
+    }
+    if (impl_->finalized) {
+        marmot_set_error(MARMOT_ERROR_INVALID_OPERATION, "Graph is already finalized");
+        return MARMOT_ERROR_INVALID_OPERATION;
+    }
+    if (impl_->nodes.empty()) {
+        marmot_set_error(MARMOT_ERROR_INVALID_OPERATION, "Graph has no nodes");
+        return MARMOT_ERROR_INVALID_OPERATION;
+    }
+    if (ffn_type >= MARMOT_FFN_COUNT || !std::isfinite(weights_scale) ||
+        router_weight_policy >= MARMOT_ROUTER_WEIGHT_POLICY_COUNT) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Invalid MoE node parameters");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+
+    GraphNode &node = impl_->nodes.back();
+    if (node.signature.op_id != MARMOT_OP_MOE_EXPERTS) {
+        marmot_set_error(MARMOT_ERROR_INVALID_OPERATION, "Last node is not MOE_EXPERTS");
+        return MARMOT_ERROR_INVALID_OPERATION;
+    }
+
+    node.moe_ffn_type = ffn_type;
+    node.moe_weights_scale = weights_scale;
+    node.moe_router_weight_policy = router_weight_policy;
+    return MARMOT_SUCCESS;
+}
+
+void Graph::set_last_node_fast_hint(
+    marmot_fast_stage_hint_t stage_hint, marmot_fast_node_role_t role, uint32_t block_id
+) {
+    if (impl_ == nullptr || impl_->finalized || impl_->nodes.empty() || stage_hint >= MARMOT_FAST_STAGE_HINT_COUNT ||
+        role >= MARMOT_FAST_NODE_ROLE_COUNT ||
+        ((stage_hint == MARMOT_FAST_STAGE_HINT_NONE) != (role == MARMOT_FAST_NODE_ROLE_NONE))) {
+        return;
+    }
+
+    GraphNode &node = impl_->nodes.back();
+    node.fast_stage_hint = stage_hint;
+    node.fast_node_role = role;
+    node.fast_block_id = block_id;
+}
+
+[[nodiscard]] marmot_error_t Graph::set_last_node_moe_params_checked(marmot_ffn_type_t ffn_type, float weights_scale) {
+    return set_last_node_moe_params_checked(ffn_type, weights_scale, MARMOT_ROUTER_WEIGHT_POLICY_SOFTMAX_SELECTED);
+}
+
+void Graph::set_last_node_moe_params(
+    marmot_ffn_type_t ffn_type, float weights_scale, marmot_router_weight_policy_t router_weight_policy
+) {
+    if (impl_ == nullptr || impl_->finalized || impl_->nodes.empty() || ffn_type >= MARMOT_FFN_COUNT ||
+        !std::isfinite(weights_scale) || router_weight_policy >= MARMOT_ROUTER_WEIGHT_POLICY_COUNT) {
+        return;
+    }
+
+    GraphNode &node = impl_->nodes.back();
+    if (node.signature.op_id != MARMOT_OP_MOE_EXPERTS) {
+        return;
+    }
+
+    node.moe_ffn_type = ffn_type;
+    node.moe_weights_scale = weights_scale;
+    node.moe_router_weight_policy = router_weight_policy;
+}
+
+void Graph::set_last_node_moe_params(marmot_ffn_type_t ffn_type, float weights_scale) {
+    set_last_node_moe_params(ffn_type, weights_scale, MARMOT_ROUTER_WEIGHT_POLICY_SOFTMAX_SELECTED);
 }
 
 } // namespace marmot::graph

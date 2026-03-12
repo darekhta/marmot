@@ -865,7 +865,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_F16_ACCELERATE,
-        .op_index = 711,
+        .op_index = 737,
     },
 #endif
     {
@@ -882,7 +882,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_F16_SCALAR,
-        .op_index = 713,
+        .op_index = 739,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -899,7 +899,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_F32_ACCELERATE,
-        .op_index = 714,
+        .op_index = 740,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -917,7 +917,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_F32_NEON,
-        .op_index = 716,
+        .op_index = 742,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -935,7 +935,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_F32_AVX2,
-        .op_index = 715,
+        .op_index = 741,
     },
 #endif
     {
@@ -952,7 +952,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_F32_SCALAR,
-        .op_index = 718,
+        .op_index = 744,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -969,7 +969,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_BF16_ACCELERATE,
-        .op_index = 708,
+        .op_index = 734,
     },
 #endif
     {
@@ -986,7 +986,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_BF16_SCALAR,
-        .op_index = 710,
+        .op_index = 736,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -1003,7 +1003,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_FP8_E4M3_SCALAR,
-        .op_index = 725,
+        .op_index = 751,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -1021,7 +1021,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_FP8_E5M2_SCALAR,
-        .op_index = 727,
+        .op_index = 753,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -1039,7 +1039,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_F64_ACCELERATE,
-        .op_index = 719,
+        .op_index = 745,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -1057,7 +1057,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_F64_NEON,
-        .op_index = 721,
+        .op_index = 747,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -1075,7 +1075,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_F64_AVX2,
-        .op_index = 720,
+        .op_index = 746,
     },
 #endif
     {
@@ -1092,7 +1092,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_F64_SCALAR,
-        .op_index = 723,
+        .op_index = 749,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1108,7 +1108,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_I8_SCALAR,
-        .op_index = 731,
+        .op_index = 757,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1124,7 +1124,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_I16_SCALAR,
-        .op_index = 728,
+        .op_index = 754,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1140,7 +1140,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_I32_SCALAR,
-        .op_index = 729,
+        .op_index = 755,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1156,7 +1156,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_I64_SCALAR,
-        .op_index = 730,
+        .op_index = 756,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1172,7 +1172,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_U8_SCALAR,
-        .op_index = 735,
+        .op_index = 761,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1188,7 +1188,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_U16_SCALAR,
-        .op_index = 732,
+        .op_index = 758,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1204,7 +1204,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_U32_SCALAR,
-        .op_index = 733,
+        .op_index = 759,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1220,7 +1220,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_U64_SCALAR,
-        .op_index = 734,
+        .op_index = 760,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1236,7 +1236,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_F16_ROW,
-        .op_index = 712,
+        .op_index = 738,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1252,7 +1252,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_F32_ROW,
-        .op_index = 717,
+        .op_index = 743,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1268,7 +1268,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_BF16_ROW,
-        .op_index = 709,
+        .op_index = 735,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -1285,7 +1285,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_FP8_E4M3_ROW,
-        .op_index = 724,
+        .op_index = 750,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -1303,7 +1303,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_FP8_E5M2_ROW,
-        .op_index = 726,
+        .op_index = 752,
     },
 #endif
     {
@@ -1320,7 +1320,7 @@ static const marmot_kernel_match_t marmot_cpu_mul_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_MUL_F64_ROW,
-        .op_index = 722,
+        .op_index = 748,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
@@ -1339,7 +1339,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_F16_ACCELERATE,
-        .op_index = 1185,
+        .op_index = 1211,
     },
 #endif
     {
@@ -1356,7 +1356,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_F16_SCALAR,
-        .op_index = 1187,
+        .op_index = 1213,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -1373,7 +1373,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_F32_ACCELERATE,
-        .op_index = 1188,
+        .op_index = 1214,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -1391,7 +1391,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_F32_NEON,
-        .op_index = 1190,
+        .op_index = 1216,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -1409,7 +1409,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_F32_AVX2,
-        .op_index = 1189,
+        .op_index = 1215,
     },
 #endif
     {
@@ -1426,7 +1426,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_F32_SCALAR,
-        .op_index = 1192,
+        .op_index = 1218,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -1443,7 +1443,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_BF16_ACCELERATE,
-        .op_index = 1182,
+        .op_index = 1208,
     },
 #endif
     {
@@ -1460,7 +1460,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_BF16_SCALAR,
-        .op_index = 1184,
+        .op_index = 1210,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -1477,7 +1477,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_FP8_E4M3_SCALAR,
-        .op_index = 1199,
+        .op_index = 1225,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -1495,7 +1495,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_FP8_E5M2_SCALAR,
-        .op_index = 1201,
+        .op_index = 1227,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -1513,7 +1513,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_F64_ACCELERATE,
-        .op_index = 1193,
+        .op_index = 1219,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -1531,7 +1531,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_F64_NEON,
-        .op_index = 1195,
+        .op_index = 1221,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -1549,7 +1549,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_F64_AVX2,
-        .op_index = 1194,
+        .op_index = 1220,
     },
 #endif
     {
@@ -1566,7 +1566,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_F64_SCALAR,
-        .op_index = 1197,
+        .op_index = 1223,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1582,7 +1582,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_I8_SCALAR,
-        .op_index = 1209,
+        .op_index = 1235,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1598,7 +1598,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_I16_SCALAR,
-        .op_index = 1202,
+        .op_index = 1228,
     },
 #if MARMOT_ENABLE_NEON
     {
@@ -1615,7 +1615,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_I32_NEON,
-        .op_index = 1204,
+        .op_index = 1230,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -1633,7 +1633,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_I32_AVX2,
-        .op_index = 1203,
+        .op_index = 1229,
     },
 #endif
     {
@@ -1650,7 +1650,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_I32_SCALAR,
-        .op_index = 1205,
+        .op_index = 1231,
     },
 #if MARMOT_ENABLE_NEON
     {
@@ -1667,7 +1667,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_I64_NEON,
-        .op_index = 1207,
+        .op_index = 1233,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -1685,7 +1685,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_I64_AVX2,
-        .op_index = 1206,
+        .op_index = 1232,
     },
 #endif
     {
@@ -1702,7 +1702,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_I64_SCALAR,
-        .op_index = 1208,
+        .op_index = 1234,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1718,7 +1718,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_U8_SCALAR,
-        .op_index = 1213,
+        .op_index = 1239,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1734,7 +1734,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_U16_SCALAR,
-        .op_index = 1210,
+        .op_index = 1236,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1750,7 +1750,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_U32_SCALAR,
-        .op_index = 1211,
+        .op_index = 1237,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1766,7 +1766,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_U64_SCALAR,
-        .op_index = 1212,
+        .op_index = 1238,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1782,7 +1782,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_F16_ROW,
-        .op_index = 1186,
+        .op_index = 1212,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1798,7 +1798,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_F32_ROW,
-        .op_index = 1191,
+        .op_index = 1217,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -1814,7 +1814,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_BF16_ROW,
-        .op_index = 1183,
+        .op_index = 1209,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -1831,7 +1831,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_FP8_E4M3_ROW,
-        .op_index = 1198,
+        .op_index = 1224,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -1849,7 +1849,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_FP8_E5M2_ROW,
-        .op_index = 1200,
+        .op_index = 1226,
     },
 #endif
     {
@@ -1866,7 +1866,7 @@ static const marmot_kernel_match_t marmot_cpu_sub_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SUB_F64_ROW,
-        .op_index = 1196,
+        .op_index = 1222,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_div_cases[] = {
@@ -3451,7 +3451,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_F16_ACCELERATE,
-        .op_index = 827,
+        .op_index = 853,
     },
 #endif
     {
@@ -3468,7 +3468,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_F16_SCALAR,
-        .op_index = 829,
+        .op_index = 855,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -3485,7 +3485,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_F32_ACCELERATE,
-        .op_index = 830,
+        .op_index = 856,
     },
 #endif
     {
@@ -3502,7 +3502,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_F32_SCALAR,
-        .op_index = 832,
+        .op_index = 858,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -3519,7 +3519,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_BF16_ACCELERATE,
-        .op_index = 824,
+        .op_index = 850,
     },
 #endif
     {
@@ -3536,7 +3536,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_BF16_SCALAR,
-        .op_index = 826,
+        .op_index = 852,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -3553,7 +3553,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_FP8_E4M3_SCALAR,
-        .op_index = 837,
+        .op_index = 863,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -3571,7 +3571,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_FP8_E5M2_SCALAR,
-        .op_index = 839,
+        .op_index = 865,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -3589,7 +3589,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_F64_ACCELERATE,
-        .op_index = 833,
+        .op_index = 859,
     },
 #endif
     {
@@ -3606,7 +3606,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_F64_SCALAR,
-        .op_index = 835,
+        .op_index = 861,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -3622,7 +3622,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_I8_SCALAR,
-        .op_index = 843,
+        .op_index = 869,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -3638,7 +3638,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_I16_SCALAR,
-        .op_index = 840,
+        .op_index = 866,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -3654,7 +3654,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_I32_SCALAR,
-        .op_index = 841,
+        .op_index = 867,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -3670,7 +3670,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_I64_SCALAR,
-        .op_index = 842,
+        .op_index = 868,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -3686,7 +3686,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_U8_SCALAR,
-        .op_index = 847,
+        .op_index = 873,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -3702,7 +3702,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_U16_SCALAR,
-        .op_index = 844,
+        .op_index = 870,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -3718,7 +3718,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_U32_SCALAR,
-        .op_index = 845,
+        .op_index = 871,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -3734,7 +3734,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_U64_SCALAR,
-        .op_index = 846,
+        .op_index = 872,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -3750,7 +3750,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_F16_ROW,
-        .op_index = 828,
+        .op_index = 854,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -3766,7 +3766,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_F32_ROW,
-        .op_index = 831,
+        .op_index = 857,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -3782,7 +3782,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_BF16_ROW,
-        .op_index = 825,
+        .op_index = 851,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -3799,7 +3799,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_FP8_E4M3_ROW,
-        .op_index = 836,
+        .op_index = 862,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -3817,7 +3817,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_FP8_E5M2_ROW,
-        .op_index = 838,
+        .op_index = 864,
     },
 #endif
     {
@@ -3834,7 +3834,7 @@ static const marmot_kernel_match_t marmot_cpu_pow_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_POW_F64_ROW,
-        .op_index = 834,
+        .op_index = 860,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_mod_cases[] = {
@@ -7278,7 +7278,7 @@ static const marmot_kernel_match_t marmot_cpu_swiglu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SWIGLU_F16_SCALAR,
-        .op_index = 1215,
+        .op_index = 1241,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -7294,7 +7294,7 @@ static const marmot_kernel_match_t marmot_cpu_swiglu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SWIGLU_F32_SCALAR,
-        .op_index = 1216,
+        .op_index = 1242,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -7310,7 +7310,7 @@ static const marmot_kernel_match_t marmot_cpu_swiglu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SWIGLU_BF16_SCALAR,
-        .op_index = 1214,
+        .op_index = 1240,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -7327,7 +7327,7 @@ static const marmot_kernel_match_t marmot_cpu_swiglu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SWIGLU_FP8_E4M3_SCALAR,
-        .op_index = 1218,
+        .op_index = 1244,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -7345,7 +7345,7 @@ static const marmot_kernel_match_t marmot_cpu_swiglu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SWIGLU_FP8_E5M2_SCALAR,
-        .op_index = 1219,
+        .op_index = 1245,
     },
 #endif
     {
@@ -7362,7 +7362,7 @@ static const marmot_kernel_match_t marmot_cpu_swiglu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SWIGLU_F64_SCALAR,
-        .op_index = 1217,
+        .op_index = 1243,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_geglu_cases[] = {
@@ -7482,7 +7482,7 @@ static const marmot_kernel_match_t marmot_cpu_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SILU_F16_SCALAR,
-        .op_index = 1141,
+        .op_index = 1167,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -7498,7 +7498,7 @@ static const marmot_kernel_match_t marmot_cpu_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SILU_F32_SCALAR,
-        .op_index = 1145,
+        .op_index = 1171,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -7514,7 +7514,7 @@ static const marmot_kernel_match_t marmot_cpu_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SILU_BF16_SCALAR,
-        .op_index = 1138,
+        .op_index = 1164,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -7531,7 +7531,7 @@ static const marmot_kernel_match_t marmot_cpu_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SILU_FP8_E4M3_SCALAR,
-        .op_index = 1150,
+        .op_index = 1176,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -7549,7 +7549,7 @@ static const marmot_kernel_match_t marmot_cpu_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SILU_FP8_E5M2_SCALAR,
-        .op_index = 1151,
+        .op_index = 1177,
     },
 #endif
     {
@@ -7566,7 +7566,7 @@ static const marmot_kernel_match_t marmot_cpu_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SILU_F64_SCALAR,
-        .op_index = 1149,
+        .op_index = 1175,
     },
 #if MARMOT_ENABLE_NEON
     {
@@ -7583,7 +7583,7 @@ static const marmot_kernel_match_t marmot_cpu_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SILU_F16_NEON,
-        .op_index = 1140,
+        .op_index = 1166,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -7601,7 +7601,7 @@ static const marmot_kernel_match_t marmot_cpu_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SILU_F16_ACCELERATE,
-        .op_index = 1139,
+        .op_index = 1165,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -7619,7 +7619,7 @@ static const marmot_kernel_match_t marmot_cpu_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SILU_F32_NEON,
-        .op_index = 1144,
+        .op_index = 1170,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -7637,7 +7637,7 @@ static const marmot_kernel_match_t marmot_cpu_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SILU_F32_AVX2,
-        .op_index = 1143,
+        .op_index = 1169,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -7655,7 +7655,7 @@ static const marmot_kernel_match_t marmot_cpu_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SILU_F32_ACCELERATE,
-        .op_index = 1142,
+        .op_index = 1168,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -7673,7 +7673,7 @@ static const marmot_kernel_match_t marmot_cpu_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SILU_BF16_ACCELERATE,
-        .op_index = 1137,
+        .op_index = 1163,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -7691,7 +7691,7 @@ static const marmot_kernel_match_t marmot_cpu_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SILU_F64_NEON,
-        .op_index = 1148,
+        .op_index = 1174,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -7709,7 +7709,7 @@ static const marmot_kernel_match_t marmot_cpu_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SILU_F64_AVX2,
-        .op_index = 1147,
+        .op_index = 1173,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -7727,7 +7727,7 @@ static const marmot_kernel_match_t marmot_cpu_silu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SILU_F64_ACCELERATE,
-        .op_index = 1146,
+        .op_index = 1172,
     },
 #endif
 };
@@ -8775,7 +8775,7 @@ static const marmot_kernel_match_t marmot_cpu_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_ROPE_F16,
-        .op_index = 883,
+        .op_index = 909,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -8791,7 +8791,7 @@ static const marmot_kernel_match_t marmot_cpu_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_ROPE_F32,
-        .op_index = 884,
+        .op_index = 910,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -8807,7 +8807,7 @@ static const marmot_kernel_match_t marmot_cpu_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_ROPE_BF16,
-        .op_index = 882,
+        .op_index = 908,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -8823,7 +8823,7 @@ static const marmot_kernel_match_t marmot_cpu_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_ROPE_Q4_K_F16,
-        .op_index = 887,
+        .op_index = 913,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -8839,7 +8839,7 @@ static const marmot_kernel_match_t marmot_cpu_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_ROPE_Q2_K_F16,
-        .op_index = 885,
+        .op_index = 911,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -8855,7 +8855,7 @@ static const marmot_kernel_match_t marmot_cpu_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_ROPE_Q3_K_F16,
-        .op_index = 886,
+        .op_index = 912,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -8871,7 +8871,7 @@ static const marmot_kernel_match_t marmot_cpu_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_ROPE_Q5_K_F16,
-        .op_index = 888,
+        .op_index = 914,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -8887,7 +8887,7 @@ static const marmot_kernel_match_t marmot_cpu_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_ROPE_Q6_K_F16,
-        .op_index = 889,
+        .op_index = 915,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -8903,7 +8903,7 @@ static const marmot_kernel_match_t marmot_cpu_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_ROPE_Q8_0_F16,
-        .op_index = 890,
+        .op_index = 916,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -8919,7 +8919,7 @@ static const marmot_kernel_match_t marmot_cpu_qkv_shared_input_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_ROPE_Q8_K_F16,
-        .op_index = 891,
+        .op_index = 917,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_qkv_projection_cases[] = {
@@ -8937,7 +8937,7 @@ static const marmot_kernel_match_t marmot_cpu_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_PROJECTION_F16,
-        .op_index = 873,
+        .op_index = 899,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -8953,7 +8953,7 @@ static const marmot_kernel_match_t marmot_cpu_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_PROJECTION_F32,
-        .op_index = 874,
+        .op_index = 900,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -8969,7 +8969,7 @@ static const marmot_kernel_match_t marmot_cpu_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_PROJECTION_BF16,
-        .op_index = 872,
+        .op_index = 898,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -8985,7 +8985,7 @@ static const marmot_kernel_match_t marmot_cpu_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_PROJECTION_Q4_K_F16,
-        .op_index = 877,
+        .op_index = 903,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -9001,7 +9001,7 @@ static const marmot_kernel_match_t marmot_cpu_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_PROJECTION_Q2_K_F16,
-        .op_index = 875,
+        .op_index = 901,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -9017,7 +9017,7 @@ static const marmot_kernel_match_t marmot_cpu_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_PROJECTION_Q3_K_F16,
-        .op_index = 876,
+        .op_index = 902,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -9033,7 +9033,7 @@ static const marmot_kernel_match_t marmot_cpu_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_PROJECTION_Q5_K_F16,
-        .op_index = 878,
+        .op_index = 904,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -9049,7 +9049,7 @@ static const marmot_kernel_match_t marmot_cpu_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_PROJECTION_Q6_K_F16,
-        .op_index = 879,
+        .op_index = 905,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -9065,7 +9065,7 @@ static const marmot_kernel_match_t marmot_cpu_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_PROJECTION_Q8_0_F16,
-        .op_index = 880,
+        .op_index = 906,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -9081,7 +9081,459 @@ static const marmot_kernel_match_t marmot_cpu_qkv_projection_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QKV_PROJECTION_Q8_K_F16,
-        .op_index = 881,
+        .op_index = 907,
+    },
+};
+static const marmot_kernel_match_t marmot_cpu_topk_cases[] = {
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_NONE),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_TOPK_F32_SCALAR,
+        .op_index = 1287,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_NONE),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_TOPK_F16_SCALAR,
+        .op_index = 1286,
+    },
+};
+static const marmot_kernel_match_t marmot_cpu_moe_experts_cases[] = {
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_NONE),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_F32_SCALAR,
+        .op_index = 709,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_NONE),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_F16_SCALAR,
+        .op_index = 708,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q4_0),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q4_0_SCALAR,
+        .op_index = 715,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q4_1),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q4_1_SCALAR,
+        .op_index = 717,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q5_0),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q5_0_SCALAR,
+        .op_index = 721,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q5_1),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q5_1_SCALAR,
+        .op_index = 723,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q8_0),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q8_0_SCALAR,
+        .op_index = 729,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q8_1),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q8_1_SCALAR,
+        .op_index = 731,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q2_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q2_K_SCALAR,
+        .op_index = 711,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q3_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q3_K_SCALAR,
+        .op_index = 713,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q4_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q4_K_SCALAR,
+        .op_index = 719,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q5_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q5_K_SCALAR,
+        .op_index = 725,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q6_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q6_K_SCALAR,
+        .op_index = 727,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT32),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q8_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q8_K_SCALAR,
+        .op_index = 733,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q4_0),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q4_0_F16_SCALAR,
+        .op_index = 714,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q4_1),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q4_1_F16_SCALAR,
+        .op_index = 716,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q5_0),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q5_0_F16_SCALAR,
+        .op_index = 720,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q5_1),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q5_1_F16_SCALAR,
+        .op_index = 722,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q8_0),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q8_0_F16_SCALAR,
+        .op_index = 728,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q8_1),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q8_1_F16_SCALAR,
+        .op_index = 730,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q2_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q2_K_F16_SCALAR,
+        .op_index = 710,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q3_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q3_K_F16_SCALAR,
+        .op_index = 712,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q4_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q4_K_F16_SCALAR,
+        .op_index = 718,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q5_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q5_K_F16_SCALAR,
+        .op_index = 724,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q6_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q6_K_F16_SCALAR,
+        .op_index = 726,
+    },
+    {
+        .profile = MARMOT_PROFILE_SCALAR,
+        .matmul_layout = MARMOT_MATMUL_LAYOUT_INVALID,
+        .input_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .weight_mask = 0,
+        .output_mask = (UINT64_C(1) << MARMOT_DTYPE_FLOAT16),
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_mask = (UINT64_C(1) << MARMOT_QSCHEME_Q8_K),
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_mask = 0,
+        .fusion_mask = 0,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .kernel_id = MARMOT_KERNEL_CPU_MOE_EXPERTS_Q8_K_F16_SCALAR,
+        .op_index = 732,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_layernorm_cases[] = {
@@ -9974,7 +10426,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_F16_ACCELERATE,
-        .op_index = 974,
+        .op_index = 1000,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -9992,7 +10444,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_F16_NEON,
-        .op_index = 976,
+        .op_index = 1002,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -10010,7 +10462,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_F16_AVX2,
-        .op_index = 975,
+        .op_index = 1001,
     },
 #endif
     {
@@ -10027,7 +10479,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_F16_SCALAR,
-        .op_index = 977,
+        .op_index = 1003,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -10044,7 +10496,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_F32_ACCELERATE,
-        .op_index = 978,
+        .op_index = 1004,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -10062,7 +10514,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_F32_NEON,
-        .op_index = 980,
+        .op_index = 1006,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -10080,7 +10532,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_F32_AVX2,
-        .op_index = 979,
+        .op_index = 1005,
     },
 #endif
     {
@@ -10097,7 +10549,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_F32_SCALAR,
-        .op_index = 981,
+        .op_index = 1007,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -10114,7 +10566,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_BF16_ACCELERATE,
-        .op_index = 970,
+        .op_index = 996,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -10132,7 +10584,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_BF16_NEON,
-        .op_index = 972,
+        .op_index = 998,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -10150,7 +10602,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_BF16_AVX2,
-        .op_index = 971,
+        .op_index = 997,
     },
 #endif
     {
@@ -10167,7 +10619,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_BF16_SCALAR,
-        .op_index = 973,
+        .op_index = 999,
     },
 #if MARMOT_ENABLE_ACCELERATE
 #if MARMOT_ENABLE_FP8
@@ -10185,7 +10637,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_FP8_E4M3_ACCELERATE,
-        .op_index = 986,
+        .op_index = 1012,
     },
 #endif
 #endif
@@ -10205,7 +10657,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_FP8_E4M3_NEON,
-        .op_index = 988,
+        .op_index = 1014,
     },
 #endif
 #endif
@@ -10225,7 +10677,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_FP8_E4M3_AVX2,
-        .op_index = 987,
+        .op_index = 1013,
     },
 #endif
 #endif
@@ -10244,7 +10696,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_FP8_E4M3_SCALAR,
-        .op_index = 989,
+        .op_index = 1015,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -10263,7 +10715,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_FP8_E5M2_ACCELERATE,
-        .op_index = 990,
+        .op_index = 1016,
     },
 #endif
 #endif
@@ -10283,7 +10735,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_FP8_E5M2_NEON,
-        .op_index = 992,
+        .op_index = 1018,
     },
 #endif
 #endif
@@ -10303,7 +10755,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_FP8_E5M2_AVX2,
-        .op_index = 991,
+        .op_index = 1017,
     },
 #endif
 #endif
@@ -10322,7 +10774,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_FP8_E5M2_SCALAR,
-        .op_index = 993,
+        .op_index = 1019,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -10340,7 +10792,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_F64_ACCELERATE,
-        .op_index = 982,
+        .op_index = 1008,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -10358,7 +10810,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_F64_NEON,
-        .op_index = 984,
+        .op_index = 1010,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -10376,7 +10828,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_F64_AVX2,
-        .op_index = 983,
+        .op_index = 1009,
     },
 #endif
     {
@@ -10393,7 +10845,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_F64_SCALAR,
-        .op_index = 985,
+        .op_index = 1011,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
@@ -10412,7 +10864,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_F16_ACCELERATE,
-        .op_index = 998,
+        .op_index = 1024,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -10430,7 +10882,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_F16_NEON,
-        .op_index = 1000,
+        .op_index = 1026,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -10448,7 +10900,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_F16_AVX2,
-        .op_index = 999,
+        .op_index = 1025,
     },
 #endif
     {
@@ -10465,7 +10917,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_F16_SCALAR,
-        .op_index = 1001,
+        .op_index = 1027,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -10482,7 +10934,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_F32_ACCELERATE,
-        .op_index = 1002,
+        .op_index = 1028,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -10500,7 +10952,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_F32_NEON,
-        .op_index = 1004,
+        .op_index = 1030,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -10518,7 +10970,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_F32_AVX2,
-        .op_index = 1003,
+        .op_index = 1029,
     },
 #endif
     {
@@ -10535,7 +10987,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_F32_SCALAR,
-        .op_index = 1005,
+        .op_index = 1031,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -10552,7 +11004,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_BF16_ACCELERATE,
-        .op_index = 994,
+        .op_index = 1020,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -10570,7 +11022,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_BF16_NEON,
-        .op_index = 996,
+        .op_index = 1022,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -10588,7 +11040,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_BF16_AVX2,
-        .op_index = 995,
+        .op_index = 1021,
     },
 #endif
     {
@@ -10605,7 +11057,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_BF16_SCALAR,
-        .op_index = 997,
+        .op_index = 1023,
     },
 #if MARMOT_ENABLE_ACCELERATE
 #if MARMOT_ENABLE_FP8
@@ -10623,7 +11075,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_FP8_E4M3_ACCELERATE,
-        .op_index = 1010,
+        .op_index = 1036,
     },
 #endif
 #endif
@@ -10643,7 +11095,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_FP8_E4M3_NEON,
-        .op_index = 1012,
+        .op_index = 1038,
     },
 #endif
 #endif
@@ -10663,7 +11115,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_FP8_E4M3_AVX2,
-        .op_index = 1011,
+        .op_index = 1037,
     },
 #endif
 #endif
@@ -10682,7 +11134,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_FP8_E4M3_SCALAR,
-        .op_index = 1013,
+        .op_index = 1039,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -10701,7 +11153,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_FP8_E5M2_ACCELERATE,
-        .op_index = 1014,
+        .op_index = 1040,
     },
 #endif
 #endif
@@ -10721,7 +11173,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_FP8_E5M2_NEON,
-        .op_index = 1016,
+        .op_index = 1042,
     },
 #endif
 #endif
@@ -10741,7 +11193,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_FP8_E5M2_AVX2,
-        .op_index = 1015,
+        .op_index = 1041,
     },
 #endif
 #endif
@@ -10760,7 +11212,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_FP8_E5M2_SCALAR,
-        .op_index = 1017,
+        .op_index = 1043,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -10778,7 +11230,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_F64_ACCELERATE,
-        .op_index = 1006,
+        .op_index = 1032,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -10796,7 +11248,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_F64_NEON,
-        .op_index = 1008,
+        .op_index = 1034,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -10814,7 +11266,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_F64_AVX2,
-        .op_index = 1007,
+        .op_index = 1033,
     },
 #endif
     {
@@ -10831,7 +11283,7 @@ static const marmot_kernel_match_t marmot_cpu_rms_norm_gemma_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RMS_NORM_GEMMA_F64_SCALAR,
-        .op_index = 1009,
+        .op_index = 1035,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
@@ -10850,7 +11302,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F16_KV_F16_ACCELERATE,
-        .op_index = 796,
+        .op_index = 822,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -10868,7 +11320,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F16_KV_F16_NEON,
-        .op_index = 798,
+        .op_index = 824,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -10886,7 +11338,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F16_KV_F16_AVX2,
-        .op_index = 797,
+        .op_index = 823,
     },
 #endif
     {
@@ -10903,7 +11355,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F16_KV_F16_SCALAR,
-        .op_index = 799,
+        .op_index = 825,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -10920,7 +11372,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F16_KV_F32_ACCELERATE,
-        .op_index = 800,
+        .op_index = 826,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -10938,7 +11390,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F16_KV_F32_NEON,
-        .op_index = 802,
+        .op_index = 828,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -10956,7 +11408,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F16_KV_F32_AVX2,
-        .op_index = 801,
+        .op_index = 827,
     },
 #endif
     {
@@ -10973,7 +11425,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F16_KV_F32_SCALAR,
-        .op_index = 803,
+        .op_index = 829,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -10990,7 +11442,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F16_KV_BF16_ACCELERATE,
-        .op_index = 792,
+        .op_index = 818,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -11008,7 +11460,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F16_KV_BF16_NEON,
-        .op_index = 794,
+        .op_index = 820,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -11026,7 +11478,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F16_KV_BF16_AVX2,
-        .op_index = 793,
+        .op_index = 819,
     },
 #endif
     {
@@ -11043,7 +11495,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F16_KV_BF16_SCALAR,
-        .op_index = 795,
+        .op_index = 821,
     },
 #if MARMOT_ENABLE_ACCELERATE
 #if MARMOT_ENABLE_FP8
@@ -11061,7 +11513,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F16_KV_FP8_E4M3_ACCELERATE,
-        .op_index = 804,
+        .op_index = 830,
     },
 #endif
 #endif
@@ -11081,7 +11533,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F16_KV_FP8_E4M3_NEON,
-        .op_index = 806,
+        .op_index = 832,
     },
 #endif
 #endif
@@ -11101,7 +11553,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F16_KV_FP8_E4M3_AVX2,
-        .op_index = 805,
+        .op_index = 831,
     },
 #endif
 #endif
@@ -11120,7 +11572,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F16_KV_FP8_E4M3_SCALAR,
-        .op_index = 807,
+        .op_index = 833,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -11138,7 +11590,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F32_KV_F16_ACCELERATE,
-        .op_index = 812,
+        .op_index = 838,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -11156,7 +11608,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F32_KV_F16_NEON,
-        .op_index = 814,
+        .op_index = 840,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -11174,7 +11626,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F32_KV_F16_AVX2,
-        .op_index = 813,
+        .op_index = 839,
     },
 #endif
     {
@@ -11191,7 +11643,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F32_KV_F16_SCALAR,
-        .op_index = 815,
+        .op_index = 841,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -11208,7 +11660,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F32_KV_F32_ACCELERATE,
-        .op_index = 816,
+        .op_index = 842,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -11226,7 +11678,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F32_KV_F32_NEON,
-        .op_index = 818,
+        .op_index = 844,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -11244,7 +11696,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F32_KV_F32_AVX2,
-        .op_index = 817,
+        .op_index = 843,
     },
 #endif
     {
@@ -11261,7 +11713,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F32_KV_F32_SCALAR,
-        .op_index = 819,
+        .op_index = 845,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -11278,7 +11730,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F32_KV_BF16_ACCELERATE,
-        .op_index = 808,
+        .op_index = 834,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -11296,7 +11748,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F32_KV_BF16_NEON,
-        .op_index = 810,
+        .op_index = 836,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -11314,7 +11766,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F32_KV_BF16_AVX2,
-        .op_index = 809,
+        .op_index = 835,
     },
 #endif
     {
@@ -11331,7 +11783,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F32_KV_BF16_SCALAR,
-        .op_index = 811,
+        .op_index = 837,
     },
 #if MARMOT_ENABLE_ACCELERATE
 #if MARMOT_ENABLE_FP8
@@ -11349,7 +11801,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F32_KV_FP8_E4M3_ACCELERATE,
-        .op_index = 820,
+        .op_index = 846,
     },
 #endif
 #endif
@@ -11369,7 +11821,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F32_KV_FP8_E4M3_NEON,
-        .op_index = 822,
+        .op_index = 848,
     },
 #endif
 #endif
@@ -11389,7 +11841,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F32_KV_FP8_E4M3_AVX2,
-        .op_index = 821,
+        .op_index = 847,
     },
 #endif
 #endif
@@ -11408,7 +11860,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_F32_KV_FP8_E4M3_SCALAR,
-        .op_index = 823,
+        .op_index = 849,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -11426,7 +11878,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_BF16_KV_F16_ACCELERATE,
-        .op_index = 780,
+        .op_index = 806,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -11444,7 +11896,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_BF16_KV_F16_NEON,
-        .op_index = 782,
+        .op_index = 808,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -11462,7 +11914,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_BF16_KV_F16_AVX2,
-        .op_index = 781,
+        .op_index = 807,
     },
 #endif
     {
@@ -11479,7 +11931,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_BF16_KV_F16_SCALAR,
-        .op_index = 783,
+        .op_index = 809,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -11496,7 +11948,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_BF16_KV_F32_ACCELERATE,
-        .op_index = 784,
+        .op_index = 810,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -11514,7 +11966,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_BF16_KV_F32_NEON,
-        .op_index = 786,
+        .op_index = 812,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -11532,7 +11984,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_BF16_KV_F32_AVX2,
-        .op_index = 785,
+        .op_index = 811,
     },
 #endif
     {
@@ -11549,7 +12001,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_BF16_KV_F32_SCALAR,
-        .op_index = 787,
+        .op_index = 813,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -11566,7 +12018,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_BF16_KV_BF16_ACCELERATE,
-        .op_index = 776,
+        .op_index = 802,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -11584,7 +12036,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_BF16_KV_BF16_NEON,
-        .op_index = 778,
+        .op_index = 804,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -11602,7 +12054,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_BF16_KV_BF16_AVX2,
-        .op_index = 777,
+        .op_index = 803,
     },
 #endif
     {
@@ -11619,7 +12071,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_BF16_KV_BF16_SCALAR,
-        .op_index = 779,
+        .op_index = 805,
     },
 #if MARMOT_ENABLE_ACCELERATE
 #if MARMOT_ENABLE_FP8
@@ -11637,7 +12089,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_BF16_KV_FP8_E4M3_ACCELERATE,
-        .op_index = 788,
+        .op_index = 814,
     },
 #endif
 #endif
@@ -11657,7 +12109,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_BF16_KV_FP8_E4M3_NEON,
-        .op_index = 790,
+        .op_index = 816,
     },
 #endif
 #endif
@@ -11677,7 +12129,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_BF16_KV_FP8_E4M3_AVX2,
-        .op_index = 789,
+        .op_index = 815,
     },
 #endif
 #endif
@@ -11696,7 +12148,7 @@ static const marmot_kernel_match_t marmot_cpu_paged_attention_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PAGED_ATTENTION_BF16_KV_FP8_E4M3_SCALAR,
-        .op_index = 791,
+        .op_index = 817,
     },
 #endif
 };
@@ -11715,7 +12167,7 @@ static const marmot_kernel_match_t marmot_cpu_quantize_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QUANTIZE_GENERIC_SCALAR,
-        .op_index = 893,
+        .op_index = 919,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -11736,7 +12188,7 @@ static const marmot_kernel_match_t marmot_cpu_quantize_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_QUANTIZE_BLOCK_SCALAR,
-        .op_index = 892,
+        .op_index = 918,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_dequantize_cases[] = {
@@ -11822,7 +12274,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_sum_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_SUM_ACCELERATE,
-        .op_index = 938,
+        .op_index = 964,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -11850,7 +12302,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_sum_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_SUM_NEON,
-        .op_index = 940,
+        .op_index = 966,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -11878,7 +12330,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_sum_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_SUM_AVX2,
-        .op_index = 939,
+        .op_index = 965,
     },
 #endif
     {
@@ -11905,7 +12357,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_sum_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_SUM_SCALAR,
-        .op_index = 941,
+        .op_index = 967,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_reduction_mean_cases[] = {
@@ -11926,7 +12378,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_mean_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_MEAN_ACCELERATE,
-        .op_index = 914,
+        .op_index = 940,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -11946,7 +12398,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_mean_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_MEAN_NEON,
-        .op_index = 916,
+        .op_index = 942,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -11966,7 +12418,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_mean_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_MEAN_AVX2,
-        .op_index = 915,
+        .op_index = 941,
     },
 #endif
     {
@@ -11985,7 +12437,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_mean_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_MEAN_SCALAR,
-        .op_index = 917,
+        .op_index = 943,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_reduction_max_cases[] = {
@@ -12014,7 +12466,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_max_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_MAX_ACCELERATE,
-        .op_index = 910,
+        .op_index = 936,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -12042,7 +12494,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_max_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_MAX_NEON,
-        .op_index = 912,
+        .op_index = 938,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -12070,7 +12522,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_max_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_MAX_AVX2,
-        .op_index = 911,
+        .op_index = 937,
     },
 #endif
     {
@@ -12097,7 +12549,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_max_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_MAX_SCALAR,
-        .op_index = 913,
+        .op_index = 939,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_reduction_min_cases[] = {
@@ -12126,7 +12578,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_min_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_MIN_ACCELERATE,
-        .op_index = 918,
+        .op_index = 944,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -12154,7 +12606,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_min_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_MIN_NEON,
-        .op_index = 920,
+        .op_index = 946,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -12182,7 +12634,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_min_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_MIN_AVX2,
-        .op_index = 919,
+        .op_index = 945,
     },
 #endif
     {
@@ -12209,7 +12661,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_min_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_MIN_SCALAR,
-        .op_index = 921,
+        .op_index = 947,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_reduction_variance_cases[] = {
@@ -12230,7 +12682,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_variance_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_VARIANCE_ACCELERATE,
-        .op_index = 942,
+        .op_index = 968,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -12250,7 +12702,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_variance_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_VARIANCE_NEON,
-        .op_index = 944,
+        .op_index = 970,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -12270,7 +12722,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_variance_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_VARIANCE_AVX2,
-        .op_index = 943,
+        .op_index = 969,
     },
 #endif
     {
@@ -12289,7 +12741,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_variance_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_VARIANCE_SCALAR,
-        .op_index = 945,
+        .op_index = 971,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_reduction_std_cases[] = {
@@ -12310,7 +12762,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_std_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_STD_ACCELERATE,
-        .op_index = 934,
+        .op_index = 960,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -12330,7 +12782,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_std_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_STD_NEON,
-        .op_index = 936,
+        .op_index = 962,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -12350,7 +12802,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_std_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_STD_AVX2,
-        .op_index = 935,
+        .op_index = 961,
     },
 #endif
     {
@@ -12369,7 +12821,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_std_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_STD_SCALAR,
-        .op_index = 937,
+        .op_index = 963,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_reduction_norm_l1_cases[] = {
@@ -12390,7 +12842,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_norm_l1_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_NORM_L1_ACCELERATE,
-        .op_index = 922,
+        .op_index = 948,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -12410,7 +12862,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_norm_l1_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_NORM_L1_NEON,
-        .op_index = 924,
+        .op_index = 950,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -12430,7 +12882,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_norm_l1_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_NORM_L1_AVX2,
-        .op_index = 923,
+        .op_index = 949,
     },
 #endif
     {
@@ -12449,7 +12901,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_norm_l1_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_NORM_L1_SCALAR,
-        .op_index = 925,
+        .op_index = 951,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_reduction_norm_l2_cases[] = {
@@ -12470,7 +12922,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_norm_l2_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_NORM_L2_ACCELERATE,
-        .op_index = 926,
+        .op_index = 952,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -12490,7 +12942,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_norm_l2_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_NORM_L2_NEON,
-        .op_index = 928,
+        .op_index = 954,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -12510,7 +12962,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_norm_l2_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_NORM_L2_AVX2,
-        .op_index = 927,
+        .op_index = 953,
     },
 #endif
     {
@@ -12529,7 +12981,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_norm_l2_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_NORM_L2_SCALAR,
-        .op_index = 929,
+        .op_index = 955,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_reduction_prod_cases[] = {
@@ -12558,7 +13010,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_prod_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_PROD_ACCELERATE,
-        .op_index = 930,
+        .op_index = 956,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -12586,7 +13038,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_prod_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_PROD_NEON,
-        .op_index = 932,
+        .op_index = 958,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -12614,7 +13066,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_prod_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_PROD_AVX2,
-        .op_index = 931,
+        .op_index = 957,
     },
 #endif
     {
@@ -12641,7 +13093,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_prod_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_PROD_SCALAR,
-        .op_index = 933,
+        .op_index = 959,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_reduction_argmax_cases[] = {
@@ -12670,7 +13122,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_argmax_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_ARGMAX_ACCELERATE,
-        .op_index = 902,
+        .op_index = 928,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -12698,7 +13150,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_argmax_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_ARGMAX_NEON,
-        .op_index = 904,
+        .op_index = 930,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -12726,7 +13178,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_argmax_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_ARGMAX_AVX2,
-        .op_index = 903,
+        .op_index = 929,
     },
 #endif
     {
@@ -12753,7 +13205,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_argmax_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_ARGMAX_SCALAR,
-        .op_index = 905,
+        .op_index = 931,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_reduction_argmin_cases[] = {
@@ -12782,7 +13234,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_argmin_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_ARGMIN_ACCELERATE,
-        .op_index = 906,
+        .op_index = 932,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -12810,7 +13262,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_argmin_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_ARGMIN_NEON,
-        .op_index = 908,
+        .op_index = 934,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -12838,7 +13290,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_argmin_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_ARGMIN_AVX2,
-        .op_index = 907,
+        .op_index = 933,
     },
 #endif
     {
@@ -12865,7 +13317,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_argmin_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_ARGMIN_SCALAR,
-        .op_index = 909,
+        .op_index = 935,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_reduction_any_cases[] = {
@@ -12894,7 +13346,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_any_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_ANY_ACCELERATE,
-        .op_index = 898,
+        .op_index = 924,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -12922,7 +13374,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_any_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_ANY_NEON,
-        .op_index = 900,
+        .op_index = 926,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -12950,7 +13402,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_any_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_ANY_AVX2,
-        .op_index = 899,
+        .op_index = 925,
     },
 #endif
     {
@@ -12977,7 +13429,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_any_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_ANY_SCALAR,
-        .op_index = 901,
+        .op_index = 927,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_reduction_all_cases[] = {
@@ -13006,7 +13458,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_all_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_ALL_ACCELERATE,
-        .op_index = 894,
+        .op_index = 920,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -13034,7 +13486,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_all_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_ALL_NEON,
-        .op_index = 896,
+        .op_index = 922,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -13062,7 +13514,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_all_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_ALL_AVX2,
-        .op_index = 895,
+        .op_index = 921,
     },
 #endif
     {
@@ -13089,7 +13541,7 @@ static const marmot_kernel_match_t marmot_cpu_reduction_all_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_REDUCTION_ALL_SCALAR,
-        .op_index = 897,
+        .op_index = 923,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_rope_cases[] = {
@@ -13107,7 +13559,7 @@ static const marmot_kernel_match_t marmot_cpu_rope_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_ROPE_F16_SCALAR,
-        .op_index = 1022,
+        .op_index = 1048,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -13123,7 +13575,7 @@ static const marmot_kernel_match_t marmot_cpu_rope_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_ROPE_F32_SCALAR,
-        .op_index = 1026,
+        .op_index = 1052,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -13139,7 +13591,7 @@ static const marmot_kernel_match_t marmot_cpu_rope_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_ROPE_BF16_SCALAR,
-        .op_index = 1019,
+        .op_index = 1045,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -13156,7 +13608,7 @@ static const marmot_kernel_match_t marmot_cpu_rope_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_ROPE_FP8_E4M3_SCALAR,
-        .op_index = 1031,
+        .op_index = 1057,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -13174,7 +13626,7 @@ static const marmot_kernel_match_t marmot_cpu_rope_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_ROPE_FP8_E5M2_SCALAR,
-        .op_index = 1032,
+        .op_index = 1058,
     },
 #endif
     {
@@ -13191,7 +13643,7 @@ static const marmot_kernel_match_t marmot_cpu_rope_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_ROPE_F64_SCALAR,
-        .op_index = 1030,
+        .op_index = 1056,
     },
 #if MARMOT_ENABLE_NEON
     {
@@ -13208,7 +13660,7 @@ static const marmot_kernel_match_t marmot_cpu_rope_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_ROPE_F16_NEON,
-        .op_index = 1021,
+        .op_index = 1047,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -13226,7 +13678,7 @@ static const marmot_kernel_match_t marmot_cpu_rope_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_ROPE_F16_ACCELERATE,
-        .op_index = 1020,
+        .op_index = 1046,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -13244,7 +13696,7 @@ static const marmot_kernel_match_t marmot_cpu_rope_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_ROPE_F32_NEON,
-        .op_index = 1025,
+        .op_index = 1051,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -13262,7 +13714,7 @@ static const marmot_kernel_match_t marmot_cpu_rope_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_ROPE_F32_AVX2,
-        .op_index = 1024,
+        .op_index = 1050,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -13280,7 +13732,7 @@ static const marmot_kernel_match_t marmot_cpu_rope_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_ROPE_F32_ACCELERATE,
-        .op_index = 1023,
+        .op_index = 1049,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -13298,7 +13750,7 @@ static const marmot_kernel_match_t marmot_cpu_rope_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_ROPE_BF16_ACCELERATE,
-        .op_index = 1018,
+        .op_index = 1044,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -13316,7 +13768,7 @@ static const marmot_kernel_match_t marmot_cpu_rope_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_ROPE_F64_NEON,
-        .op_index = 1029,
+        .op_index = 1055,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -13334,7 +13786,7 @@ static const marmot_kernel_match_t marmot_cpu_rope_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_ROPE_F64_AVX2,
-        .op_index = 1028,
+        .op_index = 1054,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -13352,7 +13804,7 @@ static const marmot_kernel_match_t marmot_cpu_rope_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_ROPE_F64_ACCELERATE,
-        .op_index = 1027,
+        .op_index = 1053,
     },
 #endif
 };
@@ -13371,7 +13823,7 @@ static const marmot_kernel_match_t marmot_cpu_softmax_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SOFTMAX_F16_SCALAR,
-        .op_index = 1153,
+        .op_index = 1179,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -13387,7 +13839,7 @@ static const marmot_kernel_match_t marmot_cpu_softmax_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SOFTMAX_F32_SCALAR,
-        .op_index = 1154,
+        .op_index = 1180,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -13403,7 +13855,7 @@ static const marmot_kernel_match_t marmot_cpu_softmax_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SOFTMAX_BF16_SCALAR,
-        .op_index = 1152,
+        .op_index = 1178,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -13420,7 +13872,7 @@ static const marmot_kernel_match_t marmot_cpu_softmax_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SOFTMAX_FP8_E4M3_SCALAR,
-        .op_index = 1156,
+        .op_index = 1182,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -13438,7 +13890,7 @@ static const marmot_kernel_match_t marmot_cpu_softmax_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SOFTMAX_FP8_E5M2_SCALAR,
-        .op_index = 1157,
+        .op_index = 1183,
     },
 #endif
     {
@@ -13455,7 +13907,7 @@ static const marmot_kernel_match_t marmot_cpu_softmax_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SOFTMAX_F64_SCALAR,
-        .op_index = 1155,
+        .op_index = 1181,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_contiguous_cases[] = {
@@ -13483,7 +13935,7 @@ static const marmot_kernel_match_t marmot_cpu_contiguous_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TENSOR_CONTIGUOUS_GENERIC,
-        .op_index = 1247,
+        .op_index = 1273,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -13500,7 +13952,7 @@ static const marmot_kernel_match_t marmot_cpu_contiguous_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TENSOR_CONTIGUOUS_FP8,
-        .op_index = 1246,
+        .op_index = 1272,
     },
 #endif
 };
@@ -13529,7 +13981,7 @@ static const marmot_kernel_match_t marmot_cpu_reshape_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TENSOR_RESHAPE_GENERIC,
-        .op_index = 1251,
+        .op_index = 1277,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -13546,7 +13998,7 @@ static const marmot_kernel_match_t marmot_cpu_reshape_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TENSOR_RESHAPE_FP8,
-        .op_index = 1250,
+        .op_index = 1276,
     },
 #endif
 };
@@ -13575,7 +14027,7 @@ static const marmot_kernel_match_t marmot_cpu_transpose_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TENSOR_TRANSPOSE_GENERIC,
-        .op_index = 1257,
+        .op_index = 1283,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -13592,7 +14044,7 @@ static const marmot_kernel_match_t marmot_cpu_transpose_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TENSOR_TRANSPOSE_FP8,
-        .op_index = 1256,
+        .op_index = 1282,
     },
 #endif
 };
@@ -13621,7 +14073,7 @@ static const marmot_kernel_match_t marmot_cpu_concat_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TENSOR_CONCAT_GENERIC,
-        .op_index = 1245,
+        .op_index = 1271,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -13638,7 +14090,7 @@ static const marmot_kernel_match_t marmot_cpu_concat_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TENSOR_CONCAT_FP8,
-        .op_index = 1244,
+        .op_index = 1270,
     },
 #endif
 };
@@ -13667,7 +14119,7 @@ static const marmot_kernel_match_t marmot_cpu_slice_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TENSOR_SLICE_GENERIC,
-        .op_index = 1255,
+        .op_index = 1281,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -13684,7 +14136,7 @@ static const marmot_kernel_match_t marmot_cpu_slice_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TENSOR_SLICE_FP8,
-        .op_index = 1254,
+        .op_index = 1280,
     },
 #endif
 };
@@ -13713,7 +14165,7 @@ static const marmot_kernel_match_t marmot_cpu_view_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TENSOR_VIEW_GENERIC,
-        .op_index = 1259,
+        .op_index = 1285,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -13730,7 +14182,7 @@ static const marmot_kernel_match_t marmot_cpu_view_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TENSOR_VIEW_FP8,
-        .op_index = 1258,
+        .op_index = 1284,
     },
 #endif
 };
@@ -13759,7 +14211,7 @@ static const marmot_kernel_match_t marmot_cpu_gather_rows_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TENSOR_GATHER_ROWS_GENERIC,
-        .op_index = 1249,
+        .op_index = 1275,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -13776,7 +14228,7 @@ static const marmot_kernel_match_t marmot_cpu_gather_rows_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TENSOR_GATHER_ROWS_FP8,
-        .op_index = 1248,
+        .op_index = 1274,
     },
 #endif
 };
@@ -13805,7 +14257,7 @@ static const marmot_kernel_match_t marmot_cpu_scatter_u64_to_i32_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TENSOR_SCATTER_U64_TO_I32_GENERIC,
-        .op_index = 1253,
+        .op_index = 1279,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -13822,7 +14274,7 @@ static const marmot_kernel_match_t marmot_cpu_scatter_u64_to_i32_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TENSOR_SCATTER_U64_TO_I32_FP8,
-        .op_index = 1252,
+        .op_index = 1278,
     },
 #endif
 };
@@ -13943,7 +14395,7 @@ static const marmot_kernel_match_t marmot_cpu_where_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_WHERE_F16_SCALAR,
-        .op_index = 1273,
+        .op_index = 1301,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -13959,7 +14411,7 @@ static const marmot_kernel_match_t marmot_cpu_where_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_WHERE_F32_SCALAR,
-        .op_index = 1274,
+        .op_index = 1302,
     },
     {
         .profile = MARMOT_PROFILE_SCALAR,
@@ -13975,7 +14427,7 @@ static const marmot_kernel_match_t marmot_cpu_where_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_WHERE_BF16_SCALAR,
-        .op_index = 1272,
+        .op_index = 1300,
     },
 #if MARMOT_ENABLE_FP8
     {
@@ -13992,7 +14444,7 @@ static const marmot_kernel_match_t marmot_cpu_where_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_WHERE_FP8_E4M3_SCALAR,
-        .op_index = 1276,
+        .op_index = 1304,
     },
 #endif
 #if MARMOT_ENABLE_FP8
@@ -14010,7 +14462,7 @@ static const marmot_kernel_match_t marmot_cpu_where_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_WHERE_FP8_E5M2_SCALAR,
-        .op_index = 1277,
+        .op_index = 1305,
     },
 #endif
     {
@@ -14027,7 +14479,7 @@ static const marmot_kernel_match_t marmot_cpu_where_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_WHERE_F64_SCALAR,
-        .op_index = 1275,
+        .op_index = 1303,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
@@ -14046,7 +14498,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_F16_ACCELERATE,
-        .op_index = 950,
+        .op_index = 976,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -14064,7 +14516,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_F16_NEON,
-        .op_index = 952,
+        .op_index = 978,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -14082,7 +14534,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_F16_AVX2,
-        .op_index = 951,
+        .op_index = 977,
     },
 #endif
     {
@@ -14099,7 +14551,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_F16_SCALAR,
-        .op_index = 953,
+        .op_index = 979,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -14116,7 +14568,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_F32_ACCELERATE,
-        .op_index = 954,
+        .op_index = 980,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -14134,7 +14586,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_F32_NEON,
-        .op_index = 956,
+        .op_index = 982,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -14152,7 +14604,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_F32_AVX2,
-        .op_index = 955,
+        .op_index = 981,
     },
 #endif
     {
@@ -14169,7 +14621,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_F32_SCALAR,
-        .op_index = 957,
+        .op_index = 983,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -14186,7 +14638,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_BF16_ACCELERATE,
-        .op_index = 946,
+        .op_index = 972,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -14204,7 +14656,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_BF16_NEON,
-        .op_index = 948,
+        .op_index = 974,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -14222,7 +14674,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_BF16_AVX2,
-        .op_index = 947,
+        .op_index = 973,
     },
 #endif
     {
@@ -14239,7 +14691,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_BF16_SCALAR,
-        .op_index = 949,
+        .op_index = 975,
     },
 #if MARMOT_ENABLE_ACCELERATE
 #if MARMOT_ENABLE_FP8
@@ -14257,7 +14709,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_FP8_E4M3_ACCELERATE,
-        .op_index = 962,
+        .op_index = 988,
     },
 #endif
 #endif
@@ -14277,7 +14729,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_FP8_E4M3_NEON,
-        .op_index = 964,
+        .op_index = 990,
     },
 #endif
 #endif
@@ -14297,7 +14749,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_FP8_E4M3_AVX2,
-        .op_index = 963,
+        .op_index = 989,
     },
 #endif
 #endif
@@ -14316,7 +14768,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_FP8_E4M3_SCALAR,
-        .op_index = 965,
+        .op_index = 991,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -14335,7 +14787,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_FP8_E5M2_ACCELERATE,
-        .op_index = 966,
+        .op_index = 992,
     },
 #endif
 #endif
@@ -14355,7 +14807,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_FP8_E5M2_NEON,
-        .op_index = 968,
+        .op_index = 994,
     },
 #endif
 #endif
@@ -14375,7 +14827,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_FP8_E5M2_AVX2,
-        .op_index = 967,
+        .op_index = 993,
     },
 #endif
 #endif
@@ -14394,7 +14846,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_FP8_E5M2_SCALAR,
-        .op_index = 969,
+        .op_index = 995,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -14412,7 +14864,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_F64_ACCELERATE,
-        .op_index = 958,
+        .op_index = 984,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -14430,7 +14882,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_F64_NEON,
-        .op_index = 960,
+        .op_index = 986,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -14448,7 +14900,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_F64_AVX2,
-        .op_index = 959,
+        .op_index = 985,
     },
 #endif
     {
@@ -14465,7 +14917,7 @@ static const marmot_kernel_match_t marmot_cpu_relu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_RELU_F64_SCALAR,
-        .op_index = 961,
+        .op_index = 987,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_gelu_cases[] = {
@@ -15360,7 +15812,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_F16_ACCELERATE,
-        .op_index = 1061,
+        .op_index = 1087,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -15378,7 +15830,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_F16_NEON,
-        .op_index = 1063,
+        .op_index = 1089,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -15396,7 +15848,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_F16_AVX2,
-        .op_index = 1062,
+        .op_index = 1088,
     },
 #endif
     {
@@ -15413,7 +15865,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_F16_SCALAR,
-        .op_index = 1064,
+        .op_index = 1090,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -15430,7 +15882,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_F32_ACCELERATE,
-        .op_index = 1065,
+        .op_index = 1091,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -15448,7 +15900,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_F32_NEON,
-        .op_index = 1067,
+        .op_index = 1093,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -15466,7 +15918,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_F32_AVX2,
-        .op_index = 1066,
+        .op_index = 1092,
     },
 #endif
     {
@@ -15483,7 +15935,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_F32_SCALAR,
-        .op_index = 1068,
+        .op_index = 1094,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -15500,7 +15952,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_BF16_ACCELERATE,
-        .op_index = 1057,
+        .op_index = 1083,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -15518,7 +15970,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_BF16_NEON,
-        .op_index = 1059,
+        .op_index = 1085,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -15536,7 +15988,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_BF16_AVX2,
-        .op_index = 1058,
+        .op_index = 1084,
     },
 #endif
     {
@@ -15553,7 +16005,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_BF16_SCALAR,
-        .op_index = 1060,
+        .op_index = 1086,
     },
 #if MARMOT_ENABLE_ACCELERATE
 #if MARMOT_ENABLE_FP8
@@ -15571,7 +16023,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_FP8_E4M3_ACCELERATE,
-        .op_index = 1073,
+        .op_index = 1099,
     },
 #endif
 #endif
@@ -15591,7 +16043,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_FP8_E4M3_NEON,
-        .op_index = 1075,
+        .op_index = 1101,
     },
 #endif
 #endif
@@ -15611,7 +16063,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_FP8_E4M3_AVX2,
-        .op_index = 1074,
+        .op_index = 1100,
     },
 #endif
 #endif
@@ -15630,7 +16082,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_FP8_E4M3_SCALAR,
-        .op_index = 1076,
+        .op_index = 1102,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -15649,7 +16101,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_FP8_E5M2_ACCELERATE,
-        .op_index = 1077,
+        .op_index = 1103,
     },
 #endif
 #endif
@@ -15669,7 +16121,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_FP8_E5M2_NEON,
-        .op_index = 1079,
+        .op_index = 1105,
     },
 #endif
 #endif
@@ -15689,7 +16141,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_FP8_E5M2_AVX2,
-        .op_index = 1078,
+        .op_index = 1104,
     },
 #endif
 #endif
@@ -15708,7 +16160,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_FP8_E5M2_SCALAR,
-        .op_index = 1080,
+        .op_index = 1106,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -15726,7 +16178,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_F64_ACCELERATE,
-        .op_index = 1069,
+        .op_index = 1095,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -15744,7 +16196,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_F64_NEON,
-        .op_index = 1071,
+        .op_index = 1097,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -15762,7 +16214,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_F64_AVX2,
-        .op_index = 1070,
+        .op_index = 1096,
     },
 #endif
     {
@@ -15779,7 +16231,7 @@ static const marmot_kernel_match_t marmot_cpu_sigmoid_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGMOID_F64_SCALAR,
-        .op_index = 1072,
+        .op_index = 1098,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
@@ -15798,7 +16250,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_F16_ACCELERATE,
-        .op_index = 1224,
+        .op_index = 1250,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -15816,7 +16268,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_F16_NEON,
-        .op_index = 1226,
+        .op_index = 1252,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -15834,7 +16286,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_F16_AVX2,
-        .op_index = 1225,
+        .op_index = 1251,
     },
 #endif
     {
@@ -15851,7 +16303,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_F16_SCALAR,
-        .op_index = 1227,
+        .op_index = 1253,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -15868,7 +16320,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_F32_ACCELERATE,
-        .op_index = 1228,
+        .op_index = 1254,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -15886,7 +16338,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_F32_NEON,
-        .op_index = 1230,
+        .op_index = 1256,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -15904,7 +16356,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_F32_AVX2,
-        .op_index = 1229,
+        .op_index = 1255,
     },
 #endif
     {
@@ -15921,7 +16373,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_F32_SCALAR,
-        .op_index = 1231,
+        .op_index = 1257,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -15938,7 +16390,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_BF16_ACCELERATE,
-        .op_index = 1220,
+        .op_index = 1246,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -15956,7 +16408,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_BF16_NEON,
-        .op_index = 1222,
+        .op_index = 1248,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -15974,7 +16426,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_BF16_AVX2,
-        .op_index = 1221,
+        .op_index = 1247,
     },
 #endif
     {
@@ -15991,7 +16443,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_BF16_SCALAR,
-        .op_index = 1223,
+        .op_index = 1249,
     },
 #if MARMOT_ENABLE_ACCELERATE
 #if MARMOT_ENABLE_FP8
@@ -16009,7 +16461,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_FP8_E4M3_ACCELERATE,
-        .op_index = 1236,
+        .op_index = 1262,
     },
 #endif
 #endif
@@ -16029,7 +16481,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_FP8_E4M3_NEON,
-        .op_index = 1238,
+        .op_index = 1264,
     },
 #endif
 #endif
@@ -16049,7 +16501,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_FP8_E4M3_AVX2,
-        .op_index = 1237,
+        .op_index = 1263,
     },
 #endif
 #endif
@@ -16068,7 +16520,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_FP8_E4M3_SCALAR,
-        .op_index = 1239,
+        .op_index = 1265,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -16087,7 +16539,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_FP8_E5M2_ACCELERATE,
-        .op_index = 1240,
+        .op_index = 1266,
     },
 #endif
 #endif
@@ -16107,7 +16559,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_FP8_E5M2_NEON,
-        .op_index = 1242,
+        .op_index = 1268,
     },
 #endif
 #endif
@@ -16127,7 +16579,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_FP8_E5M2_AVX2,
-        .op_index = 1241,
+        .op_index = 1267,
     },
 #endif
 #endif
@@ -16146,7 +16598,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_FP8_E5M2_SCALAR,
-        .op_index = 1243,
+        .op_index = 1269,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -16164,7 +16616,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_F64_ACCELERATE,
-        .op_index = 1232,
+        .op_index = 1258,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -16182,7 +16634,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_F64_NEON,
-        .op_index = 1234,
+        .op_index = 1260,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -16200,7 +16652,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_F64_AVX2,
-        .op_index = 1233,
+        .op_index = 1259,
     },
 #endif
     {
@@ -16217,7 +16669,7 @@ static const marmot_kernel_match_t marmot_cpu_tanh_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_TANH_F64_SCALAR,
-        .op_index = 1235,
+        .op_index = 1261,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
@@ -16236,7 +16688,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_F16_ACCELERATE,
-        .op_index = 1162,
+        .op_index = 1188,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -16254,7 +16706,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_F16_NEON,
-        .op_index = 1164,
+        .op_index = 1190,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -16272,7 +16724,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_F16_AVX2,
-        .op_index = 1163,
+        .op_index = 1189,
     },
 #endif
     {
@@ -16289,7 +16741,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_F16_SCALAR,
-        .op_index = 1165,
+        .op_index = 1191,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -16306,7 +16758,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_F32_ACCELERATE,
-        .op_index = 1166,
+        .op_index = 1192,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -16324,7 +16776,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_F32_NEON,
-        .op_index = 1168,
+        .op_index = 1194,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -16342,7 +16794,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_F32_AVX2,
-        .op_index = 1167,
+        .op_index = 1193,
     },
 #endif
     {
@@ -16359,7 +16811,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_F32_SCALAR,
-        .op_index = 1169,
+        .op_index = 1195,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -16376,7 +16828,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_BF16_ACCELERATE,
-        .op_index = 1158,
+        .op_index = 1184,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -16394,7 +16846,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_BF16_NEON,
-        .op_index = 1160,
+        .op_index = 1186,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -16412,7 +16864,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_BF16_AVX2,
-        .op_index = 1159,
+        .op_index = 1185,
     },
 #endif
     {
@@ -16429,7 +16881,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_BF16_SCALAR,
-        .op_index = 1161,
+        .op_index = 1187,
     },
 #if MARMOT_ENABLE_ACCELERATE
 #if MARMOT_ENABLE_FP8
@@ -16447,7 +16899,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_FP8_E4M3_ACCELERATE,
-        .op_index = 1174,
+        .op_index = 1200,
     },
 #endif
 #endif
@@ -16467,7 +16919,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_FP8_E4M3_NEON,
-        .op_index = 1176,
+        .op_index = 1202,
     },
 #endif
 #endif
@@ -16487,7 +16939,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_FP8_E4M3_AVX2,
-        .op_index = 1175,
+        .op_index = 1201,
     },
 #endif
 #endif
@@ -16506,7 +16958,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_FP8_E4M3_SCALAR,
-        .op_index = 1177,
+        .op_index = 1203,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -16525,7 +16977,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_FP8_E5M2_ACCELERATE,
-        .op_index = 1178,
+        .op_index = 1204,
     },
 #endif
 #endif
@@ -16545,7 +16997,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_FP8_E5M2_NEON,
-        .op_index = 1180,
+        .op_index = 1206,
     },
 #endif
 #endif
@@ -16565,7 +17017,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_FP8_E5M2_AVX2,
-        .op_index = 1179,
+        .op_index = 1205,
     },
 #endif
 #endif
@@ -16584,7 +17036,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_FP8_E5M2_SCALAR,
-        .op_index = 1181,
+        .op_index = 1207,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -16602,7 +17054,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_F64_ACCELERATE,
-        .op_index = 1170,
+        .op_index = 1196,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -16620,7 +17072,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_F64_NEON,
-        .op_index = 1172,
+        .op_index = 1198,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -16638,7 +17090,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_F64_AVX2,
-        .op_index = 1171,
+        .op_index = 1197,
     },
 #endif
     {
@@ -16655,7 +17107,7 @@ static const marmot_kernel_match_t marmot_cpu_sqrt_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SQRT_F64_SCALAR,
-        .op_index = 1173,
+        .op_index = 1199,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_exp_cases[] = {
@@ -18426,7 +18878,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_F16_ACCELERATE,
-        .op_index = 1037,
+        .op_index = 1063,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -18444,7 +18896,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_F16_NEON,
-        .op_index = 1039,
+        .op_index = 1065,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -18462,7 +18914,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_F16_AVX2,
-        .op_index = 1038,
+        .op_index = 1064,
     },
 #endif
     {
@@ -18479,7 +18931,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_F16_SCALAR,
-        .op_index = 1040,
+        .op_index = 1066,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -18496,7 +18948,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_F32_ACCELERATE,
-        .op_index = 1041,
+        .op_index = 1067,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -18514,7 +18966,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_F32_NEON,
-        .op_index = 1043,
+        .op_index = 1069,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -18532,7 +18984,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_F32_AVX2,
-        .op_index = 1042,
+        .op_index = 1068,
     },
 #endif
     {
@@ -18549,7 +19001,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_F32_SCALAR,
-        .op_index = 1044,
+        .op_index = 1070,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -18566,7 +19018,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_BF16_ACCELERATE,
-        .op_index = 1033,
+        .op_index = 1059,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -18584,7 +19036,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_BF16_NEON,
-        .op_index = 1035,
+        .op_index = 1061,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -18602,7 +19054,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_BF16_AVX2,
-        .op_index = 1034,
+        .op_index = 1060,
     },
 #endif
     {
@@ -18619,7 +19071,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_BF16_SCALAR,
-        .op_index = 1036,
+        .op_index = 1062,
     },
 #if MARMOT_ENABLE_ACCELERATE
 #if MARMOT_ENABLE_FP8
@@ -18637,7 +19089,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_FP8_E4M3_ACCELERATE,
-        .op_index = 1049,
+        .op_index = 1075,
     },
 #endif
 #endif
@@ -18657,7 +19109,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_FP8_E4M3_NEON,
-        .op_index = 1051,
+        .op_index = 1077,
     },
 #endif
 #endif
@@ -18677,7 +19129,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_FP8_E4M3_AVX2,
-        .op_index = 1050,
+        .op_index = 1076,
     },
 #endif
 #endif
@@ -18696,7 +19148,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_FP8_E4M3_SCALAR,
-        .op_index = 1052,
+        .op_index = 1078,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -18715,7 +19167,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_FP8_E5M2_ACCELERATE,
-        .op_index = 1053,
+        .op_index = 1079,
     },
 #endif
 #endif
@@ -18735,7 +19187,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_FP8_E5M2_NEON,
-        .op_index = 1055,
+        .op_index = 1081,
     },
 #endif
 #endif
@@ -18755,7 +19207,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_FP8_E5M2_AVX2,
-        .op_index = 1054,
+        .op_index = 1080,
     },
 #endif
 #endif
@@ -18774,7 +19226,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_FP8_E5M2_SCALAR,
-        .op_index = 1056,
+        .op_index = 1082,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -18792,7 +19244,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_F64_ACCELERATE,
-        .op_index = 1045,
+        .op_index = 1071,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -18810,7 +19262,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_F64_NEON,
-        .op_index = 1047,
+        .op_index = 1073,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -18828,7 +19280,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_F64_AVX2,
-        .op_index = 1046,
+        .op_index = 1072,
     },
 #endif
     {
@@ -18845,7 +19297,7 @@ static const marmot_kernel_match_t marmot_cpu_selu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SELU_F64_SCALAR,
-        .op_index = 1048,
+        .op_index = 1074,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_leaky_relu_cases[] = {
@@ -19302,7 +19754,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_F16_ACCELERATE,
-        .op_index = 852,
+        .op_index = 878,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -19320,7 +19772,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_F16_NEON,
-        .op_index = 854,
+        .op_index = 880,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -19338,7 +19790,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_F16_AVX2,
-        .op_index = 853,
+        .op_index = 879,
     },
 #endif
     {
@@ -19355,7 +19807,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_F16_SCALAR,
-        .op_index = 855,
+        .op_index = 881,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -19372,7 +19824,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_F32_ACCELERATE,
-        .op_index = 856,
+        .op_index = 882,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -19390,7 +19842,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_F32_NEON,
-        .op_index = 858,
+        .op_index = 884,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -19408,7 +19860,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_F32_AVX2,
-        .op_index = 857,
+        .op_index = 883,
     },
 #endif
     {
@@ -19425,7 +19877,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_F32_SCALAR,
-        .op_index = 859,
+        .op_index = 885,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -19442,7 +19894,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_BF16_ACCELERATE,
-        .op_index = 848,
+        .op_index = 874,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -19460,7 +19912,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_BF16_NEON,
-        .op_index = 850,
+        .op_index = 876,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -19478,7 +19930,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_BF16_AVX2,
-        .op_index = 849,
+        .op_index = 875,
     },
 #endif
     {
@@ -19495,7 +19947,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_BF16_SCALAR,
-        .op_index = 851,
+        .op_index = 877,
     },
 #if MARMOT_ENABLE_ACCELERATE
 #if MARMOT_ENABLE_FP8
@@ -19513,7 +19965,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_FP8_E4M3_ACCELERATE,
-        .op_index = 864,
+        .op_index = 890,
     },
 #endif
 #endif
@@ -19533,7 +19985,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_FP8_E4M3_NEON,
-        .op_index = 866,
+        .op_index = 892,
     },
 #endif
 #endif
@@ -19553,7 +20005,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_FP8_E4M3_AVX2,
-        .op_index = 865,
+        .op_index = 891,
     },
 #endif
 #endif
@@ -19572,7 +20024,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_FP8_E4M3_SCALAR,
-        .op_index = 867,
+        .op_index = 893,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -19591,7 +20043,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_FP8_E5M2_ACCELERATE,
-        .op_index = 868,
+        .op_index = 894,
     },
 #endif
 #endif
@@ -19611,7 +20063,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_FP8_E5M2_NEON,
-        .op_index = 870,
+        .op_index = 896,
     },
 #endif
 #endif
@@ -19631,7 +20083,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_FP8_E5M2_AVX2,
-        .op_index = 869,
+        .op_index = 895,
     },
 #endif
 #endif
@@ -19650,7 +20102,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_FP8_E5M2_SCALAR,
-        .op_index = 871,
+        .op_index = 897,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -19668,7 +20120,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_F64_ACCELERATE,
-        .op_index = 860,
+        .op_index = 886,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -19686,7 +20138,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_F64_NEON,
-        .op_index = 862,
+        .op_index = 888,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -19704,7 +20156,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_F64_AVX2,
-        .op_index = 861,
+        .op_index = 887,
     },
 #endif
     {
@@ -19721,7 +20173,7 @@ static const marmot_kernel_match_t marmot_cpu_prelu_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_PRELU_F64_SCALAR,
-        .op_index = 863,
+        .op_index = 889,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_abs_cases[] = {
@@ -20738,7 +21190,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_F16_ACCELERATE,
-        .op_index = 740,
+        .op_index = 766,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -20756,7 +21208,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_F16_NEON,
-        .op_index = 742,
+        .op_index = 768,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -20774,7 +21226,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_F16_AVX2,
-        .op_index = 741,
+        .op_index = 767,
     },
 #endif
     {
@@ -20791,7 +21243,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_F16_SCALAR,
-        .op_index = 743,
+        .op_index = 769,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -20808,7 +21260,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_F32_ACCELERATE,
-        .op_index = 744,
+        .op_index = 770,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -20826,7 +21278,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_F32_NEON,
-        .op_index = 746,
+        .op_index = 772,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -20844,7 +21296,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_F32_AVX2,
-        .op_index = 745,
+        .op_index = 771,
     },
 #endif
     {
@@ -20861,7 +21313,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_F32_SCALAR,
-        .op_index = 747,
+        .op_index = 773,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -20878,7 +21330,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_BF16_ACCELERATE,
-        .op_index = 736,
+        .op_index = 762,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -20896,7 +21348,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_BF16_NEON,
-        .op_index = 738,
+        .op_index = 764,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -20914,7 +21366,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_BF16_AVX2,
-        .op_index = 737,
+        .op_index = 763,
     },
 #endif
     {
@@ -20931,7 +21383,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_BF16_SCALAR,
-        .op_index = 739,
+        .op_index = 765,
     },
 #if MARMOT_ENABLE_ACCELERATE
 #if MARMOT_ENABLE_FP8
@@ -20949,7 +21401,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_FP8_E4M3_ACCELERATE,
-        .op_index = 752,
+        .op_index = 778,
     },
 #endif
 #endif
@@ -20969,7 +21421,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_FP8_E4M3_NEON,
-        .op_index = 754,
+        .op_index = 780,
     },
 #endif
 #endif
@@ -20989,7 +21441,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_FP8_E4M3_AVX2,
-        .op_index = 753,
+        .op_index = 779,
     },
 #endif
 #endif
@@ -21008,7 +21460,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_FP8_E4M3_SCALAR,
-        .op_index = 755,
+        .op_index = 781,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -21027,7 +21479,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_FP8_E5M2_ACCELERATE,
-        .op_index = 756,
+        .op_index = 782,
     },
 #endif
 #endif
@@ -21047,7 +21499,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_FP8_E5M2_NEON,
-        .op_index = 758,
+        .op_index = 784,
     },
 #endif
 #endif
@@ -21067,7 +21519,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_FP8_E5M2_AVX2,
-        .op_index = 757,
+        .op_index = 783,
     },
 #endif
 #endif
@@ -21086,7 +21538,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_FP8_E5M2_SCALAR,
-        .op_index = 759,
+        .op_index = 785,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -21104,7 +21556,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_F64_ACCELERATE,
-        .op_index = 748,
+        .op_index = 774,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -21122,7 +21574,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_F64_NEON,
-        .op_index = 750,
+        .op_index = 776,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -21140,7 +21592,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_F64_AVX2,
-        .op_index = 749,
+        .op_index = 775,
     },
 #endif
     {
@@ -21157,7 +21609,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_F64_SCALAR,
-        .op_index = 751,
+        .op_index = 777,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -21174,7 +21626,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_I8_ACCELERATE,
-        .op_index = 772,
+        .op_index = 798,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -21192,7 +21644,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_I8_NEON,
-        .op_index = 774,
+        .op_index = 800,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -21210,7 +21662,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_I8_AVX2,
-        .op_index = 773,
+        .op_index = 799,
     },
 #endif
     {
@@ -21227,7 +21679,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_I8_SCALAR,
-        .op_index = 775,
+        .op_index = 801,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -21244,7 +21696,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_I16_ACCELERATE,
-        .op_index = 760,
+        .op_index = 786,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -21262,7 +21714,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_I16_NEON,
-        .op_index = 762,
+        .op_index = 788,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -21280,7 +21732,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_I16_AVX2,
-        .op_index = 761,
+        .op_index = 787,
     },
 #endif
     {
@@ -21297,7 +21749,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_I16_SCALAR,
-        .op_index = 763,
+        .op_index = 789,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -21314,7 +21766,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_I32_ACCELERATE,
-        .op_index = 764,
+        .op_index = 790,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -21332,7 +21784,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_I32_NEON,
-        .op_index = 766,
+        .op_index = 792,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -21350,7 +21802,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_I32_AVX2,
-        .op_index = 765,
+        .op_index = 791,
     },
 #endif
     {
@@ -21367,7 +21819,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_I32_SCALAR,
-        .op_index = 767,
+        .op_index = 793,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -21384,7 +21836,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_I64_ACCELERATE,
-        .op_index = 768,
+        .op_index = 794,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -21402,7 +21854,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_I64_NEON,
-        .op_index = 770,
+        .op_index = 796,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -21420,7 +21872,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_I64_AVX2,
-        .op_index = 769,
+        .op_index = 795,
     },
 #endif
     {
@@ -21437,7 +21889,7 @@ static const marmot_kernel_match_t marmot_cpu_neg_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_NEG_I64_SCALAR,
-        .op_index = 771,
+        .op_index = 797,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
@@ -21456,7 +21908,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_F16_ACCELERATE,
-        .op_index = 1085,
+        .op_index = 1111,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -21474,7 +21926,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_F16_NEON,
-        .op_index = 1087,
+        .op_index = 1113,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -21492,7 +21944,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_F16_AVX2,
-        .op_index = 1086,
+        .op_index = 1112,
     },
 #endif
     {
@@ -21509,7 +21961,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_F16_SCALAR,
-        .op_index = 1088,
+        .op_index = 1114,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -21526,7 +21978,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_F32_ACCELERATE,
-        .op_index = 1089,
+        .op_index = 1115,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -21544,7 +21996,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_F32_NEON,
-        .op_index = 1091,
+        .op_index = 1117,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -21562,7 +22014,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_F32_AVX2,
-        .op_index = 1090,
+        .op_index = 1116,
     },
 #endif
     {
@@ -21579,7 +22031,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_F32_SCALAR,
-        .op_index = 1092,
+        .op_index = 1118,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -21596,7 +22048,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_BF16_ACCELERATE,
-        .op_index = 1081,
+        .op_index = 1107,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -21614,7 +22066,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_BF16_NEON,
-        .op_index = 1083,
+        .op_index = 1109,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -21632,7 +22084,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_BF16_AVX2,
-        .op_index = 1082,
+        .op_index = 1108,
     },
 #endif
     {
@@ -21649,7 +22101,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_BF16_SCALAR,
-        .op_index = 1084,
+        .op_index = 1110,
     },
 #if MARMOT_ENABLE_ACCELERATE
 #if MARMOT_ENABLE_FP8
@@ -21667,7 +22119,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_FP8_E4M3_ACCELERATE,
-        .op_index = 1097,
+        .op_index = 1123,
     },
 #endif
 #endif
@@ -21687,7 +22139,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_FP8_E4M3_NEON,
-        .op_index = 1099,
+        .op_index = 1125,
     },
 #endif
 #endif
@@ -21707,7 +22159,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_FP8_E4M3_AVX2,
-        .op_index = 1098,
+        .op_index = 1124,
     },
 #endif
 #endif
@@ -21726,7 +22178,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_FP8_E4M3_SCALAR,
-        .op_index = 1100,
+        .op_index = 1126,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -21745,7 +22197,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_FP8_E5M2_ACCELERATE,
-        .op_index = 1101,
+        .op_index = 1127,
     },
 #endif
 #endif
@@ -21765,7 +22217,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_FP8_E5M2_NEON,
-        .op_index = 1103,
+        .op_index = 1129,
     },
 #endif
 #endif
@@ -21785,7 +22237,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_FP8_E5M2_AVX2,
-        .op_index = 1102,
+        .op_index = 1128,
     },
 #endif
 #endif
@@ -21804,7 +22256,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_FP8_E5M2_SCALAR,
-        .op_index = 1104,
+        .op_index = 1130,
     },
 #endif
 #if MARMOT_ENABLE_ACCELERATE
@@ -21822,7 +22274,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_F64_ACCELERATE,
-        .op_index = 1093,
+        .op_index = 1119,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -21840,7 +22292,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_F64_NEON,
-        .op_index = 1095,
+        .op_index = 1121,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -21858,7 +22310,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_F64_AVX2,
-        .op_index = 1094,
+        .op_index = 1120,
     },
 #endif
     {
@@ -21875,7 +22327,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_F64_SCALAR,
-        .op_index = 1096,
+        .op_index = 1122,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -21892,7 +22344,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_I8_ACCELERATE,
-        .op_index = 1117,
+        .op_index = 1143,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -21910,7 +22362,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_I8_NEON,
-        .op_index = 1119,
+        .op_index = 1145,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -21928,7 +22380,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_I8_AVX2,
-        .op_index = 1118,
+        .op_index = 1144,
     },
 #endif
     {
@@ -21945,7 +22397,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_I8_SCALAR,
-        .op_index = 1120,
+        .op_index = 1146,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -21962,7 +22414,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_I16_ACCELERATE,
-        .op_index = 1105,
+        .op_index = 1131,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -21980,7 +22432,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_I16_NEON,
-        .op_index = 1107,
+        .op_index = 1133,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -21998,7 +22450,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_I16_AVX2,
-        .op_index = 1106,
+        .op_index = 1132,
     },
 #endif
     {
@@ -22015,7 +22467,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_I16_SCALAR,
-        .op_index = 1108,
+        .op_index = 1134,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -22032,7 +22484,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_I32_ACCELERATE,
-        .op_index = 1109,
+        .op_index = 1135,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -22050,7 +22502,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_I32_NEON,
-        .op_index = 1111,
+        .op_index = 1137,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -22068,7 +22520,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_I32_AVX2,
-        .op_index = 1110,
+        .op_index = 1136,
     },
 #endif
     {
@@ -22085,7 +22537,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_I32_SCALAR,
-        .op_index = 1112,
+        .op_index = 1138,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -22102,7 +22554,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_I64_ACCELERATE,
-        .op_index = 1113,
+        .op_index = 1139,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -22120,7 +22572,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_I64_NEON,
-        .op_index = 1115,
+        .op_index = 1141,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -22138,7 +22590,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_I64_AVX2,
-        .op_index = 1114,
+        .op_index = 1140,
     },
 #endif
     {
@@ -22155,7 +22607,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_I64_SCALAR,
-        .op_index = 1116,
+        .op_index = 1142,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -22172,7 +22624,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_U8_ACCELERATE,
-        .op_index = 1133,
+        .op_index = 1159,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -22190,7 +22642,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_U8_NEON,
-        .op_index = 1135,
+        .op_index = 1161,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -22208,7 +22660,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_U8_AVX2,
-        .op_index = 1134,
+        .op_index = 1160,
     },
 #endif
     {
@@ -22225,7 +22677,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_U8_SCALAR,
-        .op_index = 1136,
+        .op_index = 1162,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -22242,7 +22694,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_U16_ACCELERATE,
-        .op_index = 1121,
+        .op_index = 1147,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -22260,7 +22712,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_U16_NEON,
-        .op_index = 1123,
+        .op_index = 1149,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -22278,7 +22730,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_U16_AVX2,
-        .op_index = 1122,
+        .op_index = 1148,
     },
 #endif
     {
@@ -22295,7 +22747,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_U16_SCALAR,
-        .op_index = 1124,
+        .op_index = 1150,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -22312,7 +22764,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_U32_ACCELERATE,
-        .op_index = 1125,
+        .op_index = 1151,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -22330,7 +22782,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_U32_NEON,
-        .op_index = 1127,
+        .op_index = 1153,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -22348,7 +22800,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_U32_AVX2,
-        .op_index = 1126,
+        .op_index = 1152,
     },
 #endif
     {
@@ -22365,7 +22817,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_U32_SCALAR,
-        .op_index = 1128,
+        .op_index = 1154,
     },
 #if MARMOT_ENABLE_ACCELERATE
     {
@@ -22382,7 +22834,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_U64_ACCELERATE,
-        .op_index = 1129,
+        .op_index = 1155,
     },
 #endif
 #if MARMOT_ENABLE_NEON
@@ -22400,7 +22852,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_U64_NEON,
-        .op_index = 1131,
+        .op_index = 1157,
     },
 #endif
 #if MARMOT_ENABLE_AVX2
@@ -22418,7 +22870,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_U64_AVX2,
-        .op_index = 1130,
+        .op_index = 1156,
     },
 #endif
     {
@@ -22435,7 +22887,7 @@ static const marmot_kernel_match_t marmot_cpu_sign_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_SIGN_U64_SCALAR,
-        .op_index = 1132,
+        .op_index = 1158,
     },
 };
 static const marmot_kernel_match_t marmot_cpu_bitwise_not_cases[] = {
@@ -23015,7 +23467,7 @@ static const marmot_kernel_match_t marmot_cpu_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_VEC_DOT_Q4_0_Q8_0,
-        .op_index = 1262,
+        .op_index = 1290,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -23031,7 +23483,7 @@ static const marmot_kernel_match_t marmot_cpu_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_VEC_DOT_Q4_1_Q8_0,
-        .op_index = 1263,
+        .op_index = 1291,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -23047,7 +23499,7 @@ static const marmot_kernel_match_t marmot_cpu_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_VEC_DOT_Q5_0_Q8_0,
-        .op_index = 1265,
+        .op_index = 1293,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -23063,7 +23515,7 @@ static const marmot_kernel_match_t marmot_cpu_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_VEC_DOT_Q5_1_Q8_0,
-        .op_index = 1266,
+        .op_index = 1294,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -23079,7 +23531,7 @@ static const marmot_kernel_match_t marmot_cpu_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_VEC_DOT_Q8_0_Q8_0,
-        .op_index = 1269,
+        .op_index = 1297,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -23095,7 +23547,7 @@ static const marmot_kernel_match_t marmot_cpu_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_VEC_DOT_Q8_1_Q8_0,
-        .op_index = 1270,
+        .op_index = 1298,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -23111,7 +23563,7 @@ static const marmot_kernel_match_t marmot_cpu_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_VEC_DOT_Q2_K_Q8_K,
-        .op_index = 1260,
+        .op_index = 1288,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -23127,7 +23579,7 @@ static const marmot_kernel_match_t marmot_cpu_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_VEC_DOT_Q3_K_Q8_K,
-        .op_index = 1261,
+        .op_index = 1289,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -23143,7 +23595,7 @@ static const marmot_kernel_match_t marmot_cpu_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_VEC_DOT_Q4_K_Q8_K,
-        .op_index = 1264,
+        .op_index = 1292,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -23159,7 +23611,7 @@ static const marmot_kernel_match_t marmot_cpu_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_VEC_DOT_Q5_K_Q8_K,
-        .op_index = 1267,
+        .op_index = 1295,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -23175,7 +23627,7 @@ static const marmot_kernel_match_t marmot_cpu_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_VEC_DOT_Q6_K_Q8_K,
-        .op_index = 1268,
+        .op_index = 1296,
     },
     {
         .profile = MARMOT_PROFILE_INVALID,
@@ -23191,7 +23643,7 @@ static const marmot_kernel_match_t marmot_cpu_vec_dot_cases[] = {
         .fusion_mask = 0,
         .activation = MARMOT_DEVICE_UNARY_COUNT,
         .kernel_id = MARMOT_KERNEL_CPU_VEC_DOT_Q8_K_Q8_K,
-        .op_index = 1271,
+        .op_index = 1299,
     },
 };
 
@@ -23300,6 +23752,12 @@ marmot_kernel_selection_t marmot_cpu_query_kernel(const marmot_op_signature_t *s
     case MARMOT_OP_QKV_PROJECTION:
         return marmot_select_kernel_case(
             sig, caps, marmot_cpu_qkv_projection_cases, MARMOT_ARRAY_LEN(marmot_cpu_qkv_projection_cases)
+        );
+    case MARMOT_OP_TOPK:
+        return marmot_select_kernel_case(sig, caps, marmot_cpu_topk_cases, MARMOT_ARRAY_LEN(marmot_cpu_topk_cases));
+    case MARMOT_OP_MOE_EXPERTS:
+        return marmot_select_kernel_case(
+            sig, caps, marmot_cpu_moe_experts_cases, MARMOT_ARRAY_LEN(marmot_cpu_moe_experts_cases)
         );
     case MARMOT_OP_LAYERNORM:
         return marmot_select_kernel_case(

@@ -930,7 +930,15 @@ id<MTLBuffer> metal_buffer_acquire(metal_context_t *ctx, const void *ptr, size_t
 
     id<MTLBuffer> buffer = metal_buffer_lookup(ctx, (void *)ptr);
     if (buffer != nil) {
-        return buffer;
+        if (buffer.length >= length) {
+            return buffer;
+        }
+        // Cached buffer is too small for the requested length — evict and recreate below.
+        [buffer release];
+        id<MTLBuffer> evicted = metal_buffer_detach(ctx, (void *)ptr);
+        if (evicted != nil) {
+            [evicted release];
+        }
     }
 
     id<MTLBuffer> base_buffer = nil;
@@ -1063,9 +1071,16 @@ metal_tensor_buffer_t metal_buffer_acquire_view(
     pthread_mutex_lock(&ctx->residency_mutex);
     bool has_view = metal_residency_find_view_locked(ctx, tensor->data, bytes, compute_dtype, &resolved);
     if (has_view && resolved.record != nil && resolved.record.privateBuffer != nil && !resolved.record.sharedDirty) {
+        const size_t quant_bytes = marmot_tensor_quant_storage_bytes(tensor);
+        if (quant_bytes != 0 && compute_dtype == tensor->dtype && resolved.record.byteLength >= resolved.offset_bytes &&
+            resolved.record.byteLength - resolved.offset_bytes >= bytes) {
+            view.buffer = [resolved.record.privateBuffer retain];
+            view.offset = resolved.offset_bytes;
+            view.is_private = true;
+        }
         const size_t elem_size = marmot_dtype_size(tensor->dtype);
         const size_t compute_size = marmot_dtype_size(compute_dtype);
-        if (elem_size != 0 && compute_size != 0 && (resolved.offset_bytes % elem_size) == 0) {
+        if (view.buffer == nil && elem_size != 0 && compute_size != 0 && (resolved.offset_bytes % elem_size) == 0) {
             const size_t offset_elems = resolved.offset_bytes / elem_size;
             if (resolved.record.elementCount >= offset_elems &&
                 resolved.record.elementCount - offset_elems >= marmot_tensor_num_elements(tensor)) {
@@ -1575,6 +1590,18 @@ void metal_residency_mark_dirty(metal_context_t *ctx, const marmot_tensor_t *ten
     NSValue *key = metal_key_for_pointer(tensor->data);
     NSMutableDictionary<NSNumber *, MarmotMetalResidencyRecord *> *table = ctx->residency_map[key];
     MarmotMetalResidencyRecord *record = table != nil ? table[@(compute_dtype)] : nil;
+    if (record == nil) {
+        metal_residency_view_t resolved{};
+        const size_t tensor_bytes = metal_tensor_storage_bytes(tensor);
+        if (tensor_bytes != 0 &&
+            metal_residency_find_view_locked(ctx, tensor->data, tensor_bytes, compute_dtype, &resolved) &&
+            resolved.base_ptr != nullptr && resolved.record != nil) {
+            [key release];
+            key = metal_key_for_pointer(resolved.base_ptr);
+            table = ctx->residency_map[key];
+            record = resolved.record;
+        }
+    }
     if (record != nil && record.privateBuffer != nil) {
         record.privateDirty = YES;
         record.sharedDirty = NO;
@@ -1612,6 +1639,14 @@ static void metal_residency_mark_shared_dirty(metal_context_t *ctx, const void *
     }
     pthread_mutex_unlock(&ctx->residency_mutex);
     [key release];
+}
+
+void metal_residency_mark_shared_write(metal_context_t *ctx, const void *ptr) {
+    metal_residency_mark_shared_dirty(ctx, ptr);
+}
+
+void metal_residency_sync_shared_range(metal_context_t *ctx, const void *ptr, size_t bytes) {
+    (void)metal_residency_sync_range(ctx, ptr, bytes);
 }
 
 static void metal_residency_sync_single_buffer(

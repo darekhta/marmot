@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <math.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -57,6 +58,50 @@ static void test_finalize_with_options_null_guard(void **state) {
     marmot_graph_finalize_options_t opts;
     assert_int_equal(marmot_graph_finalize_options_init(&opts), MARMOT_SUCCESS);
     assert_int_equal(marmot_graph_finalize_with_options(nullptr, &opts, nullptr), MARMOT_ERROR_INVALID_ARGUMENT);
+}
+
+static void test_set_last_node_moe_params_guards(void **state) {
+    (void)state;
+
+    assert_int_equal(
+        marmot_graph_set_last_node_moe_params(nullptr, MARMOT_FFN_SWIGLU, 1.0f), MARMOT_ERROR_INVALID_ARGUMENT
+    );
+
+    marmot_graph_t *graph = marmot_graph_create();
+    assert_non_null(graph);
+
+    assert_int_equal(
+        marmot_graph_set_last_node_moe_params(graph, MARMOT_FFN_SWIGLU, 1.0f), MARMOT_ERROR_INVALID_OPERATION
+    );
+
+    marmot_graph_tensor_desc_t input_desc;
+    marmot_graph_tensor_desc_t weight_desc;
+    marmot_graph_tensor_desc_t output_desc;
+    init_tensor_desc(&input_desc, 2, 2, MARMOT_DTYPE_FLOAT32);
+    init_tensor_desc(&weight_desc, 2, 2, MARMOT_DTYPE_FLOAT32);
+    init_tensor_desc(&output_desc, 2, 2, MARMOT_DTYPE_FLOAT32);
+
+    marmot_value_id_t input_id = MARMOT_VALUE_ID_INVALID;
+    marmot_value_id_t weight_id = MARMOT_VALUE_ID_INVALID;
+    marmot_value_id_t output_id = MARMOT_VALUE_ID_INVALID;
+    assert_int_equal(marmot_graph_add_input(graph, &input_desc, &input_id), MARMOT_SUCCESS);
+    assert_int_equal(marmot_graph_add_input(graph, &weight_desc, &weight_id), MARMOT_SUCCESS);
+
+    marmot_value_id_t op_inputs[2] = {input_id, weight_id};
+    assert_int_equal(
+        marmot_graph_add_op(graph, "matmul", nullptr, op_inputs, 2, &output_desc, 1, &output_id), MARMOT_SUCCESS
+    );
+    assert_int_equal(
+        marmot_graph_set_last_node_moe_params(graph, MARMOT_FFN_SWIGLU, 1.0f), MARMOT_ERROR_INVALID_OPERATION
+    );
+    assert_int_equal(
+        marmot_graph_set_last_node_moe_params(graph, MARMOT_FFN_COUNT, 1.0f), MARMOT_ERROR_INVALID_ARGUMENT
+    );
+    assert_int_equal(
+        marmot_graph_set_last_node_moe_params(graph, MARMOT_FFN_SWIGLU, NAN), MARMOT_ERROR_INVALID_ARGUMENT
+    );
+
+    marmot_graph_destroy(graph);
 }
 
 static marmot_graph_t *create_matmul_graph(void) {
@@ -235,6 +280,7 @@ int main(void) {
         cmocka_unit_test(test_graph_get_backend_null_guard),
         cmocka_unit_test(test_finalize_auto_null_guard),
         cmocka_unit_test(test_finalize_with_options_null_guard),
+        cmocka_unit_test(test_set_last_node_moe_params_guards),
         cmocka_unit_test(test_finalize_auto_prefers_gpu_backend),
         cmocka_unit_test(test_finalize_with_options_always_cpu),
         cmocka_unit_test(test_finalize_with_options_always_gpu),

@@ -10,6 +10,7 @@ static void test_architecture_from_string(void) {
     assert(marmot_architecture_from_string("llama") == MARMOT_ARCH_LLAMA);
     assert(marmot_architecture_from_string("qwen2") == MARMOT_ARCH_QWEN2);
     assert(marmot_architecture_from_string("qwen3") == MARMOT_ARCH_QWEN3);
+    assert(marmot_architecture_from_string("qwen3moe") == MARMOT_ARCH_QWEN3MOE);
     assert(marmot_architecture_from_string("phi3") == MARMOT_ARCH_PHI3);
     assert(marmot_architecture_from_string("gemma") == MARMOT_ARCH_GEMMA);
     assert(marmot_architecture_from_string("unknown_arch") == MARMOT_ARCH_UNKNOWN);
@@ -22,6 +23,7 @@ static void test_architecture_to_string(void) {
     assert(strcmp(marmot_architecture_to_string(MARMOT_ARCH_MISTRAL), "mistral") == 0);
     assert(strcmp(marmot_architecture_to_string(MARMOT_ARCH_QWEN2), "qwen2") == 0);
     assert(strcmp(marmot_architecture_to_string(MARMOT_ARCH_QWEN3), "qwen3") == 0);
+    assert(strcmp(marmot_architecture_to_string(MARMOT_ARCH_QWEN3MOE), "qwen3moe") == 0);
     assert(strcmp(marmot_architecture_to_string(MARMOT_ARCH_PHI3), "phi3") == 0);
     assert(strcmp(marmot_architecture_to_string(MARMOT_ARCH_GEMMA), "gemma") == 0);
     assert(strcmp(marmot_architecture_to_string(MARMOT_ARCH_UNKNOWN), "unknown") == 0);
@@ -49,9 +51,21 @@ static void test_architecture_traits(void) {
     assert(qwen3 != nullptr);
     assert(qwen3->arch_id == MARMOT_ARCH_QWEN3);
     assert(qwen3->ffn_type == MARMOT_FFN_SWIGLU);
+    assert(qwen3->is_moe == false);
     assert(qwen3->has_attention_bias == false);
     assert(qwen3->has_qk_norm == true);
     assert(qwen3->rope_type == MARMOT_ROPE_TYPE_NEOX);
+
+    const marmot_architecture_traits_t *qwen3moe = marmot_get_architecture_traits(MARMOT_ARCH_QWEN3MOE);
+    assert(qwen3moe != nullptr);
+    assert(qwen3moe->arch_id == MARMOT_ARCH_QWEN3MOE);
+    assert(qwen3moe->ffn_type == MARMOT_FFN_SWIGLU);
+    assert(qwen3moe->is_moe == true);
+    assert(qwen3moe->has_attention_bias == false);
+    assert(qwen3moe->has_qk_norm == true);
+    assert(qwen3moe->router_weight_policy == MARMOT_ROUTER_WEIGHT_POLICY_SOFTMAX_SELECTED_SCALED);
+    assert(qwen3moe->rope_type == MARMOT_ROPE_TYPE_NEOX);
+    assert(qwen3moe->metal_activation_dtype == MARMOT_DTYPE_FLOAT32);
 
     const marmot_architecture_traits_t *gemma = marmot_get_architecture_traits(MARMOT_ARCH_GEMMA);
     assert(gemma != nullptr);
@@ -81,6 +95,13 @@ static void test_metadata_keys(void) {
     assert(qwen3_keys != nullptr);
     assert(strcmp(qwen3_keys->context_length, "qwen3.context_length") == 0);
     assert(strcmp(qwen3_keys->embedding_length, "qwen3.embedding_length") == 0);
+
+    const marmot_metadata_key_map_t *qwen3moe_keys = marmot_get_metadata_keys(MARMOT_ARCH_QWEN3MOE);
+    assert(qwen3moe_keys != nullptr);
+    assert(strcmp(qwen3moe_keys->context_length, "qwen3moe.context_length") == 0);
+    assert(strcmp(qwen3moe_keys->expert_count, "qwen3moe.expert_count") == 0);
+    assert(strcmp(qwen3moe_keys->expert_used_count, "qwen3moe.expert_used_count") == 0);
+    assert(strcmp(qwen3moe_keys->shared_expert_count, "qwen3moe.expert_shared_count") == 0);
 
     assert(marmot_get_metadata_keys(MARMOT_ARCH_UNKNOWN) == nullptr);
 

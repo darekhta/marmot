@@ -21,8 +21,8 @@ static const marmot_device_ops_t cpu_ops = {
     .allocator_usage = cpu_allocator_usage,
     .graph_batch_begin = nullptr,
     .graph_batch_end = nullptr,
-    .on_host_ptr_freed = nullptr,
-    .on_host_range_freed = nullptr,
+    .on_host_ptr_freed = cpu_on_host_ptr_freed,
+    .on_host_range_freed = cpu_on_host_range_freed,
 };
 
 const marmot_device_ops_t *marmot_get_cpu_ops(void) {

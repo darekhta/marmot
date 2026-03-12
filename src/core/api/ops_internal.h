@@ -78,6 +78,10 @@ marmot_error_t marmot_rmsnorm_gemma_dispatch(const marmot_context_t *ctx, const 
 
 marmot_error_t marmot_softmax_dispatch(const marmot_context_t *ctx, const marmot_softmax_desc_t *desc);
 
+marmot_error_t marmot_topk_impl(const marmot_context_t *ctx, const marmot_topk_desc_t *desc);
+
+marmot_error_t marmot_moe_experts_impl(const marmot_context_t *ctx, const marmot_moe_experts_desc_t *desc);
+
 marmot_error_t marmot_embedding_lookup_impl(const marmot_context_t *ctx, const marmot_embedding_desc_t *desc);
 
 marmot_error_t marmot_linear_impl(

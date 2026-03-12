@@ -89,13 +89,18 @@ export OBJCXX="/usr/bin/clang++"
 
 BUILD_DIR="build-release"
 
+ACCELERATE_OPT="-Denable_apple_accelerate=false"
+if [[ "$(uname)" == "Darwin" ]]; then
+    ACCELERATE_OPT="-Denable_apple_accelerate=true"
+fi
+
 # --- Install libmarmot ---
 if [[ $INSTALL_LIB -eq 1 ]]; then
     echo "--- Building libmarmot (release) ---"
 
     MESON_OPTS=(
         "-Dbuildtype=release"
-        "-Denable_apple_accelerate=false"
+        "$ACCELERATE_OPT"
         "--prefix=$PREFIX"
     )
 

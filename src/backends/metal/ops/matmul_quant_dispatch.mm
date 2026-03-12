@@ -12,9 +12,19 @@
 
 #ifdef __APPLE__
 
+static thread_local uint32_t metal_matmul_quant_hints = 0;
+
 static const char *metal_matmul_quant_log_label(const marmot_tensor_t *out, const char *kernel_name) {
     (void)out;
     return kernel_name != nullptr ? kernel_name : "matmul_quant";
+}
+
+void metal_matmul_quant_push_hints(uint32_t hints) {
+    metal_matmul_quant_hints |= hints;
+}
+
+void metal_matmul_quant_pop_hints(uint32_t hints) {
+    metal_matmul_quant_hints &= ~hints;
 }
 
 static bool metal_log_routes(void) {
@@ -47,7 +57,7 @@ static bool metal_force_mv(void) {
         value = (env != nullptr && env[0] == '1');
         initialized = true;
     }
-    return value;
+    return value || (metal_matmul_quant_hints & METAL_MATMUL_QUANT_HINT_PREFER_MV) != 0;
 }
 
 static void
@@ -97,9 +107,9 @@ static marmot_error_t metal_matmul_quant_dispatch_direct_impl(
     const uint32_t stride_k_u32 = (uint32_t)input->shape.strides[1];
     const uint32_t weight_blocks_u32 = (uint32_t)weight_blocks_per_row;
 
-    [encoder setBuffer:buffers.weight offset:0 atIndex:0];
-    [encoder setBuffer:buffers.input offset:0 atIndex:1];
-    [encoder setBuffer:buffers.out offset:0 atIndex:2];
+    [encoder setBuffer:buffers.weight offset:buffers.weight_offset atIndex:0];
+    [encoder setBuffer:buffers.input offset:buffers.input_offset atIndex:1];
+    [encoder setBuffer:buffers.out offset:buffers.out_offset atIndex:2];
     [encoder setBytes:&N_u32 length:sizeof(uint32_t) atIndex:3];
     [encoder setBytes:&K_u32 length:sizeof(uint32_t) atIndex:4];
     [encoder setBytes:&M_u32 length:sizeof(uint32_t) atIndex:5];
@@ -127,10 +137,16 @@ static marmot_error_t metal_matmul_quant_dispatch_direct_impl(
     }
     if (epilogue != nullptr) {
         id<MTLBuffer> ep_buffer = [buffers.out retain];
-        ep_status = metal_matmul_apply_epilogue(ctx, out, ep_buffer, N * M, ep_feature_dim, ep_bias_scalar, epilogue);
+        ep_status = metal_matmul_apply_epilogue(
+            ctx, out, ep_buffer, buffers.out_offset, N * M, ep_feature_dim, ep_bias_scalar, epilogue
+        );
         [ep_buffer release];
     } else {
-        metal_residency_mark_dirty(ctx, out, out->dtype);
+        if (buffers.out_private) {
+            metal_residency_mark_dirty(ctx, out, out->dtype);
+        } else {
+            metal_command_stream_track_shared_write(ctx, out->data);
+        }
         metal_command_stream_flush(ctx, false);
     }
 
@@ -199,7 +215,7 @@ static marmot_error_t metal_matmul_quant_dispatch_packed_impl(
     const uint32_t stride_n = (uint32_t)input->shape.strides[0];
     const uint32_t activation_blocks_u32 = (uint32_t)activation_blocks_per_row;
 
-    [encoder setBuffer:buffers.input offset:0 atIndex:0];
+    [encoder setBuffer:buffers.input offset:buffers.input_offset atIndex:0];
     [encoder setBuffer:input_q8_buffer offset:0 atIndex:1];
     [encoder setBytes:&K_u32 length:sizeof(uint32_t) atIndex:2];
     [encoder setBytes:&N_u32 length:sizeof(uint32_t) atIndex:3];
@@ -223,9 +239,9 @@ static marmot_error_t metal_matmul_quant_dispatch_packed_impl(
     const uint32_t weight_blocks_u32 = (uint32_t)weight_blocks_per_row;
     const uint32_t M_u32 = (uint32_t)M;
 
-    [encoder setBuffer:buffers.weight offset:0 atIndex:0];
+    [encoder setBuffer:buffers.weight offset:buffers.weight_offset atIndex:0];
     [encoder setBuffer:input_q8_buffer offset:0 atIndex:1];
-    [encoder setBuffer:buffers.out offset:0 atIndex:2];
+    [encoder setBuffer:buffers.out offset:buffers.out_offset atIndex:2];
     [encoder setBytes:&N_u32 length:sizeof(uint32_t) atIndex:3];
     [encoder setBytes:&activation_blocks_u32 length:sizeof(uint32_t) atIndex:4];
     [encoder setBytes:&M_u32 length:sizeof(uint32_t) atIndex:5];
@@ -255,10 +271,16 @@ static marmot_error_t metal_matmul_quant_dispatch_packed_impl(
     }
     if (epilogue != nullptr) {
         id<MTLBuffer> ep_buffer = [buffers.out retain];
-        ep_status = metal_matmul_apply_epilogue(ctx, out, ep_buffer, N * M, ep_feature_dim, ep_bias_scalar, epilogue);
+        ep_status = metal_matmul_apply_epilogue(
+            ctx, out, ep_buffer, buffers.out_offset, N * M, ep_feature_dim, ep_bias_scalar, epilogue
+        );
         [ep_buffer release];
     } else {
-        metal_residency_mark_dirty(ctx, out, out->dtype);
+        if (buffers.out_private) {
+            metal_residency_mark_dirty(ctx, out, out->dtype);
+        } else {
+            metal_command_stream_track_shared_write(ctx, out->data);
+        }
         metal_command_stream_flush(ctx, false);
     }
 
@@ -289,7 +311,9 @@ marmot_error_t metal_matmul_quant_dispatch_k_direct(
     const char *mm_kernel = mm16_candidate ? kernels->kernel_mm16 : (mm32_candidate ? kernels->kernel_mm : nullptr);
     const bool mv_ext_candidate = !small_k && !mm_candidate && kernels->kernel_mv_ext != nullptr && N >= 4 && N <= 8 &&
         input->shape.strides[1] == 1 && (input->shape.strides[0] % 16u) == 0u && (K % 16u) == 0u;
-    const bool use_nr2 = !small_k && !mm_candidate && !mv_ext_candidate && kernels->kernel_nr2 != nullptr && N >= 2;
+    const bool opt_path_nr2 = kernels->kernel_opt != nullptr && metal_kernel_has_suffix(kernels->kernel_opt, "_opt");
+    const bool use_nr2 =
+        !small_k && !mm_candidate && !mv_ext_candidate && opt_path_nr2 && kernels->kernel_nr2 != nullptr && N >= 2;
     const char *kernel_name = small_k
         ? kernels->kernel_small
         : (mm_candidate
@@ -364,9 +388,9 @@ marmot_error_t metal_matmul_quant_dispatch_k_direct(
     const uint32_t stride_k = (uint32_t)input->shape.strides[1];
     const uint32_t weight_blocks_u32 = (uint32_t)weight_blocks_per_row;
 
-    [encoder setBuffer:buffers.weight offset:0 atIndex:0];
-    [encoder setBuffer:buffers.input offset:0 atIndex:1];
-    [encoder setBuffer:buffers.out offset:0 atIndex:2];
+    [encoder setBuffer:buffers.weight offset:buffers.weight_offset atIndex:0];
+    [encoder setBuffer:buffers.input offset:buffers.input_offset atIndex:1];
+    [encoder setBuffer:buffers.out offset:buffers.out_offset atIndex:2];
     [encoder setBytes:&N_u32 length:sizeof(uint32_t) atIndex:3];
     [encoder setBytes:&K_u32 length:sizeof(uint32_t) atIndex:4];
     [encoder setBytes:&M_u32 length:sizeof(uint32_t) atIndex:5];
@@ -428,10 +452,16 @@ marmot_error_t metal_matmul_quant_dispatch_k_direct(
     }
     if (epilogue != nullptr) {
         id<MTLBuffer> ep_buffer = [buffers.out retain];
-        ep_status = metal_matmul_apply_epilogue(ctx, out, ep_buffer, N * M, ep_feature_dim, ep_bias_scalar, epilogue);
+        ep_status = metal_matmul_apply_epilogue(
+            ctx, out, ep_buffer, buffers.out_offset, N * M, ep_feature_dim, ep_bias_scalar, epilogue
+        );
         [ep_buffer release];
     } else {
-        metal_residency_mark_dirty(ctx, out, out->dtype);
+        if (buffers.out_private) {
+            metal_residency_mark_dirty(ctx, out, out->dtype);
+        } else {
+            metal_command_stream_track_shared_write(ctx, out->data);
+        }
         metal_command_stream_flush(ctx, false);
     }
 

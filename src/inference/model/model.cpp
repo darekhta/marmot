@@ -122,6 +122,9 @@ Model::load_file(const char *path, const marmot_model_options_t &opts, marmot_er
     info.rope_beta_slow = meta.rope_beta_slow;
     info.rope_orig_ctx_len = meta.rope_orig_ctx_len;
     info.rms_norm_eps = meta.rms_norm_eps;
+    info.is_moe = meta.is_moe;
+    info.n_experts = meta.n_experts;
+    info.n_experts_used = meta.n_experts_used;
 
     if (info.architecture[0] == '\0') {
         status = MARMOT_ERROR_INVALID_ARGUMENT;

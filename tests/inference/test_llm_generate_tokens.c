@@ -1004,15 +1004,42 @@ static void test_llm_smoke_all_fixtures_metal(void **state) {
         assert_int_equal(marmot_model_get_info(model, &info), MARMOT_SUCCESS);
 
         marmot_token_id_t prompt_token = info.n_vocab > 1 ? (marmot_token_id_t)1 : (marmot_token_id_t)0;
-        marmot_token_id_t out_tokens[1] = {MARMOT_TOKEN_ID_INVALID};
+        marmot_token_id_t out_tokens[4] = {
+            MARMOT_TOKEN_ID_INVALID, MARMOT_TOKEN_ID_INVALID, MARMOT_TOKEN_ID_INVALID, MARMOT_TOKEN_ID_INVALID
+        };
         size_t out_len = 0;
 
         marmot_error_t gen_err =
-            run_serving_generate(ctx, model, MARMOT_BACKEND_METAL, &prompt_token, 1, 16, 1, out_tokens, 1, &out_len);
+            run_serving_generate(ctx, model, MARMOT_BACKEND_METAL, &prompt_token, 1, 16, 4, out_tokens, 4, &out_len);
         if (gen_err == MARMOT_SUCCESS) {
-            assert_int_equal(out_len, 1);
+            fprintf(stderr, "[metal_decode] %s: tokens=[", fixture->filename);
+            for (size_t i = 0; i < out_len; ++i) {
+                fprintf(stderr, "%s%d", i ? ", " : "", out_tokens[i]);
+            }
+            fprintf(stderr, "] (len=%zu)\n", out_len);
+            assert_true(out_len >= 1);
             assert_true(out_tokens[0] >= 0);
             assert_true((size_t)out_tokens[0] < info.n_vocab);
+        }
+
+        // CPU comparison
+        marmot_context_t *cpu_ctx = marmot_init(MARMOT_BACKEND_CPU);
+        if (cpu_ctx != nullptr) {
+            marmot_token_id_t cpu_tokens[4] = {
+                MARMOT_TOKEN_ID_INVALID, MARMOT_TOKEN_ID_INVALID, MARMOT_TOKEN_ID_INVALID, MARMOT_TOKEN_ID_INVALID
+            };
+            size_t cpu_len = 0;
+            marmot_error_t cpu_err = run_serving_generate(
+                cpu_ctx, model, MARMOT_BACKEND_CPU, &prompt_token, 1, 16, 4, cpu_tokens, 4, &cpu_len
+            );
+            if (cpu_err == MARMOT_SUCCESS) {
+                fprintf(stderr, "[cpu_decode]   %s: tokens=[", fixture->filename);
+                for (size_t i = 0; i < cpu_len; ++i) {
+                    fprintf(stderr, "%s%d", i ? ", " : "", cpu_tokens[i]);
+                }
+                fprintf(stderr, "] (len=%zu)\n", cpu_len);
+            }
+            marmot_destroy(cpu_ctx);
         }
 
         marmot_model_destroy(model);

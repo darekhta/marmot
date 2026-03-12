@@ -13,6 +13,10 @@ typedef struct metal_matmul_quant_buffers {
     id<MTLBuffer> weight;
     id<MTLBuffer> input;
     id<MTLBuffer> out;
+    size_t weight_offset;
+    size_t input_offset;
+    size_t out_offset;
+    bool out_private;
 } metal_matmul_quant_buffers_t;
 
 void metal_matmul_quant_buffers_release(metal_matmul_quant_buffers_t *buffers);

@@ -79,6 +79,20 @@ static void split_qkv_bias(const float *fused, size_t m, float *bq, float *bk, f
     memcpy(bv, fused + 2 * m, m * sizeof(float));
 }
 
+static float test_moe_silu(float x) {
+    return x / (1.0f + expf(-x));
+}
+
+static void matmul_row_vector(const float *x, size_t in_dim, const float *weight, size_t out_dim, float *out) {
+    for (size_t row = 0; row < out_dim; ++row) {
+        float acc = 0.0f;
+        for (size_t col = 0; col < in_dim; ++col) {
+            acc += x[col] * weight[row * in_dim + col];
+        }
+        out[row] = acc;
+    }
+}
+
 static void test_graph_build_and_finalize(void **state) {
     (void)state;
 
@@ -415,6 +429,306 @@ static void test_graph_execute_gather_rows(void **state) {
     marmot_tensor_destroy(output_tensor);
     marmot_tensor_destroy(indices_tensor);
     marmot_tensor_destroy(input_tensor);
+    marmot_graph_destroy(graph);
+    marmot_destroy(ctx);
+}
+
+static void test_graph_execute_topk_dispatch(void **state) {
+    (void)state;
+
+    marmot_context_t *ctx = marmot_init(MARMOT_BACKEND_CPU);
+    assert_non_null(ctx);
+
+    marmot_graph_t *graph = marmot_graph_create();
+    assert_non_null(graph);
+
+    marmot_graph_tensor_desc_t input_desc;
+    init_tensor_desc(&input_desc, 2, 5, MARMOT_DTYPE_FLOAT32);
+
+    marmot_graph_tensor_desc_t values_desc;
+    init_tensor_desc(&values_desc, 2, 3, MARMOT_DTYPE_FLOAT32);
+
+    marmot_graph_tensor_desc_t indices_desc;
+    init_tensor_desc(&indices_desc, 2, 3, MARMOT_DTYPE_INT32);
+
+    marmot_value_id_t input_id = MARMOT_VALUE_ID_INVALID;
+    assert_int_equal(marmot_graph_add_input(graph, &input_desc, &input_id), MARMOT_SUCCESS);
+
+    marmot_op_signature_t sig = {
+        .op_id = MARMOT_OP_TOPK,
+        .profile_id = MARMOT_PROFILE_INVALID,
+        .input_dtype = MARMOT_DTYPE_FLOAT32,
+        .weight_dtype = MARMOT_DTYPE_INT32,
+        .output_dtype = MARMOT_DTYPE_FLOAT32,
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_id = MARMOT_QSCHEME_NONE,
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_flags = MARMOT_EPILOGUE_NONE,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .variant_flags = MARMOT_FUSION_NONE,
+    };
+
+    marmot_graph_tensor_desc_t output_descs[2] = {values_desc, indices_desc};
+    marmot_value_id_t output_ids[2] = {MARMOT_VALUE_ID_INVALID, MARMOT_VALUE_ID_INVALID};
+    assert_int_equal(
+        marmot_graph_add_op(graph, "topk", &sig, &input_id, 1, output_descs, 2, output_ids), MARMOT_SUCCESS
+    );
+    assert_int_equal(marmot_graph_finalize(graph, MARMOT_BACKEND_CPU), MARMOT_SUCCESS);
+
+    const size_t input_shape[2] = {2, 5};
+    const size_t output_shape[2] = {2, 3};
+    const float input_data[] = {
+        1.0f, 4.0f, 4.0f, 2.0f, -1.0f, 0.0f, -3.0f, 5.0f, 5.0f, 1.0f,
+    };
+    const float expected_values[] = {
+        4.0f, 4.0f, 2.0f, 5.0f, 5.0f, 1.0f,
+    };
+    const int32_t expected_indices[] = {
+        1, 2, 3, 2, 3, 4,
+    };
+
+    marmot_tensor_t *input_tensor = marmot_tensor_create(nullptr, input_shape, 2, MARMOT_DTYPE_FLOAT32);
+    marmot_tensor_t *values_tensor = marmot_tensor_create(nullptr, output_shape, 2, MARMOT_DTYPE_FLOAT32);
+    marmot_tensor_t *indices_tensor = marmot_tensor_create(nullptr, output_shape, 2, MARMOT_DTYPE_INT32);
+    assert_non_null(input_tensor);
+    assert_non_null(values_tensor);
+    assert_non_null(indices_tensor);
+    fill_tensor_f32(input_tensor, input_data, 10);
+
+    const marmot_tensor_t *graph_inputs[] = {input_tensor};
+    marmot_tensor_t *graph_outputs[] = {values_tensor, indices_tensor};
+    assert_int_equal(marmot_graph_execute(graph, ctx, graph_inputs, 1, graph_outputs, 2), MARMOT_SUCCESS);
+
+    const float *actual_values = (const float *)values_tensor->data;
+    for (size_t i = 0; i < 6; ++i) {
+        assert_float_equal(actual_values[i], expected_values[i], 1e-6f);
+    }
+
+    const marmot_int32_t *actual_indices = marmot_tensor_data_i32(ctx, indices_tensor);
+    assert_non_null(actual_indices);
+    for (size_t i = 0; i < 6; ++i) {
+        assert_int_equal(actual_indices[i].value, expected_indices[i]);
+    }
+
+    marmot_tensor_destroy(indices_tensor);
+    marmot_tensor_destroy(values_tensor);
+    marmot_tensor_destroy(input_tensor);
+    marmot_graph_destroy(graph);
+    marmot_destroy(ctx);
+}
+
+static void test_graph_execute_moe_experts_dispatch(void **state) {
+    (void)state;
+
+    marmot_context_t *ctx = marmot_init(MARMOT_BACKEND_CPU);
+    assert_non_null(ctx);
+
+    marmot_graph_t *graph = marmot_graph_create();
+    assert_non_null(graph);
+
+    marmot_graph_tensor_desc_t hidden_desc;
+    init_tensor_desc(&hidden_desc, 2, 2, MARMOT_DTYPE_FLOAT32);
+
+    marmot_graph_tensor_desc_t expert_desc;
+    memset(&expert_desc, 0, sizeof(expert_desc));
+    expert_desc.dtype = MARMOT_DTYPE_FLOAT32;
+    expert_desc.ndim = 3;
+    expert_desc.shape[0] = 2;
+    expert_desc.shape[1] = 2;
+    expert_desc.shape[2] = 2;
+    expert_desc.strides[2] = 1;
+    expert_desc.strides[1] = expert_desc.shape[2];
+    expert_desc.strides[0] = expert_desc.shape[1] * expert_desc.shape[2];
+
+    marmot_graph_tensor_desc_t topk_ids_desc;
+    init_tensor_desc(&topk_ids_desc, 2, 2, MARMOT_DTYPE_INT32);
+
+    marmot_graph_tensor_desc_t topk_weights_desc;
+    init_tensor_desc(&topk_weights_desc, 2, 2, MARMOT_DTYPE_FLOAT32);
+
+    marmot_value_id_t hidden_id = MARMOT_VALUE_ID_INVALID;
+    marmot_value_id_t gate_id = MARMOT_VALUE_ID_INVALID;
+    marmot_value_id_t up_id = MARMOT_VALUE_ID_INVALID;
+    marmot_value_id_t down_id = MARMOT_VALUE_ID_INVALID;
+    marmot_value_id_t topk_ids_id = MARMOT_VALUE_ID_INVALID;
+    marmot_value_id_t topk_weights_id = MARMOT_VALUE_ID_INVALID;
+    assert_int_equal(marmot_graph_add_input(graph, &hidden_desc, &hidden_id), MARMOT_SUCCESS);
+    assert_int_equal(marmot_graph_add_input(graph, &expert_desc, &gate_id), MARMOT_SUCCESS);
+    assert_int_equal(marmot_graph_add_input(graph, &expert_desc, &up_id), MARMOT_SUCCESS);
+    assert_int_equal(marmot_graph_add_input(graph, &expert_desc, &down_id), MARMOT_SUCCESS);
+    assert_int_equal(marmot_graph_add_input(graph, &topk_ids_desc, &topk_ids_id), MARMOT_SUCCESS);
+    assert_int_equal(marmot_graph_add_input(graph, &topk_weights_desc, &topk_weights_id), MARMOT_SUCCESS);
+
+    marmot_op_signature_t sig = {
+        .op_id = MARMOT_OP_MOE_EXPERTS,
+        .profile_id = MARMOT_PROFILE_INVALID,
+        .input_dtype = MARMOT_DTYPE_FLOAT32,
+        .weight_dtype = MARMOT_DTYPE_FLOAT32,
+        .output_dtype = MARMOT_DTYPE_FLOAT32,
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_id = MARMOT_QSCHEME_NONE,
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_flags = MARMOT_EPILOGUE_NONE,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .variant_flags = MARMOT_FUSION_NONE,
+    };
+
+    marmot_value_id_t op_inputs[6] = {hidden_id, gate_id, up_id, down_id, topk_ids_id, topk_weights_id};
+    marmot_value_id_t output_id = MARMOT_VALUE_ID_INVALID;
+    assert_int_equal(
+        marmot_graph_add_op(graph, "moe_experts", &sig, op_inputs, 6, &hidden_desc, 1, &output_id), MARMOT_SUCCESS
+    );
+    assert_int_equal(marmot_graph_set_last_node_moe_params(graph, MARMOT_FFN_SWIGLU, 1.5f), MARMOT_SUCCESS);
+    assert_int_equal(marmot_graph_finalize(graph, MARMOT_BACKEND_CPU), MARMOT_SUCCESS);
+
+    const size_t hidden_shape[2] = {2, 2};
+    const size_t expert_shape[3] = {2, 2, 2};
+    const size_t topk_shape[2] = {2, 2};
+    const float hidden_data[] = {
+        1.0f,
+        -0.5f,
+        0.25f,
+        0.75f,
+    };
+    const float gate_expert0[] = {
+        1.0f,
+        0.0f,
+        0.0f,
+        1.0f,
+    };
+    const float gate_expert1[] = {
+        0.2f,
+        -0.4f,
+        0.7f,
+        0.1f,
+    };
+    const float up_expert0[] = {
+        0.5f,
+        0.0f,
+        0.0f,
+        2.0f,
+    };
+    const float up_expert1[] = {
+        1.2f,
+        0.3f,
+        -0.6f,
+        0.8f,
+    };
+    const float down_expert0[] = {
+        1.0f,
+        0.0f,
+        0.0f,
+        1.0f,
+    };
+    const float down_expert1[] = {
+        0.6f,
+        -0.2f,
+        0.1f,
+        0.9f,
+    };
+    const float gate_exps_storage[] = {
+        1.0f, 0.0f, 0.0f, 1.0f, 0.2f, -0.4f, 0.7f, 0.1f,
+    };
+    const float up_exps_storage[] = {
+        0.5f, 0.0f, 0.0f, 2.0f, 1.2f, 0.3f, -0.6f, 0.8f,
+    };
+    const float down_exps_storage[] = {
+        1.0f, 0.0f, 0.0f, 1.0f, 0.6f, -0.2f, 0.1f, 0.9f,
+    };
+    const marmot_int32_t topk_ids_data[] = {
+        MARMOT_I32(0),
+        MARMOT_I32(1),
+        MARMOT_I32(1),
+        MARMOT_I32(0),
+    };
+    const float topk_weights_data[] = {
+        0.75f,
+        0.25f,
+        1.0f,
+        0.5f,
+    };
+
+    marmot_tensor_t *hidden_tensor = marmot_tensor_create(ctx, hidden_shape, 2, MARMOT_DTYPE_FLOAT32);
+    marmot_tensor_t *gate_tensor = marmot_tensor_create(ctx, expert_shape, 3, MARMOT_DTYPE_FLOAT32);
+    marmot_tensor_t *up_tensor = marmot_tensor_create(ctx, expert_shape, 3, MARMOT_DTYPE_FLOAT32);
+    marmot_tensor_t *down_tensor = marmot_tensor_create(ctx, expert_shape, 3, MARMOT_DTYPE_FLOAT32);
+    marmot_tensor_t *topk_ids_tensor = marmot_tensor_create(ctx, topk_shape, 2, MARMOT_DTYPE_INT32);
+    marmot_tensor_t *topk_weights_tensor = marmot_tensor_create(ctx, topk_shape, 2, MARMOT_DTYPE_FLOAT32);
+    marmot_tensor_t *output_tensor = marmot_tensor_create(ctx, hidden_shape, 2, MARMOT_DTYPE_FLOAT32);
+    assert_non_null(hidden_tensor);
+    assert_non_null(gate_tensor);
+    assert_non_null(up_tensor);
+    assert_non_null(down_tensor);
+    assert_non_null(topk_ids_tensor);
+    assert_non_null(topk_weights_tensor);
+    assert_non_null(output_tensor);
+
+    fill_tensor_f32(hidden_tensor, hidden_data, 4);
+    assert_int_equal(
+        marmot_tensor_copy_from_host_buffer(ctx, gate_tensor, gate_exps_storage, sizeof(gate_exps_storage)),
+        MARMOT_SUCCESS
+    );
+    assert_int_equal(
+        marmot_tensor_copy_from_host_buffer(ctx, up_tensor, up_exps_storage, sizeof(up_exps_storage)), MARMOT_SUCCESS
+    );
+    assert_int_equal(
+        marmot_tensor_copy_from_host_buffer(ctx, down_tensor, down_exps_storage, sizeof(down_exps_storage)),
+        MARMOT_SUCCESS
+    );
+    assert_int_equal(
+        marmot_tensor_copy_from_host_buffer(ctx, topk_ids_tensor, topk_ids_data, sizeof(topk_ids_data)), MARMOT_SUCCESS
+    );
+    assert_int_equal(
+        marmot_tensor_copy_from_host_buffer(ctx, topk_weights_tensor, topk_weights_data, sizeof(topk_weights_data)),
+        MARMOT_SUCCESS
+    );
+
+    const marmot_tensor_t *graph_inputs[] = {
+        hidden_tensor, gate_tensor, up_tensor, down_tensor, topk_ids_tensor, topk_weights_tensor,
+    };
+    marmot_tensor_t *graph_outputs[] = {output_tensor};
+    assert_int_equal(marmot_graph_execute(graph, ctx, graph_inputs, 6, graph_outputs, 1), MARMOT_SUCCESS);
+
+    float expected[4] = {0.0f, 0.0f, 0.0f, 0.0f};
+    const float *expert_gate[2] = {gate_expert0, gate_expert1};
+    const float *expert_up[2] = {up_expert0, up_expert1};
+    const float *expert_down[2] = {down_expert0, down_expert1};
+    for (size_t token = 0; token < 2; ++token) {
+        const float *x = hidden_data + token * 2;
+        float *out_row = expected + token * 2;
+        for (size_t slot = 0; slot < 2; ++slot) {
+            const int32_t expert_idx = topk_ids_data[token * 2 + slot].value;
+            float gate_vals[2];
+            float up_vals[2];
+            float fused[2];
+            float down_vals[2];
+            matmul_row_vector(x, 2, expert_gate[expert_idx], 2, gate_vals);
+            matmul_row_vector(x, 2, expert_up[expert_idx], 2, up_vals);
+            for (size_t i = 0; i < 2; ++i) {
+                fused[i] = test_moe_silu(gate_vals[i]) * up_vals[i];
+            }
+            matmul_row_vector(fused, 2, expert_down[expert_idx], 2, down_vals);
+            const float weight = topk_weights_data[token * 2 + slot] * 1.5f;
+            for (size_t i = 0; i < 2; ++i) {
+                out_row[i] += weight * down_vals[i];
+            }
+        }
+    }
+
+    const float *actual = (const float *)output_tensor->data;
+    for (size_t i = 0; i < 4; ++i) {
+        assert_float_equal(actual[i], expected[i], 1e-5f);
+    }
+
+    marmot_tensor_destroy(output_tensor);
+    marmot_tensor_destroy(topk_weights_tensor);
+    marmot_tensor_destroy(topk_ids_tensor);
+    marmot_tensor_destroy(down_tensor);
+    marmot_tensor_destroy(up_tensor);
+    marmot_tensor_destroy(gate_tensor);
+    marmot_tensor_destroy(hidden_tensor);
     marmot_graph_destroy(graph);
     marmot_destroy(ctx);
 }
@@ -767,6 +1081,8 @@ int main(void) {
         cmocka_unit_test(test_graph_finalize_requires_rank2_inputs),
         cmocka_unit_test(test_graph_execute_matmul_dispatch),
         cmocka_unit_test(test_graph_execute_gather_rows),
+        cmocka_unit_test(test_graph_execute_topk_dispatch),
+        cmocka_unit_test(test_graph_execute_moe_experts_dispatch),
         cmocka_unit_test(test_graph_execute_qkv_dispatch),
         cmocka_unit_test(test_graph_execute_two_stage_matmul),
         cmocka_unit_test(test_graph_execute_llama_matmul_cases),

@@ -3,9 +3,9 @@
 #include "marmot/ops/manipulation.h"
 #include "marmot/ops/matmul.h"
 #include "marmot/ops/rope.h"
-#if MARMOT_ENABLE_CPU
 marmot_error_t cpu_matmul_quant_prepack(const void *device_ctx, const marmot_tensor_t *weight);
-#endif
+marmot_error_t
+cpu_matmul_quant_pin_range(const void *device_ctx, const void *src, size_t bytes, size_t row_bytes, size_t rows);
 
 #include "core/dispatch/dispatch_build.h"
 #include "core/dispatch/dispatch_execute.h"
@@ -525,13 +525,25 @@ marmot_error_t marmot_matmul_prepack_quant_weight_impl(const marmot_context_t *c
         marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Prepack only supports block-quantized weights");
         return MARMOT_ERROR_INVALID_ARGUMENT;
     }
-#if MARMOT_ENABLE_CPU
-    if (ctx->backend != nullptr && ctx->backend->type == MARMOT_BACKEND_CPU) {
+    if (ctx->backend_type == MARMOT_BACKEND_CPU) {
         return cpu_matmul_quant_prepack(ctx->device_ctx, weight);
     }
-#endif
     marmot_set_error(MARMOT_ERROR_NOT_IMPLEMENTED, "Matmul prepack not available for this backend");
     return MARMOT_ERROR_NOT_IMPLEMENTED;
+}
+
+marmot_error_t marmot_cpu_pin_quant_weight_range(
+    const marmot_context_t *ctx, const void *src, size_t bytes, size_t row_bytes, size_t rows
+) {
+    if (ctx == nullptr || src == nullptr || bytes == 0 || row_bytes == 0 || rows == 0) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null argument to CPU quant weight pin");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    if (ctx->backend_type != MARMOT_BACKEND_CPU) {
+        marmot_set_error(MARMOT_ERROR_NOT_IMPLEMENTED, "CPU quant weight pin only supports the CPU backend");
+        return MARMOT_ERROR_NOT_IMPLEMENTED;
+    }
+    return cpu_matmul_quant_pin_range(ctx->device_ctx, src, bytes, row_bytes, rows);
 }
 
 static bool marmot_matmul_qkv_desc_is_separate(const marmot_matmul_qkv_desc_t *desc) {

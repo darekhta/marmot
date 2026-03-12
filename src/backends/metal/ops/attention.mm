@@ -120,10 +120,6 @@ static constexpr uint32_t k_metal_decode_attention_simd_groups_large = 8;
 static constexpr size_t k_metal_decode_attention_dim_max = 256;
 static constexpr size_t k_metal_decode_attention_seq_k_large = 64;
 
-static constexpr size_t k_metal_flash_attention_dim_small = 128;
-static constexpr size_t k_metal_flash_attention_dim_max = 256;
-static constexpr size_t k_metal_flash_attention_dim_narrow = 192;
-
 static constexpr uint32_t k_paged_token_flag_prefill = 1u << 0;
 static constexpr uint32_t k_paged_token_flag_decode = 1u << 1;
 
@@ -145,225 +141,122 @@ static int metal_decode_attention_simd_groups_override(void) {
     return cached;
 }
 
-enum metal_paged_flash_tuning_mode {
-    k_metal_paged_flash_tune_auto = 0,
-    k_metal_paged_flash_tune_default = 1,
-    k_metal_paged_flash_tune_narrow = 2,
-};
-
-static metal_paged_flash_tuning_mode metal_paged_flash_tuning_mode_value(void) {
-    static bool cached = false;
-    static metal_paged_flash_tuning_mode mode = k_metal_paged_flash_tune_auto;
-    if (cached) {
-        return mode;
+static bool metal_flash_disabled(void) {
+    static int cached = -1;
+    if (cached == -1) {
+        const char *env = getenv("MARMOT_METAL_FLASH_DISABLE");
+        cached = (env != nullptr && env[0] == '1') ? 1 : 0;
     }
-    cached = true;
-    const char *env = getenv("MARMOT_METAL_PAGED_FLASH_VARIANT");
-    if (env == nullptr || env[0] == '\0') {
-        return mode;
-    }
-    if (strcmp(env, "narrow") == 0 || strcmp(env, "1") == 0) {
-        mode = k_metal_paged_flash_tune_narrow;
-    } else if (strcmp(env, "default") == 0 || strcmp(env, "0") == 0) {
-        mode = k_metal_paged_flash_tune_default;
-    } else if (strcmp(env, "auto") == 0) {
-        mode = k_metal_paged_flash_tune_auto;
-    }
-    return mode;
+    return cached == 1;
 }
 
-static bool metal_paged_flash_use_narrow_variant(size_t dim, marmot_dtype_t dtype, marmot_dtype_t kv_dtype) {
-    if (dim == 0 || dim > k_metal_flash_attention_dim_max) {
+static bool metal_should_use_flash_attention(size_t dim, marmot_dtype_t q_dtype, marmot_dtype_t kv_dtype) {
+    if (metal_flash_disabled())
         return false;
-    }
-    if (dtype != MARMOT_DTYPE_FLOAT32 && dtype != MARMOT_DTYPE_FLOAT16 && dtype != MARMOT_DTYPE_BFLOAT16) {
+    if (dim != 64 && dim != 128)
         return false;
+    // Only use simdgroup kernel when dtypes match or KV precision <= Q precision.
+    // Mixed cases where KV is higher precision (e.g., f16 Q / f32 KV) lose too much
+    // accuracy when KV values are demoted to half for simdgroup_matrix.
+    if (q_dtype != kv_dtype) {
+        size_t q_size = marmot_dtype_size(q_dtype);
+        size_t kv_size = marmot_dtype_size(kv_dtype);
+        if (kv_size > q_size)
+            return false;
     }
-    const metal_paged_flash_tuning_mode mode = metal_paged_flash_tuning_mode_value();
-    if (mode == k_metal_paged_flash_tune_narrow) {
-        return true;
-    }
-    if (mode == k_metal_paged_flash_tune_default) {
-        return false;
-    }
-    if (kv_dtype == MARMOT_DTYPE_FLOAT32 && (dtype == MARMOT_DTYPE_FLOAT16 || dtype == MARMOT_DTYPE_BFLOAT16)) {
-        return true;
-    }
-    return dim >= k_metal_flash_attention_dim_narrow;
+    return true;
 }
 
-static const char *metal_paged_flash_attention_kernel_name(marmot_dtype_t dtype, size_t dim) {
-    if (dim == 0 || dim > k_metal_flash_attention_dim_max) {
+static const char *
+metal_paged_flash_attention_kernel_name(marmot_dtype_t q_dtype, marmot_dtype_t kv_dtype, size_t dim, bool use_c64) {
+    if (dim != 64 && dim != 128)
         return nullptr;
-    }
-    const bool wide = dim > k_metal_flash_attention_dim_small;
-    const bool narrow = metal_paged_flash_use_narrow_variant(dim, dtype, dtype);
-    switch (dtype) {
+
+    const char *suffix = use_c64 ? "_c64" : "";
+    static thread_local char name_buf[64];
+
+    const char *dtype_part = nullptr;
+    switch (q_dtype) {
     case MARMOT_DTYPE_FLOAT32:
-        if (narrow) {
-            return wide ? "paged_flash_attention_f32_wide_narrow" : "paged_flash_attention_f32_narrow";
-        }
-        return wide ? "paged_flash_attention_f32_wide" : "paged_flash_attention_f32";
-    case MARMOT_DTYPE_FLOAT16:
-        if (narrow) {
-            return wide ? "paged_flash_attention_f16_wide_narrow" : "paged_flash_attention_f16_narrow";
-        }
-        return wide ? "paged_flash_attention_f16_wide" : "paged_flash_attention_f16";
-    case MARMOT_DTYPE_BFLOAT16:
-        if (narrow) {
-            return wide ? "paged_flash_attention_bf16_wide_narrow" : "paged_flash_attention_bf16_narrow";
-        }
-        return wide ? "paged_flash_attention_bf16_wide" : "paged_flash_attention_bf16";
-    default:
-        return nullptr;
-    }
-}
-
-static const char *metal_paged_flash_attention_kernel_name(marmot_dtype_t dtype, marmot_dtype_t kv_dtype, size_t dim) {
-    if (kv_dtype == dtype) {
-        return metal_paged_flash_attention_kernel_name(dtype, dim);
-    }
-    if (dim == 0 || dim > k_metal_flash_attention_dim_max) {
-        return nullptr;
-    }
-    const bool wide = dim > k_metal_flash_attention_dim_small;
-    const bool narrow = metal_paged_flash_use_narrow_variant(dim, dtype, kv_dtype);
-    switch (dtype) {
-    case MARMOT_DTYPE_FLOAT32:
-        switch (kv_dtype) {
-        case MARMOT_DTYPE_FLOAT16:
-            if (narrow) {
-                return wide ? "paged_flash_attention_f32_kv_f16_wide_narrow"
-                            : "paged_flash_attention_f32_kv_f16_narrow";
-            }
-            return wide ? "paged_flash_attention_f32_kv_f16_wide" : "paged_flash_attention_f32_kv_f16";
-        case MARMOT_DTYPE_BFLOAT16:
-            if (narrow) {
-                return wide ? "paged_flash_attention_f32_kv_bf16_wide_narrow"
-                            : "paged_flash_attention_f32_kv_bf16_narrow";
-            }
-            return wide ? "paged_flash_attention_f32_kv_bf16_wide" : "paged_flash_attention_f32_kv_bf16";
-        default:
-            return nullptr;
-        }
-    case MARMOT_DTYPE_FLOAT16:
         switch (kv_dtype) {
         case MARMOT_DTYPE_FLOAT32:
-            if (narrow) {
-                return wide ? "paged_flash_attention_f16_kv_f32_wide_narrow"
-                            : "paged_flash_attention_f16_kv_f32_narrow";
-            }
-            return wide ? "paged_flash_attention_f16_kv_f32_wide" : "paged_flash_attention_f16_kv_f32";
+            dtype_part = "f32";
+            break;
+        case MARMOT_DTYPE_FLOAT16:
+            dtype_part = "f32_kv_f16";
+            break;
         case MARMOT_DTYPE_BFLOAT16:
-            if (narrow) {
-                return wide ? "paged_flash_attention_f16_kv_bf16_wide_narrow"
-                            : "paged_flash_attention_f16_kv_bf16_narrow";
-            }
-            return wide ? "paged_flash_attention_f16_kv_bf16_wide" : "paged_flash_attention_f16_kv_bf16";
+            dtype_part = "f32_kv_bf16";
+            break;
         default:
             return nullptr;
         }
+        break;
+    case MARMOT_DTYPE_FLOAT16:
+        switch (kv_dtype) {
+        case MARMOT_DTYPE_FLOAT16:
+            dtype_part = "f16";
+            break;
+        case MARMOT_DTYPE_FLOAT32:
+            dtype_part = "f16_kv_f32";
+            break;
+        case MARMOT_DTYPE_BFLOAT16:
+            dtype_part = "f16_kv_bf16";
+            break;
+        default:
+            return nullptr;
+        }
+        break;
     case MARMOT_DTYPE_BFLOAT16:
         switch (kv_dtype) {
+        case MARMOT_DTYPE_BFLOAT16:
+            dtype_part = "bf16";
+            break;
         case MARMOT_DTYPE_FLOAT32:
-            if (narrow) {
-                return wide ? "paged_flash_attention_bf16_kv_f32_wide_narrow"
-                            : "paged_flash_attention_bf16_kv_f32_narrow";
-            }
-            return wide ? "paged_flash_attention_bf16_kv_f32_wide" : "paged_flash_attention_bf16_kv_f32";
+            dtype_part = "bf16_kv_f32";
+            break;
         case MARMOT_DTYPE_FLOAT16:
-            if (narrow) {
-                return wide ? "paged_flash_attention_bf16_kv_f16_wide_narrow"
-                            : "paged_flash_attention_bf16_kv_f16_narrow";
-            }
-            return wide ? "paged_flash_attention_bf16_kv_f16_wide" : "paged_flash_attention_bf16_kv_f16";
+            dtype_part = "bf16_kv_f16";
+            break;
         default:
             return nullptr;
         }
+        break;
     default:
         return nullptr;
     }
+
+    snprintf(name_buf, sizeof(name_buf), "paged_flash_attention_%s_%zu%s", dtype_part, dim, suffix);
+    return name_buf;
 }
 
-static uint32_t metal_flash_attention_block_m(marmot_dtype_t dtype, size_t dim) {
-    const bool wide = dim > k_metal_flash_attention_dim_small;
-    switch (dtype) {
-    case MARMOT_DTYPE_FLOAT32:
-        return wide ? 4 : 8;
-    case MARMOT_DTYPE_FLOAT16:
-    case MARMOT_DTYPE_BFLOAT16:
-#if MARMOT_ENABLE_FP8
-    case MARMOT_DTYPE_FLOAT8_E4M3:
-    case MARMOT_DTYPE_FLOAT8_E5M2:
-#endif
-        return wide ? 8 : 16;
-    default:
-        return 0;
-    }
+static bool metal_flash_use_c64([[maybe_unused]] size_t kv_len) {
+    // C=64 with NSG=1 only benefits when S×V uses simdgroup_matrix (not scalar).
+    // With scalar S×V, C=32/NSG=2 is faster (parallel simdgroups offset reduction overhead).
+    return false;
 }
 
-static uint32_t metal_flash_attention_block_n(marmot_dtype_t dtype, size_t dim) {
-    const bool wide = dim > k_metal_flash_attention_dim_small;
-    switch (dtype) {
-    case MARMOT_DTYPE_FLOAT32:
-        return wide ? 16 : 32;
-    case MARMOT_DTYPE_FLOAT16:
-    case MARMOT_DTYPE_BFLOAT16:
-#if MARMOT_ENABLE_FP8
-    case MARMOT_DTYPE_FLOAT8_E4M3:
-    case MARMOT_DTYPE_FLOAT8_E5M2:
-#endif
-        return 32;
-    default:
-        return 0;
-    }
+static uint32_t metal_flash_nsg(size_t kv_len, size_t head_dim, bool use_c64) {
+    // C=64 kernels always use NSG=1 (threadgroup memory constraint)
+    if (use_c64)
+        return 1;
+    // C=32 kernels: use multiple simdgroups for longer sequences
+    // Max NSG is constrained by threadgroup memory (32KB limit)
+    // DK=128: per-sg needs ~9KB (sk + ss), max NSG=2
+    // DK=64:  per-sg needs ~5KB (sk + ss), max NSG=4
+    uint32_t max_nsg = (head_dim <= 64) ? 4 : 2;
+    uint32_t nsg = (kv_len <= 64) ? 1 : max_nsg;
+    return nsg;
 }
 
-static uint32_t metal_paged_flash_attention_block_n(marmot_dtype_t dtype, marmot_dtype_t kv_dtype, size_t dim) {
-    if (!metal_paged_flash_use_narrow_variant(dim, dtype, kv_dtype)) {
-        return metal_flash_attention_block_n(dtype, dim);
-    }
-    const bool wide = dim > k_metal_flash_attention_dim_small;
-    switch (dtype) {
-    case MARMOT_DTYPE_FLOAT32:
-        return wide ? 8 : 16;
-    case MARMOT_DTYPE_FLOAT16:
-    case MARMOT_DTYPE_BFLOAT16:
-        return 16;
-    default:
-        return 0;
-    }
-}
-
-static size_t metal_flash_attention_max_dim(marmot_dtype_t dtype) {
-    switch (dtype) {
-    case MARMOT_DTYPE_FLOAT32:
-    case MARMOT_DTYPE_FLOAT16:
-    case MARMOT_DTYPE_BFLOAT16:
-#if MARMOT_ENABLE_FP8
-    case MARMOT_DTYPE_FLOAT8_E4M3:
-    case MARMOT_DTYPE_FLOAT8_E5M2:
-#endif
-        return k_metal_flash_attention_dim_max;
-    default:
-        return 0;
-    }
-}
-
-static bool metal_should_use_paged_flash_attention(
-    size_t seq_q, size_t seq_k, size_t dim, marmot_dtype_t dtype, marmot_dtype_t kv_dtype
-) {
-    (void)seq_q;
-    // Use paged Flash Attention when:
-    // 1. KV length is long enough to benefit from tiling (>= 128)
-    // 2. Dimension fits within kernel limits
-    size_t max_dim = metal_flash_attention_max_dim(dtype);
-    uint32_t block_m = metal_flash_attention_block_m(dtype, dim);
-    uint32_t block_n = metal_paged_flash_attention_block_n(dtype, kv_dtype, dim);
-    if (seq_k < 128 || max_dim == 0 || dim > max_dim || block_m == 0 || block_n == 0) {
-        return false;
-    }
-    return metal_paged_flash_attention_kernel_name(dtype, kv_dtype, dim) != nullptr;
+static size_t metal_flash_threadgroup_memory_bytes(size_t head_dim, uint32_t nsg, size_t c_per_sg) {
+    const size_t q_rows = 8;
+    return q_rows * head_dim * sizeof(uint16_t) +              // sq
+        (size_t)nsg * q_rows * c_per_sg * sizeof(float) +      // ss
+        (size_t)nsg * c_per_sg * head_dim * sizeof(uint16_t) + // sk
+        (size_t)nsg * q_rows * sizeof(float) +                 // sm
+        (size_t)nsg * q_rows * sizeof(float) +                 // sl
+        q_rows * sizeof(uint32_t) + 2u * sizeof(uint32_t);     // row_pos + seq_slot + kv_len_max
 }
 
 static uint32_t metal_decode_attention_simd_groups(size_t seq_k) {
@@ -849,6 +742,51 @@ marmot_error_t metal_paged_attention_impl(const void *device_ctx, const marmot_p
 
     const uint32_t block_shift = metal_log2_u32(desc->block_size);
     const uint32_t gqa_group = desc->num_q_heads / desc->num_kv_heads;
+    const marmot_uint32_t *meta_data = (const marmot_uint32_t *)token_meta->data;
+    const size_t max_seq_slots = block_table->shape.shape[0];
+    const size_t max_kv_blocks = kv_k->shape.shape[0];
+    if (meta_data == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "paged_attention requires host-visible token_meta");
+        [bufferMeta release];
+        [bufferBlock release];
+        [bufferQ release];
+        [bufferK release];
+        [bufferV release];
+        [bufferKvK release];
+        [bufferKvV release];
+        [bufferOut release];
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    for (size_t t = 0; t < desc->token_count; ++t) {
+        const size_t meta_base = t * meta_stride0;
+        const uint32_t seq_slot = meta_data[meta_base + 0 * meta_stride1].value;
+        const uint32_t kv_slot = meta_data[meta_base + 2 * meta_stride1].value;
+        const uint32_t block_id = kv_slot >> block_shift;
+        if (seq_slot >= max_seq_slots) {
+            marmot_set_error(MARMOT_ERROR_DIMENSION_MISMATCH, "paged_attention seq_slot out of range");
+            [bufferMeta release];
+            [bufferBlock release];
+            [bufferQ release];
+            [bufferK release];
+            [bufferV release];
+            [bufferKvK release];
+            [bufferKvV release];
+            [bufferOut release];
+            return MARMOT_ERROR_DIMENSION_MISMATCH;
+        }
+        if (block_id >= max_kv_blocks) {
+            marmot_set_error(MARMOT_ERROR_DIMENSION_MISMATCH, "paged_attention kv_slot block out of range");
+            [bufferMeta release];
+            [bufferBlock release];
+            [bufferQ release];
+            [bufferK release];
+            [bufferV release];
+            [bufferKvK release];
+            [bufferKvV release];
+            [bufferOut release];
+            return MARMOT_ERROR_DIMENSION_MISMATCH;
+        }
+    }
     metal_paged_attention_uniforms_t base_uniforms = {
         .token_count = desc->token_count,
         .token_offset = 0,
@@ -916,7 +854,6 @@ marmot_error_t metal_paged_attention_impl(const void *device_ctx, const marmot_p
 
     [scatter_pipe release];
 
-    const marmot_uint32_t *meta_data = (const marmot_uint32_t *)token_meta->data;
     bool mixed = false;
     bool have_phase = false;
     bool first_is_decode = true;
@@ -1055,26 +992,37 @@ marmot_error_t metal_paged_attention_impl(const void *device_ctx, const marmot_p
         if (token_count == 0) {
             return MARMOT_SUCCESS;
         }
+        if (!metal_should_use_flash_attention(desc->head_dim, q->dtype, kv_k->dtype)) {
+            return encode_attention_segment(token_offset, token_count, max_pos);
+        }
         const uint32_t kv_len = max_pos + 1u;
-        if (!metal_should_use_paged_flash_attention(token_count, kv_len, desc->head_dim, q->dtype, kv_k->dtype)) {
-            return encode_attention_segment(token_offset, token_count, max_pos);
-        }
-        const char *kernel_name = metal_paged_flash_attention_kernel_name(q->dtype, kv_k->dtype, desc->head_dim);
-        uint32_t block_m = metal_flash_attention_block_m(q->dtype, desc->head_dim);
-        uint32_t block_n = metal_paged_flash_attention_block_n(q->dtype, kv_k->dtype, desc->head_dim);
-        if (kernel_name == nullptr || block_m == 0 || block_n == 0) {
-            return encode_attention_segment(token_offset, token_count, max_pos);
-        }
-        id<MTLComputePipelineState> pipe = metal_pipeline_get(ctx, kernel_name);
-        if (pipe == nil) {
-            return MARMOT_ERROR_BACKEND_INIT_FAILED;
-        }
-        const NSUInteger required_threads = (NSUInteger)block_m * (NSUInteger)block_n;
-        if (pipe.maxTotalThreadsPerThreadgroup < required_threads) {
-            [pipe release];
+        bool use_c64 = metal_flash_use_c64(kv_len);
+        size_t c_per_sg = use_c64 ? 64 : 32;
+
+        const char *kernel_name =
+            metal_paged_flash_attention_kernel_name(q->dtype, kv_k->dtype, desc->head_dim, use_c64);
+        if (kernel_name == nullptr) {
             return encode_attention_segment(token_offset, token_count, max_pos);
         }
 
+        uint32_t nsg = metal_flash_nsg(kv_len, desc->head_dim, use_c64);
+
+        id<MTLComputePipelineState> pipe = metal_pipeline_get_with_u32_constant(ctx, kernel_name, 0u, nsg);
+        if (pipe == nil) {
+            return encode_attention_segment(token_offset, token_count, max_pos);
+        }
+
+        const NSUInteger required_threads = (NSUInteger)32 * (NSUInteger)nsg;
+        if (pipe.maxTotalThreadsPerThreadgroup < required_threads) {
+            [pipe release];
+            nsg = 1;
+            pipe = metal_pipeline_get_with_u32_constant(ctx, kernel_name, 0u, nsg);
+            if (pipe == nil) {
+                return encode_attention_segment(token_offset, token_count, max_pos);
+            }
+        }
+
+        constexpr uint32_t q_rows = 8;
         metal_paged_attention_uniforms_t uniforms = base_uniforms;
         uniforms.token_offset = (uint32_t)token_offset;
         uniforms.token_count = (uint32_t)token_count;
@@ -1093,10 +1041,11 @@ marmot_error_t metal_paged_attention_impl(const void *device_ctx, const marmot_p
         [enc setBuffer:bufferOut offset:viewOut.offset atIndex:5];
         [enc setBytes:&uniforms length:sizeof(uniforms) atIndex:6];
         [enc setBytes:&strides length:sizeof(strides) atIndex:7];
+        [enc setThreadgroupMemoryLength:metal_flash_threadgroup_memory_bytes(desc->head_dim, nsg, c_per_sg) atIndex:0];
 
-        uint32_t num_q_blocks = (uint32_t)((token_count + block_m - 1u) / block_m);
+        uint32_t num_q_blocks = (uint32_t)((token_count + q_rows - 1u) / q_rows);
         MTLSize threadgroups = MTLSizeMake(num_q_blocks, (NSUInteger)desc->num_q_heads, 1);
-        MTLSize threads = MTLSizeMake(block_n, block_m, 1);
+        MTLSize threads = MTLSizeMake(32, nsg, 1);
         [enc dispatchThreadgroups:threadgroups threadsPerThreadgroup:threads];
 
         [pipe release];

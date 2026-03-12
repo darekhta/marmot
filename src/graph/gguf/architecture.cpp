@@ -12,12 +12,18 @@ constexpr marmot_architecture_traits_t kArchitectureTraits[] = {
         .name = "llama",
         .gguf_arch_name = "llama",
         .ffn_type = MARMOT_FFN_SWIGLU,
+        .is_moe = false,
         .has_attention_bias = false,
         .has_qk_norm = false,
         .uses_gemma_norm = false, // GGUF converter pre-shifts Gemma norm weights by +1.
         .embedding_scale_sqrt_dim = false,
+        .n_experts = 0,
+        .n_experts_used = 0,
+        .n_shared_experts = 0,
         .rope_type = MARMOT_ROPE_TYPE_NORM,
         .default_rope_base = 10000.0f,
+        .expert_weights_scale = 1.0f,
+        .router_weight_policy = MARMOT_ROUTER_WEIGHT_POLICY_SOFTMAX_SELECTED,
         .metadata_prefix = "llama",
         .metal_activation_dtype = MARMOT_DTYPE_FLOAT16,
     },
@@ -26,12 +32,18 @@ constexpr marmot_architecture_traits_t kArchitectureTraits[] = {
         .name = "mistral",
         .gguf_arch_name = "llama",
         .ffn_type = MARMOT_FFN_SWIGLU,
+        .is_moe = false,
         .has_attention_bias = false,
         .has_qk_norm = false,
         .uses_gemma_norm = false,
         .embedding_scale_sqrt_dim = false,
+        .n_experts = 0,
+        .n_experts_used = 0,
+        .n_shared_experts = 0,
         .rope_type = MARMOT_ROPE_TYPE_NORM,
         .default_rope_base = 1000000.0f,
+        .expert_weights_scale = 1.0f,
+        .router_weight_policy = MARMOT_ROUTER_WEIGHT_POLICY_SOFTMAX_SELECTED,
         .metadata_prefix = "llama",
         .metal_activation_dtype = MARMOT_DTYPE_FLOAT16,
     },
@@ -40,12 +52,18 @@ constexpr marmot_architecture_traits_t kArchitectureTraits[] = {
         .name = "qwen2",
         .gguf_arch_name = "qwen2",
         .ffn_type = MARMOT_FFN_SWIGLU,
+        .is_moe = false,
         .has_attention_bias = true,
         .has_qk_norm = false,
         .uses_gemma_norm = false,
         .embedding_scale_sqrt_dim = false,
+        .n_experts = 0,
+        .n_experts_used = 0,
+        .n_shared_experts = 0,
         .rope_type = MARMOT_ROPE_TYPE_NEOX,
         .default_rope_base = 10000.0f,
+        .expert_weights_scale = 1.0f,
+        .router_weight_policy = MARMOT_ROUTER_WEIGHT_POLICY_SOFTMAX_SELECTED,
         .metadata_prefix = "qwen2",
         .metal_activation_dtype = MARMOT_DTYPE_FLOAT16,
     },
@@ -54,12 +72,18 @@ constexpr marmot_architecture_traits_t kArchitectureTraits[] = {
         .name = "phi3",
         .gguf_arch_name = "phi3",
         .ffn_type = MARMOT_FFN_SWIGLU,
+        .is_moe = false,
         .has_attention_bias = false,
         .has_qk_norm = false,
         .uses_gemma_norm = false,
         .embedding_scale_sqrt_dim = false,
+        .n_experts = 0,
+        .n_experts_used = 0,
+        .n_shared_experts = 0,
         .rope_type = MARMOT_ROPE_TYPE_NEOX,
         .default_rope_base = 10000.0f,
+        .expert_weights_scale = 1.0f,
+        .router_weight_policy = MARMOT_ROUTER_WEIGHT_POLICY_SOFTMAX_SELECTED,
         .metadata_prefix = "phi3",
         .metal_activation_dtype = MARMOT_DTYPE_FLOAT16,
     },
@@ -68,12 +92,18 @@ constexpr marmot_architecture_traits_t kArchitectureTraits[] = {
         .name = "gemma",
         .gguf_arch_name = "gemma",
         .ffn_type = MARMOT_FFN_GEGLU,
+        .is_moe = false,
         .has_attention_bias = false,
         .has_qk_norm = false,
         .uses_gemma_norm = false,
         .embedding_scale_sqrt_dim = true,
+        .n_experts = 0,
+        .n_experts_used = 0,
+        .n_shared_experts = 0,
         .rope_type = MARMOT_ROPE_TYPE_NEOX,
         .default_rope_base = 10000.0f,
+        .expert_weights_scale = 1.0f,
+        .router_weight_policy = MARMOT_ROUTER_WEIGHT_POLICY_SOFTMAX_SELECTED,
         .metadata_prefix = "gemma",
         .metal_activation_dtype = MARMOT_DTYPE_FLOAT32, // Gemma needs F32 for numerical stability
     },
@@ -82,14 +112,40 @@ constexpr marmot_architecture_traits_t kArchitectureTraits[] = {
         .name = "qwen3",
         .gguf_arch_name = "qwen3",
         .ffn_type = MARMOT_FFN_SWIGLU,
+        .is_moe = false,
         .has_attention_bias = false,
         .has_qk_norm = true,
         .uses_gemma_norm = false,
         .embedding_scale_sqrt_dim = false,
+        .n_experts = 0,
+        .n_experts_used = 0,
+        .n_shared_experts = 0,
         .rope_type = MARMOT_ROPE_TYPE_NEOX,
         .default_rope_base = 10000.0f,
+        .expert_weights_scale = 1.0f,
+        .router_weight_policy = MARMOT_ROUTER_WEIGHT_POLICY_SOFTMAX_SELECTED,
         .metadata_prefix = "qwen3",
         .metal_activation_dtype = MARMOT_DTYPE_FLOAT16,
+    },
+    {
+        .arch_id = MARMOT_ARCH_QWEN3MOE,
+        .name = "qwen3moe",
+        .gguf_arch_name = "qwen3moe",
+        .ffn_type = MARMOT_FFN_SWIGLU,
+        .is_moe = true,
+        .has_attention_bias = false,
+        .has_qk_norm = true,
+        .uses_gemma_norm = false,
+        .embedding_scale_sqrt_dim = false,
+        .n_experts = 0,
+        .n_experts_used = 0,
+        .n_shared_experts = 0,
+        .rope_type = MARMOT_ROPE_TYPE_NEOX,
+        .default_rope_base = 10000.0f,
+        .expert_weights_scale = 1.0f,
+        .router_weight_policy = MARMOT_ROUTER_WEIGHT_POLICY_SOFTMAX_SELECTED_SCALED,
+        .metadata_prefix = "qwen3moe",
+        .metal_activation_dtype = MARMOT_DTYPE_FLOAT32,
     },
 };
 
@@ -114,6 +170,11 @@ constexpr marmot_metadata_key_map_t kLlamaMetadataKeys = {
     .rope_orig_ctx_len = "llama.rope.scaling.original_context_length",
     .key_length = nullptr,
     .value_length = nullptr,
+    .expert_count = nullptr,
+    .expert_used_count = nullptr,
+    .shared_expert_count = nullptr,
+    .expert_weights_scale = nullptr,
+    .expert_gating_func = nullptr,
 };
 
 constexpr marmot_metadata_key_map_t kQwen2MetadataKeys = {
@@ -135,6 +196,11 @@ constexpr marmot_metadata_key_map_t kQwen2MetadataKeys = {
     .rope_orig_ctx_len = "qwen2.rope.scaling.original_context_length",
     .key_length = nullptr,
     .value_length = nullptr,
+    .expert_count = nullptr,
+    .expert_used_count = nullptr,
+    .shared_expert_count = nullptr,
+    .expert_weights_scale = nullptr,
+    .expert_gating_func = nullptr,
 };
 
 constexpr marmot_metadata_key_map_t kPhi3MetadataKeys = {
@@ -156,6 +222,11 @@ constexpr marmot_metadata_key_map_t kPhi3MetadataKeys = {
     .rope_orig_ctx_len = "phi3.rope.scaling.original_context_length",
     .key_length = nullptr,
     .value_length = nullptr,
+    .expert_count = nullptr,
+    .expert_used_count = nullptr,
+    .shared_expert_count = nullptr,
+    .expert_weights_scale = nullptr,
+    .expert_gating_func = nullptr,
 };
 
 constexpr marmot_metadata_key_map_t kGemmaMetadataKeys = {
@@ -177,6 +248,11 @@ constexpr marmot_metadata_key_map_t kGemmaMetadataKeys = {
     .rope_orig_ctx_len = "gemma.rope.scaling.original_context_length",
     .key_length = "gemma.attention.key_length",
     .value_length = "gemma.attention.value_length",
+    .expert_count = nullptr,
+    .expert_used_count = nullptr,
+    .shared_expert_count = nullptr,
+    .expert_weights_scale = nullptr,
+    .expert_gating_func = nullptr,
 };
 
 constexpr marmot_metadata_key_map_t kQwen3MetadataKeys = {
@@ -198,16 +274,48 @@ constexpr marmot_metadata_key_map_t kQwen3MetadataKeys = {
     .rope_orig_ctx_len = "qwen3.rope.scaling.original_context_length",
     .key_length = "qwen3.attention.key_length",
     .value_length = "qwen3.attention.value_length",
+    .expert_count = nullptr,
+    .expert_used_count = nullptr,
+    .shared_expert_count = nullptr,
+    .expert_weights_scale = nullptr,
+    .expert_gating_func = nullptr,
+};
+
+constexpr marmot_metadata_key_map_t kQwen3MoeMetadataKeys = {
+    .context_length = "qwen3moe.context_length",
+    .embedding_length = "qwen3moe.embedding_length",
+    .block_count = "qwen3moe.block_count",
+    .head_count = "qwen3moe.attention.head_count",
+    .head_count_kv = "qwen3moe.attention.head_count_kv",
+    .ff_length = "qwen3moe.feed_forward_length",
+    .rope_dimension = "qwen3moe.rope.dimension_count",
+    .rms_eps = "qwen3moe.attention.layer_norm_rms_epsilon",
+    .rope_base = "qwen3moe.rope.freq_base",
+    .rope_scaling_type = "qwen3moe.rope.scaling.type",
+    .rope_scaling_factor = "qwen3moe.rope.scaling.factor",
+    .rope_attn_factor = "qwen3moe.rope.scaling.attn_factor",
+    .rope_ext_factor = "qwen3moe.rope.scaling.yarn_ext_factor",
+    .rope_beta_fast = "qwen3moe.rope.scaling.yarn_beta_fast",
+    .rope_beta_slow = "qwen3moe.rope.scaling.yarn_beta_slow",
+    .rope_orig_ctx_len = "qwen3moe.rope.scaling.original_context_length",
+    .key_length = "qwen3moe.attention.key_length",
+    .value_length = "qwen3moe.attention.value_length",
+    .expert_count = "qwen3moe.expert_count",
+    .expert_used_count = "qwen3moe.expert_used_count",
+    .shared_expert_count = "qwen3moe.expert_shared_count",
+    .expert_weights_scale = "qwen3moe.expert_weights_scale",
+    .expert_gating_func = "qwen3moe.expert_gating_func",
 };
 
 const marmot_metadata_key_map_t *kMetadataKeyMaps[MARMOT_ARCH_COUNT] = {
-    nullptr,             // MARMOT_ARCH_UNKNOWN
-    &kLlamaMetadataKeys, // MARMOT_ARCH_LLAMA
-    &kLlamaMetadataKeys, // MARMOT_ARCH_MISTRAL (uses llama keys)
-    &kQwen2MetadataKeys, // MARMOT_ARCH_QWEN2
-    &kPhi3MetadataKeys,  // MARMOT_ARCH_PHI3
-    &kGemmaMetadataKeys, // MARMOT_ARCH_GEMMA
-    &kQwen3MetadataKeys, // MARMOT_ARCH_QWEN3
+    nullptr,                // MARMOT_ARCH_UNKNOWN
+    &kLlamaMetadataKeys,    // MARMOT_ARCH_LLAMA
+    &kLlamaMetadataKeys,    // MARMOT_ARCH_MISTRAL (uses llama keys)
+    &kQwen2MetadataKeys,    // MARMOT_ARCH_QWEN2
+    &kPhi3MetadataKeys,     // MARMOT_ARCH_PHI3
+    &kGemmaMetadataKeys,    // MARMOT_ARCH_GEMMA
+    &kQwen3MetadataKeys,    // MARMOT_ARCH_QWEN3
+    &kQwen3MoeMetadataKeys, // MARMOT_ARCH_QWEN3MOE
 };
 
 } // namespace

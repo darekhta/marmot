@@ -60,6 +60,31 @@ enum {
 };
 
 enum {
+    MARMOT_KERNEL_ARGS_TOPK_CTX = 0,
+    MARMOT_KERNEL_ARGS_TOPK_INPUT = 1,
+    MARMOT_KERNEL_ARGS_TOPK_VALUES_OUT = 2,
+    MARMOT_KERNEL_ARGS_TOPK_INDICES_OUT = 3,
+    MARMOT_KERNEL_ARGS_TOPK_AXIS = 4,
+    MARMOT_KERNEL_ARGS_TOPK_K = 5,
+    MARMOT_KERNEL_ARGS_TOPK_COUNT = 6,
+};
+
+enum {
+    MARMOT_KERNEL_ARGS_MOE_EXPERTS_CTX = 0,
+    MARMOT_KERNEL_ARGS_MOE_EXPERTS_HIDDEN_STATES = 1,
+    MARMOT_KERNEL_ARGS_MOE_EXPERTS_GATE_EXPS = 2,
+    MARMOT_KERNEL_ARGS_MOE_EXPERTS_UP_EXPS = 3,
+    MARMOT_KERNEL_ARGS_MOE_EXPERTS_DOWN_EXPS = 4,
+    MARMOT_KERNEL_ARGS_MOE_EXPERTS_TOPK_IDS = 5,
+    MARMOT_KERNEL_ARGS_MOE_EXPERTS_TOPK_WEIGHTS = 6,
+    MARMOT_KERNEL_ARGS_MOE_EXPERTS_OUT = 7,
+    MARMOT_KERNEL_ARGS_MOE_EXPERTS_FFN_TYPE = 8,
+    MARMOT_KERNEL_ARGS_MOE_EXPERTS_WEIGHTS_SCALE = 9,
+    MARMOT_KERNEL_ARGS_MOE_EXPERTS_ROUTER_WEIGHT_POLICY = 10,
+    MARMOT_KERNEL_ARGS_MOE_EXPERTS_COUNT = 11,
+};
+
+enum {
     MARMOT_KERNEL_ARGS_LAYERNORM_CTX = 0,
     MARMOT_KERNEL_ARGS_LAYERNORM_INPUT = 1,
     MARMOT_KERNEL_ARGS_LAYERNORM_WEIGHT = 2,
@@ -294,6 +319,29 @@ typedef struct marmot_kernel_args_softmax {
     marmot_tensor_t *output;
     int32_t axis;
 } marmot_kernel_args_softmax_t;
+
+typedef struct marmot_kernel_args_topk {
+    const marmot_context_t *ctx;
+    const marmot_tensor_t *input;
+    marmot_tensor_t *values_out;
+    marmot_tensor_t *indices_out;
+    int32_t axis;
+    uint32_t k;
+} marmot_kernel_args_topk_t;
+
+typedef struct marmot_kernel_args_moe_experts {
+    const marmot_context_t *ctx;
+    const marmot_tensor_t *hidden_states;
+    const marmot_tensor_t *gate_exps;
+    const marmot_tensor_t *up_exps;
+    const marmot_tensor_t *down_exps;
+    const marmot_tensor_t *topk_ids;
+    const marmot_tensor_t *topk_weights;
+    marmot_tensor_t *out;
+    marmot_ffn_type_t ffn_type;
+    float weights_scale;
+    marmot_router_weight_policy_t router_weight_policy;
+} marmot_kernel_args_moe_experts_t;
 
 typedef struct marmot_kernel_args_layernorm {
     const marmot_context_t *ctx;
@@ -552,6 +600,8 @@ typedef enum {
     MARMOT_OP_SCHEMA_TERNARY,
     MARMOT_OP_SCHEMA_REDUCTION,
     MARMOT_OP_SCHEMA_SOFTMAX,
+    MARMOT_OP_SCHEMA_TOPK,
+    MARMOT_OP_SCHEMA_MOE_EXPERTS,
     MARMOT_OP_SCHEMA_LAYERNORM,
     MARMOT_OP_SCHEMA_RMS_NORM,
     MARMOT_OP_SCHEMA_PAGED_ATTENTION,
@@ -694,6 +744,10 @@ static inline marmot_op_schema_t marmot_op_get_schema(marmot_op_id_t op) {
         return MARMOT_OP_SCHEMA_REDUCTION;
     case MARMOT_OP_SOFTMAX:
         return MARMOT_OP_SCHEMA_SOFTMAX;
+    case MARMOT_OP_TOPK:
+        return MARMOT_OP_SCHEMA_TOPK;
+    case MARMOT_OP_MOE_EXPERTS:
+        return MARMOT_OP_SCHEMA_MOE_EXPERTS;
     case MARMOT_OP_LAYERNORM:
         return MARMOT_OP_SCHEMA_LAYERNORM;
     case MARMOT_OP_RMS_NORM:

@@ -380,6 +380,63 @@ marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
 }
 {{ m.platform_guard_end(kernel) }}
 
+{# ----- TopK Operations ----- #}
+{% elif kernel.kind == 'topk' %}
+// {{ kernel.name }}: topk
+{{ m.platform_guard_start(kernel) }}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_topk_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_topk_desc_t desc = {
+        .x = args->input,
+        .values_out = args->values_out,
+        .indices_out = args->indices_out,
+        .axis = args->axis,
+        .k = args->k,
+    };
+{% if kernel.kernel_func and cfg.allows_kernel_func_override %}
+    return {{ kernel.kernel_func }}(device_ctx, &desc);
+{% else %}
+    marmot_set_error(MARMOT_ERROR_NOT_IMPLEMENTED, "TopK kernel handler not configured");
+    return MARMOT_ERROR_NOT_IMPLEMENTED;
+{% endif %}
+}
+{{ m.platform_guard_end(kernel) }}
+
+{# ----- MoE Expert Operations ----- #}
+{% elif kernel.kind == 'moe_experts' %}
+// {{ kernel.name }}: fused MoE experts
+{{ m.platform_guard_start(kernel) }}
+marmot_error_t marmot_{{ cfg.name }}_{{ kernel.name }}_exec(
+    const void *device_ctx, const marmot_kernel_args_moe_experts_t *args) {
+    if (args == nullptr) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Kernel args not provided");
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    marmot_moe_experts_desc_t desc = {
+        .hidden_states = args->hidden_states,
+        .gate_exps = args->gate_exps,
+        .up_exps = args->up_exps,
+        .down_exps = args->down_exps,
+        .topk_ids = args->topk_ids,
+        .topk_weights = args->topk_weights,
+        .out = args->out,
+        .ffn_type = args->ffn_type,
+        .weights_scale = args->weights_scale,
+        .router_weight_policy = args->router_weight_policy,
+    };
+{% if kernel.kernel_func and cfg.allows_kernel_func_override %}
+    return {{ kernel.kernel_func }}(device_ctx, &desc);
+{% else %}
+    marmot_set_error(MARMOT_ERROR_NOT_IMPLEMENTED, "MoE kernel handler not configured");
+    return MARMOT_ERROR_NOT_IMPLEMENTED;
+{% endif %}
+}
+{{ m.platform_guard_end(kernel) }}
+
 {# ----- RoPE Operations ----- #}
 {% elif kernel.kind == 'rope' %}
 // {{ kernel.name }}: rotary position embedding

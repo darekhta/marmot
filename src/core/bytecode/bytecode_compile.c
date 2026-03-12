@@ -456,6 +456,52 @@ marmot_error_t marmot_bc_execute_op(
         }
         break;
     }
+    case MARMOT_BC_SCHEMA_TOPK: {
+        const marmot_kernel_args_topk_t *packed = args;
+        const marmot_tensor_t *input = packed->input;
+        marmot_tensor_t *values_out = packed->values_out;
+        marmot_tensor_t *indices_out = packed->indices_out;
+        if (input == nullptr || values_out == nullptr || indices_out == nullptr) {
+            marmot_bc_builder_reset(&builder);
+            marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null args for TopK bytecode execution");
+            return MARMOT_ERROR_INVALID_ARGUMENT;
+        }
+        if (!marmot_bc_emit_tensor_reg(&builder, regs, &reg_count, input) ||
+            !marmot_bc_emit_tensor_reg(&builder, regs, &reg_count, values_out) ||
+            !marmot_bc_emit_tensor_reg(&builder, regs, &reg_count, indices_out) ||
+            !marmot_bc_builder_emit_u32(&builder, (uint32_t)packed->axis) ||
+            !marmot_bc_builder_emit_u32(&builder, packed->k)) {
+            marmot_bc_builder_reset(&builder);
+            marmot_set_error(MARMOT_ERROR_OUT_OF_MEMORY, "Failed to encode TopK args");
+            return MARMOT_ERROR_OUT_OF_MEMORY;
+        }
+        break;
+    }
+    case MARMOT_BC_SCHEMA_MOE_EXPERTS: {
+        const marmot_kernel_args_moe_experts_t *packed = args;
+        if (packed->hidden_states == nullptr || packed->gate_exps == nullptr || packed->up_exps == nullptr ||
+            packed->down_exps == nullptr || packed->topk_ids == nullptr || packed->topk_weights == nullptr ||
+            packed->out == nullptr) {
+            marmot_bc_builder_reset(&builder);
+            marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Null args for MoE experts bytecode execution");
+            return MARMOT_ERROR_INVALID_ARGUMENT;
+        }
+        if (!marmot_bc_emit_tensor_reg(&builder, regs, &reg_count, packed->hidden_states) ||
+            !marmot_bc_emit_tensor_reg(&builder, regs, &reg_count, packed->gate_exps) ||
+            !marmot_bc_emit_tensor_reg(&builder, regs, &reg_count, packed->up_exps) ||
+            !marmot_bc_emit_tensor_reg(&builder, regs, &reg_count, packed->down_exps) ||
+            !marmot_bc_emit_tensor_reg(&builder, regs, &reg_count, packed->topk_ids) ||
+            !marmot_bc_emit_tensor_reg(&builder, regs, &reg_count, packed->topk_weights) ||
+            !marmot_bc_emit_tensor_reg(&builder, regs, &reg_count, packed->out) ||
+            !marmot_bc_builder_emit_u32(&builder, (uint32_t)packed->ffn_type) ||
+            !marmot_bc_builder_emit_f32(&builder, packed->weights_scale) ||
+            !marmot_bc_builder_emit_u32(&builder, (uint32_t)packed->router_weight_policy)) {
+            marmot_bc_builder_reset(&builder);
+            marmot_set_error(MARMOT_ERROR_OUT_OF_MEMORY, "Failed to encode MoE experts args");
+            return MARMOT_ERROR_OUT_OF_MEMORY;
+        }
+        break;
+    }
     case MARMOT_BC_SCHEMA_LAYERNORM: {
         const marmot_kernel_args_layernorm_t *packed = args;
         const marmot_tensor_t *input = packed->input;

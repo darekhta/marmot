@@ -21,7 +21,12 @@
 #include <ctime>
 #include <new>
 #include <numeric>
+#include <span>
 
+#include "core/context/context_internal.h"
+#include "graph/fast_executor.hpp"
+#include "graph/fast_plan.hpp"
+#include "inference/common/model_prepack.hpp"
 #include "inference/kv_pool/kv_pool.hpp"
 #include "inference/model/model.hpp"
 #include "utils/dtype_ref.h"
@@ -36,6 +41,80 @@ bool step_profile_enabled() {
         return env != nullptr && env[0] != '\0' && std::strcmp(env, "0") != 0;
     }();
     return enabled;
+}
+
+bool fast_plan_profile_enabled() {
+    static bool enabled = [] {
+        const char *env = std::getenv("MARMOT_FAST_PLAN_PROFILE");
+        return env != nullptr && env[0] != '\0' && std::strcmp(env, "0") != 0;
+    }();
+    return enabled;
+}
+
+size_t cpu_prefill_thread_count(const marmot_context_t *ctx) {
+    if (ctx == nullptr || ctx->backend_type != MARMOT_BACKEND_CPU) {
+        return 0;
+    }
+    const auto &topology = ctx->device_caps.topology;
+    if (topology.is_hybrid && topology.p_cores > 1) {
+        return topology.p_cores - 1;
+    }
+    if (topology.total_cores > 0) {
+        return topology.total_cores;
+    }
+    return marmot_context_get_thread_count(ctx);
+}
+
+size_t cpu_decode_thread_count(const marmot_context_t *ctx) {
+    if (ctx == nullptr || ctx->backend_type != MARMOT_BACKEND_CPU) {
+        return 0;
+    }
+    const auto &topology = ctx->device_caps.topology;
+    if (topology.is_hybrid && topology.p_cores > 1) {
+        return topology.p_cores - 1;
+    }
+    if (topology.total_cores > 0) {
+        return topology.total_cores;
+    }
+    return marmot_context_get_thread_count(ctx);
+}
+
+marmot_error_t apply_cpu_step_thread_policy(const marmot_context_t *ctx, bool has_prefill) {
+    if (ctx == nullptr || ctx->backend_type != MARMOT_BACKEND_CPU) {
+        return MARMOT_SUCCESS;
+    }
+    if (marmot_context_thread_count_is_explicit(ctx)) {
+        return MARMOT_SUCCESS;
+    }
+
+    const size_t target_threads = has_prefill ? cpu_prefill_thread_count(ctx) : cpu_decode_thread_count(ctx);
+    if (target_threads == 0 || target_threads == marmot_context_get_thread_count(ctx)) {
+        return MARMOT_SUCCESS;
+    }
+    return marmot_context_set_thread_count_auto(const_cast<marmot_context_t *>(ctx), target_threads);
+}
+
+marmot_error_t execute_packed_graph(
+    marmot_graph_t *graph, const graph::FastPlan *fast_plan, const marmot_context_t *ctx,
+    std::span<const marmot_tensor_t *const> inputs, std::span<marmot_tensor_t *const> outputs
+) {
+    if (graph == nullptr || ctx == nullptr) {
+        return MARMOT_ERROR_INVALID_ARGUMENT;
+    }
+    if (fast_plan == nullptr) {
+        return marmot_graph_execute(
+            graph, ctx, const_cast<const marmot_tensor_t **>(inputs.data()), inputs.size(),
+            const_cast<marmot_tensor_t **>(outputs.data()), outputs.size()
+        );
+    }
+
+    graph::FastExecProfile profile{};
+    graph::FastExecProfile *profile_ptr = fast_plan_profile_enabled() ? &profile : nullptr;
+    marmot_error_t status = graph::FastExecutor::execute(graph, fast_plan, ctx, inputs, outputs, profile_ptr);
+    if (status == MARMOT_SUCCESS && profile_ptr != nullptr) {
+        graph::FastExecutor::print_profile(profile);
+    }
+    return status;
 }
 
 struct StepTimer {
@@ -404,7 +483,11 @@ std::unique_ptr<ServingEngine> ServingEngine::create(
 
     marmot_serving_engine_options_t normalized_opts = opts;
     if (normalized_opts.prefill_chunk_size == 0) {
-        normalized_opts.prefill_chunk_size = normalized_opts.block_size;
+        if (normalized_opts.max_seqs == 1 && normalized_opts.max_batch_seqs == 1) {
+            normalized_opts.prefill_chunk_size = normalized_opts.max_num_tokens;
+        } else {
+            normalized_opts.prefill_chunk_size = normalized_opts.block_size;
+        }
     }
     if (!std::isfinite(normalized_opts.kv_block_watermark) || normalized_opts.kv_block_watermark < 0.0f ||
         normalized_opts.kv_block_watermark >= 1.0f) {
@@ -747,13 +830,17 @@ marmot_error_t ServingEngine::ensure_scratch(size_t token_count, size_t sample_c
 }
 
 marmot_error_t ServingEngine::ensure_packed_graph(
-    size_t token_count, size_t sample_count, marmot_graph_t **out_graph, std::string &error
+    size_t token_count, size_t sample_count, marmot_graph_t **out_graph, const graph::FastPlan **out_fast_plan,
+    std::string &error
 ) {
     error.clear();
     if (ctx_ == nullptr || model_ == nullptr || out_graph == nullptr) {
         return MARMOT_ERROR_INVALID_OPERATION;
     }
     *out_graph = nullptr;
+    if (out_fast_plan != nullptr) {
+        *out_fast_plan = nullptr;
+    }
 
     if (token_count == 0 || token_count > opts_.max_num_tokens || token_count > UINT32_MAX ||
         sample_count > UINT32_MAX) {
@@ -772,8 +859,11 @@ marmot_error_t ServingEngine::ensure_packed_graph(
     };
 
     auto found = packed_graphs_.find(key);
-    if (found != packed_graphs_.end() && found->second) {
-        *out_graph = found->second.get();
+    if (found != packed_graphs_.end() && found->second.graph) {
+        *out_graph = found->second.graph.get();
+        if (out_fast_plan != nullptr) {
+            *out_fast_plan = found->second.fast_plan.get();
+        }
         return MARMOT_SUCCESS;
     }
     if (emit_logits && opts_.max_batch_seqs == 0) {
@@ -805,8 +895,31 @@ marmot_error_t ServingEngine::ensure_packed_graph(
         return status != MARMOT_SUCCESS ? status : MARMOT_ERROR_INVALID_OPERATION;
     }
 
-    packed_graphs_.insert_or_assign(key, GraphOwner(graph_raw));
-    *out_graph = graph_raw;
+    PackedGraphEntry entry{};
+    entry.graph.reset(graph_raw);
+    prepack_cpu_model_weights(ctx_, model_->gguf(), emit_logits);
+
+    graph::FastPlanBucket bucket{
+        .token_count = key.token_count,
+        .sample_count = key.sample_count,
+        .emit_logits = key.emit_logits,
+    };
+    if (auto fast_plan = graph::compile_fast_plan(graph_raw, bucket)) {
+        entry.fast_plan = std::make_unique<graph::FastPlan>(std::move(*fast_plan));
+    } else {
+        marmot_clear_error();
+    }
+
+    packed_graphs_.insert_or_assign(key, std::move(entry));
+    auto inserted = packed_graphs_.find(key);
+    if (inserted == packed_graphs_.end() || !inserted->second.graph) {
+        error = "failed to cache packed graph";
+        return MARMOT_ERROR_INVALID_OPERATION;
+    }
+    *out_graph = inserted->second.graph.get();
+    if (out_fast_plan != nullptr) {
+        *out_fast_plan = inserted->second.fast_plan.get();
+    }
     return MARMOT_SUCCESS;
 }
 
@@ -1335,7 +1448,9 @@ ServingEngine::step_pipelined_greedy_decode(size_t max_steps, size_t &out_steps_
         }
 
         marmot_graph_t *graph = nullptr;
-        marmot_error_t graph_status = ensure_packed_graph(graph_token_count, graph_sample_count, &graph, error);
+        const graph::FastPlan *fast_plan = nullptr;
+        marmot_error_t graph_status =
+            ensure_packed_graph(graph_token_count, graph_sample_count, &graph, &fast_plan, error);
         if (graph_status != MARMOT_SUCCESS) {
             kv_pool_->abort_append(plan);
             return graph_status;
@@ -1392,8 +1507,10 @@ ServingEngine::step_pipelined_greedy_decode(size_t max_steps, size_t &out_steps_
             hidden_.get(), positions, token_meta, graph_block_table, kv_k, kv_v, sample_indices,
         };
         marmot_tensor_t *outputs[] = {logits_.get()};
-        marmot_error_t run_status =
-            marmot_graph_execute(graph, ctx_, inputs, ARRAY_LENGTH(inputs), outputs, ARRAY_LENGTH(outputs));
+        marmot_error_t run_status = execute_packed_graph(
+            graph, fast_plan, ctx_, std::span<const marmot_tensor_t *const>(inputs, ARRAY_LENGTH(inputs)),
+            std::span<marmot_tensor_t *const>(outputs, ARRAY_LENGTH(outputs))
+        );
         if (run_status != MARMOT_SUCCESS) {
             kv_pool_->abort_append(plan);
             const char *detail = marmot_get_last_error_detail();
@@ -1401,21 +1518,23 @@ ServingEngine::step_pipelined_greedy_decode(size_t max_steps, size_t &out_steps_
             return run_status;
         }
 
-        int32_t axis = 1;
-        marmot_reduction_desc_t argmax = marmot_reduction_desc_default();
-        argmax.input = logits_.get();
-        argmax.out = argmax_values;
-        argmax.indices_out = argmax_indices;
-        argmax.axes = &axis;
-        argmax.num_axes = 1;
-        argmax.keepdims = false;
+        {
+            int32_t axis = 1;
+            marmot_reduction_desc_t argmax = marmot_reduction_desc_default();
+            argmax.input = logits_.get();
+            argmax.out = argmax_values;
+            argmax.indices_out = argmax_indices;
+            argmax.axes = &axis;
+            argmax.num_axes = 1;
+            argmax.keepdims = false;
 
-        marmot_error_t argmax_status = marmot_reduce_argmax(ctx_, &argmax);
-        if (argmax_status != MARMOT_SUCCESS) {
-            kv_pool_->abort_append(plan);
-            const char *detail = marmot_get_last_error_detail();
-            error = (detail != nullptr && detail[0] != '\0') ? detail : "argmax failed";
-            return argmax_status;
+            marmot_error_t argmax_status = marmot_reduce_argmax(ctx_, &argmax);
+            if (argmax_status != MARMOT_SUCCESS) {
+                kv_pool_->abort_append(plan);
+                const char *detail = marmot_get_last_error_detail();
+                error = (detail != nullptr && detail[0] != '\0') ? detail : "argmax failed";
+                return argmax_status;
+            }
         }
 
         marmot_error_t scatter_status =
@@ -2127,6 +2246,11 @@ marmot_error_t ServingEngine::step(size_t max_steps, size_t &out_steps_done, std
 
         const size_t token_count = batch.token_ids.size();
         const size_t sample_count = batch.sample_indices.size();
+        marmot_error_t thread_status = apply_cpu_step_thread_policy(ctx_, batch_has_prefill);
+        if (thread_status != MARMOT_SUCCESS) {
+            abort_append_plans(append_plans);
+            return thread_status;
+        }
         marmot_error_t scratch_status = ensure_scratch(token_count, sample_count, error);
         if (scratch_status != MARMOT_SUCCESS) {
             abort_append_plans(append_plans);
@@ -2226,6 +2350,7 @@ marmot_error_t ServingEngine::step(size_t max_steps, size_t &out_steps_done, std
             }
             pos_ptr[i] = (float)batch.token_meta[i * 4 + 1];
         }
+
         for (size_t i = 0; i < token_count * 4; ++i) {
             meta_ptr[i].value = batch.token_meta[i];
         }
@@ -2304,7 +2429,9 @@ marmot_error_t ServingEngine::step(size_t max_steps, size_t &out_steps_done, std
         }
 
         marmot_graph_t *graph = nullptr;
-        marmot_error_t graph_status = ensure_packed_graph(graph_token_count, graph_sample_count, &graph, error);
+        const graph::FastPlan *fast_plan = nullptr;
+        marmot_error_t graph_status =
+            ensure_packed_graph(graph_token_count, graph_sample_count, &graph, &fast_plan, error);
         if (graph_status != MARMOT_SUCCESS) {
             abort_append_plans(append_plans);
             return graph_status;
@@ -2346,8 +2473,10 @@ marmot_error_t ServingEngine::step(size_t max_steps, size_t &out_steps_done, std
                     kv_v,          kv_k_scale,       kv_v_scale,        sample_indices_.get(),
                 };
                 marmot_tensor_t *outputs[] = {logits_.get()};
-                marmot_error_t run_status =
-                    marmot_graph_execute(graph, ctx_, inputs, ARRAY_LENGTH(inputs), outputs, ARRAY_LENGTH(outputs));
+                marmot_error_t run_status = execute_packed_graph(
+                    graph, fast_plan, ctx_, std::span<const marmot_tensor_t *const>(inputs, ARRAY_LENGTH(inputs)),
+                    std::span<marmot_tensor_t *const>(outputs, ARRAY_LENGTH(outputs))
+                );
                 if (run_status != MARMOT_SUCCESS) {
                     const char *detail = marmot_get_last_error_detail();
                     error = (detail != nullptr && detail[0] != '\0') ? detail : "packed graph execute failed";
@@ -2359,8 +2488,10 @@ marmot_error_t ServingEngine::step(size_t max_steps, size_t &out_steps_done, std
                     hidden_.get(), positions_.get(), token_meta_.get(), block_table, kv_k, kv_v, sample_indices_.get(),
                 };
                 marmot_tensor_t *outputs[] = {logits_.get()};
-                marmot_error_t run_status =
-                    marmot_graph_execute(graph, ctx_, inputs, ARRAY_LENGTH(inputs), outputs, ARRAY_LENGTH(outputs));
+                marmot_error_t run_status = execute_packed_graph(
+                    graph, fast_plan, ctx_, std::span<const marmot_tensor_t *const>(inputs, ARRAY_LENGTH(inputs)),
+                    std::span<marmot_tensor_t *const>(outputs, ARRAY_LENGTH(outputs))
+                );
                 if (run_status != MARMOT_SUCCESS) {
                     const char *detail = marmot_get_last_error_detail();
                     error = (detail != nullptr && detail[0] != '\0') ? detail : "packed graph execute failed";
@@ -2374,8 +2505,10 @@ marmot_error_t ServingEngine::step(size_t max_steps, size_t &out_steps_done, std
                     hidden_.get(), positions_.get(), token_meta_.get(), block_table, kv_k, kv_v, kv_k_scale, kv_v_scale,
                 };
                 marmot_tensor_t *outputs[] = {hidden_out_.get()};
-                marmot_error_t run_status =
-                    marmot_graph_execute(graph, ctx_, inputs, ARRAY_LENGTH(inputs), outputs, ARRAY_LENGTH(outputs));
+                marmot_error_t run_status = execute_packed_graph(
+                    graph, fast_plan, ctx_, std::span<const marmot_tensor_t *const>(inputs, ARRAY_LENGTH(inputs)),
+                    std::span<marmot_tensor_t *const>(outputs, ARRAY_LENGTH(outputs))
+                );
                 if (run_status != MARMOT_SUCCESS) {
                     const char *detail = marmot_get_last_error_detail();
                     error = (detail != nullptr && detail[0] != '\0') ? detail : "packed graph execute failed";
@@ -2387,8 +2520,10 @@ marmot_error_t ServingEngine::step(size_t max_steps, size_t &out_steps_done, std
                     hidden_.get(), positions_.get(), token_meta_.get(), block_table, kv_k, kv_v,
                 };
                 marmot_tensor_t *outputs[] = {hidden_out_.get()};
-                marmot_error_t run_status =
-                    marmot_graph_execute(graph, ctx_, inputs, ARRAY_LENGTH(inputs), outputs, ARRAY_LENGTH(outputs));
+                marmot_error_t run_status = execute_packed_graph(
+                    graph, fast_plan, ctx_, std::span<const marmot_tensor_t *const>(inputs, ARRAY_LENGTH(inputs)),
+                    std::span<marmot_tensor_t *const>(outputs, ARRAY_LENGTH(outputs))
+                );
                 if (run_status != MARMOT_SUCCESS) {
                     const char *detail = marmot_get_last_error_detail();
                     error = (detail != nullptr && detail[0] != '\0') ? detail : "packed graph execute failed";
@@ -2414,15 +2549,6 @@ marmot_error_t ServingEngine::step(size_t max_steps, size_t &out_steps_done, std
             const size_t vocab = n_vocab_;
             const size_t total_elems = marmot_tensor_num_elements(logits_tensor);
 
-            // Check if we can use fast device-side argmax for greedy sampling.
-            // This avoids copying logits to host when:
-            //   - Backend supports device argmax (non-CPU)
-            //   - temperature <= 0 (greedy decoding)
-            //   - top_k <= 1 (no top-k sampling)
-            //   - repetition_penalty == 1.0 (no penalty)
-            //   - suppress_special_tokens is disabled (no filtering needed)
-            // Note: allowed_special_mask is only used when suppress_special_tokens is enabled,
-            // so we don't need to check it separately.
             bool use_device_argmax = false;
             if (ctx_->backend_type != MARMOT_BACKEND_CPU && logits_argmax_ && logits_max_) {
                 use_device_argmax = true;
@@ -2784,7 +2910,6 @@ marmot_error_t ServingEngine::step(size_t max_steps, size_t &out_steps_done, std
                     abort_append_plans(append_plans);
                     return sample_status;
                 }
-
                 sample_results.push_back(SampleResult{&req, token, finished_for_token(req, token)});
 
                 const uint32_t token_index = batch.sample_indices[i];

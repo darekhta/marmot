@@ -65,7 +65,7 @@ bool marmot_tensor_is_logical_quant_weight(const marmot_tensor_t *tensor) {
     if (tensor->quant_layout != qtraits->layout) {
         return false;
     }
-    if (tensor->shape.ndim != 2) {
+    if (tensor->shape.ndim < 2) {
         return false;
     }
     return true;
@@ -83,10 +83,37 @@ size_t marmot_tensor_quant_storage_bytes(const marmot_tensor_t *tensor) {
     const size_t block_vals = qtraits->block_values;
     const size_t block_bytes = qtraits->header_bytes + qtraits->payload_bytes;
 
-    const size_t rows = tensor->shape.shape[0];
-    const size_t cols = tensor->shape.shape[1];
-    const size_t blocks_per_row = (cols + block_vals - 1) / block_vals;
-    return rows * blocks_per_row * block_bytes;
+    size_t inner_dim = 0;
+    size_t row_count = 0;
+    if (tensor->shape.ndim == 2) {
+        row_count = tensor->shape.shape[0];
+        inner_dim = tensor->shape.shape[1];
+    } else {
+        inner_dim = tensor->shape.shape[0];
+        row_count = 1;
+        for (size_t d = 1; d < tensor->shape.ndim; ++d) {
+            if (tensor->shape.shape[d] > 0 && row_count > SIZE_MAX / tensor->shape.shape[d]) {
+                marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Quantized tensor size overflow");
+                return 0;
+            }
+            row_count *= tensor->shape.shape[d];
+        }
+    }
+    if (inner_dim == 0) {
+        return 0;
+    }
+
+    const size_t blocks_per_row = (inner_dim + block_vals - 1) / block_vals;
+    if (blocks_per_row > 0 && row_count > SIZE_MAX / blocks_per_row) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Quantized tensor size overflow");
+        return 0;
+    }
+    size_t total = row_count * blocks_per_row;
+    if (block_bytes > 0 && total > SIZE_MAX / block_bytes) {
+        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "Quantized tensor size overflow");
+        return 0;
+    }
+    return total * block_bytes;
 }
 
 size_t marmot_tensor_size_bytes(const marmot_tensor_t *tensor) {

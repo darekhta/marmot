@@ -24,7 +24,13 @@ struct GraphNode {
     float estimated_us{0.0f};
     bool skip{false};
     size_t view_byte_offset{0};
+    uint32_t fast_block_id{UINT32_MAX};
     uint32_t paged_attention_layer_idx{0};
+    marmot_fast_stage_hint_t fast_stage_hint{MARMOT_FAST_STAGE_HINT_NONE};
+    marmot_fast_node_role_t fast_node_role{MARMOT_FAST_NODE_ROLE_NONE};
+    marmot_ffn_type_t moe_ffn_type{MARMOT_FFN_COUNT};
+    float moe_weights_scale{1.0f};
+    marmot_router_weight_policy_t moe_router_weight_policy{MARMOT_ROUTER_WEIGHT_POLICY_COUNT};
     std::array<size_t, MARMOT_MAX_DIMS> slice_starts{};
 };
 

@@ -394,7 +394,7 @@ static marmot_error_t accel_run_blocked(
     const accel_pack_ops_t *ops, const void *input, const void *weight, void *out, size_t N, size_t K, size_t M,
     bool layout_nt
 ) {
-    const sgemm_neon_params_t *params = sgemm_neon_get_params();
+    const marmot_neon_f32_params_t *params = marmot_neon_f32_get_params();
     const size_t a_elems = params->block_n * params->block_k;
     const size_t b_elems = layout_nt ? params->block_m * params->block_k : params->block_k * params->block_m;
     const size_t c_elems = params->block_n * params->block_m;

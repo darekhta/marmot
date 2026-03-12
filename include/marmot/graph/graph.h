@@ -54,6 +54,9 @@ MARMOT_NODISCARD marmot_error_t marmot_graph_add_op(
     size_t num_outputs, marmot_value_id_t *out_value_ids
 );
 
+MARMOT_NODISCARD marmot_error_t
+marmot_graph_set_last_node_moe_params(marmot_graph_t *graph, marmot_ffn_type_t ffn_type, float weights_scale);
+
 MARMOT_NODISCARD marmot_error_t marmot_graph_finalize(marmot_graph_t *graph, marmot_backend_type_t backend);
 
 MARMOT_NODISCARD marmot_error_t marmot_graph_finalize_auto(marmot_graph_t *graph, marmot_backend_type_t *out_backend);

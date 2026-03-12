@@ -319,6 +319,7 @@ kernel_codegen = custom_target(
     meson.current_source_dir() / 'src/backends/cpu/kernels/matmul_qkv.def',
     meson.current_source_dir() / 'src/backends/cpu/kernels/matmul_quantized_scalar.def',
     meson.current_source_dir() / 'src/backends/cpu/kernels/matmul_scalar.def',
+    meson.current_source_dir() / 'src/backends/cpu/kernels/moe.def',
     meson.current_source_dir() / 'src/backends/cpu/kernels/normalization.def',
     meson.current_source_dir() / 'src/backends/cpu/kernels/paged_attention.def',
     meson.current_source_dir() / 'src/backends/cpu/kernels/quantization.def',
@@ -338,6 +339,7 @@ kernel_codegen = custom_target(
     meson.current_source_dir() / 'src/backends/metal/kernels/matmul.def',
     meson.current_source_dir() / 'src/backends/metal/kernels/matmul_qkv.def',
     meson.current_source_dir() / 'src/backends/metal/kernels/matmul_quantized.def',
+    meson.current_source_dir() / 'src/backends/metal/kernels/moe.def',
     meson.current_source_dir() / 'src/backends/metal/kernels/normalization.def',
     meson.current_source_dir() / 'src/backends/metal/kernels/paged_attention.def',
     meson.current_source_dir() / 'src/backends/metal/kernels/quantization.def',
@@ -407,6 +409,7 @@ core_sources = files(
   'src/core/ops/embedding_impl.c',
   'src/core/ops/attention_impl.c',
   'src/core/ops/matmul_impl.c',
+  'src/core/ops/moe_impl.c',
   'src/core/tensor/tensor_utils.c',
   'src/core/api/elementwise.c',
   'src/core/api/unary.c',
@@ -431,6 +434,9 @@ core_sources = files(
   'src/core/helpers/rope.c',
   'third_party/yyjson/yyjson.c',
   'src/graph/graph.cpp',
+  'src/graph/fast_plan.cpp',
+  'src/graph/fast_executor.cpp',
+  'src/graph/fast_exec.cpp',
   'src/graph/passes/fusion_pass.cpp',
   'src/graph/graph_executor.cpp',
   'src/graph/graph_validator.cpp',
@@ -543,6 +549,7 @@ cpu_backend_sources = files(
   'src/backends/cpu/ops/softmax/neon/softmax_f32_neon.c',
   'src/backends/cpu/ops/softmax/neon/softmax_f16_neon.c',
   'src/backends/cpu/ops/softmax/avx2/softmax_f32_avx2.c',
+  'src/backends/cpu/ops/moe/moe_ops.c',
   'src/backends/cpu/ops/matmul/matmul_epilogue.c',
   'src/backends/cpu/ops/matmul/qkv/matmul_qkv.c',
   'src/backends/cpu/ops/matmul/qkv/matmul_qkv_neon.c',
@@ -612,6 +619,7 @@ if host_machine.system() == 'darwin' and enable_metal_opt
       metal_shader_dir + '/conversions.metal',
       metal_shader_dir + '/quantization.metal',
       metal_shader_dir + '/reductions.metal',
+      metal_shader_dir + '/moe.metal',
     )
 
     metal_include_dir = join_paths(meson.current_source_dir(), metal_shader_dir)
@@ -668,6 +676,7 @@ if host_machine.system() == 'darwin' and enable_metal_opt
         'src/backends/metal/ops/matmul_qkv_kernel.mm',
         'src/backends/metal/ops/matmul_qkv.mm',
         'src/backends/metal/ops/matmul_qkv_quant.mm',
+        'src/backends/metal/ops/moe.mm',
         'src/backends/metal/ops/vec_dot.mm',
         'src/backends/metal/quantization/metal_quant_utils.mm',
         'src/backends/metal/quantization/q_gguf.mm',
@@ -741,6 +750,7 @@ backend_tests = [
   {'target': 'test_backend_activations', 'label': 'Backend activations', 'source': 'tests/backend/test_backend_activations.c'},
   {'target': 'test_backend_normalization', 'label': 'Backend normalization', 'source': 'tests/backend/test_backend_normalization.c'},
   {'target': 'test_backend_softmax', 'label': 'Backend softmax', 'source': 'tests/backend/test_backend_softmax.c'},
+  {'target': 'test_backend_moe', 'label': 'Backend moe', 'source': 'tests/backend/test_backend_moe.c'},
   {'target': 'test_backend_reduction', 'label': 'Backend reductions', 'source': 'tests/backend/test_backend_reduction.c'},
   {'target': 'test_backend_matmul', 'label': 'Backend matmul', 'source': 'tests/backend/test_backend_matmul.c'},
   {'target': 'test_backend_paged_attention', 'label': 'Backend paged attention', 'source': 'tests/backend/test_backend_paged_attention.c'},
@@ -812,9 +822,11 @@ core_tests = [
   {'target': 'test_ops_utils', 'label': 'Ops utils shape inference', 'source': 'tests/core/test_ops_utils.c'},
   {'target': 'test_rope_freq_cache', 'label': 'RoPE frequency cache', 'source': 'tests/core/test_rope_freq_cache.c'},
   {'target': 'test_quant_registry', 'label': 'Quant registry', 'source': 'tests/core/test_quant_registry.c'},
+  {'target': 'test_tensor_metadata', 'label': 'Tensor metadata', 'source': 'tests/core/test_tensor_metadata.c'},
   {'target': 'test_bitpack_utils', 'label': 'Bitpack utils', 'source': 'tests/core/test_bitpack_utils.c'},
   {'target': 'test_int4_utils', 'label': 'Int4 utils', 'source': 'tests/core/test_int4_utils.c'},
   {'target': 'test_allocator_registry', 'label': 'Allocator registry', 'source': 'tests/core/test_allocator_registry.c'},
+  {'target': 'test_context_threads', 'label': 'Context thread control', 'source': 'tests/core/test_context_threads.c'},
 ]
 
 foreach t : core_tests
@@ -838,6 +850,7 @@ graph_tests = [
   {'target': 'test_graph_fusion', 'label': 'Graph fusion', 'source': 'tests/graph/test_graph_fusion.c'},
   {'target': 'test_cross_backend_fusion', 'label': 'Cross-backend fusion', 'source': 'tests/graph/test_cross_backend_fusion.c'},
   {'target': 'test_architecture_traits', 'label': 'Architecture traits', 'source': 'tests/graph/test_architecture_traits.c'},
+  {'target': 'test_fast_plan', 'label': 'Fast plan lowering', 'source': 'tests/graph/test_fast_plan.cpp'},
 ]
 
 # Manual test tool for multi-architecture GGUF loading (not part of test suite)
@@ -915,6 +928,16 @@ llm_generate_test = executable('test_llm_generate_tokens',
 
 test('LLM generate tokens', llm_generate_test, is_parallel: false, suite: ['ci'], timeout: 600)
 
+model_prepack_test = executable('test_model_prepack',
+  'tests/inference/test_model_prepack.cpp',
+  include_directories: test_inc_dirs,
+  c_args: c_args,
+  link_with: libmarmot,
+  dependencies: deps,
+)
+
+test('Model prepack', model_prepack_test, is_parallel: false, suite: ['default', 'ci'])
+
 serving_engine_scheduler_test = executable('test_serving_engine_scheduler',
   'tests/inference/test_serving_engine_scheduler.c',
   include_directories: test_inc_dirs,
@@ -934,6 +957,16 @@ kv_pool_swap_test = executable('test_kv_pool_swap',
 )
 
 test('KV pool swap', kv_pool_swap_test, is_parallel: false, suite: ['ci'])
+
+llm_moe_generate_test = executable('test_llm_moe_generate',
+  'tests/inference/test_llm_moe_generate.c',
+  include_directories: test_inc_dirs,
+  c_args: c_args + [gguf_fixture_c_arg],
+  link_with: libmarmot,
+  dependencies: deps + (cmocka_dep.found() ? [cmocka_dep] : []),
+)
+
+test('LLM MoE generate', llm_moe_generate_test, is_parallel: false, suite: ['ci'], timeout: 600)
 
 test('Kernel def validation (fixtures)',
   py,
@@ -960,6 +993,33 @@ test('Kernel def parser errors',
   py,
   args: [
     meson.current_source_dir() / 'tests/codegen/test_def_parser_errors.py',
+  ],
+  is_parallel: false,
+  suite: ['default', 'ci'],
+)
+
+test('MoE fixture rewrite',
+  py,
+  args: [
+    meson.current_source_dir() / 'tests/codegen/test_make_moe_fixture.py',
+  ],
+  is_parallel: false,
+  suite: ['default', 'ci'],
+)
+
+test('MoE CPU benchmark compare parser',
+  py,
+  args: [
+    meson.current_source_dir() / 'tests/codegen/test_compare_moe_cpu.py',
+  ],
+  is_parallel: false,
+  suite: ['default', 'ci'],
+)
+
+test('LLM benchmark matrix parser',
+  py,
+  args: [
+    meson.current_source_dir() / 'tests/codegen/test_benchmark_llm_matrix.py',
   ],
   is_parallel: false,
   suite: ['default', 'ci'],

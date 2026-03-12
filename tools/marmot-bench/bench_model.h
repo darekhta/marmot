@@ -24,6 +24,7 @@ typedef struct {
     marmot_dtype_t kv_type_v;      // KV cache V type (-ctv)
     size_t gpu_layers;             // GPU layers to offload (-ngl)
     bool flash_attn;               // Use flash attention (-fa)
+    bool create_engine;            // Create serving engine sidecar
     size_t n_threads;              // Number of threads (-t)
     marmot_backend_type_t backend; // Backend to use
 } marmot_bench_model_config_t;

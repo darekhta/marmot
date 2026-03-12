@@ -11,6 +11,9 @@
 namespace marmot::graph {
 
 class ExecutionSession;
+class FastExec;
+class FastPlan;
+struct FastExecProfile;
 
 class Executor {
   public:
@@ -21,9 +24,13 @@ class Executor {
         std::span<marmot_tensor_t *const> outputs
     );
 
-    [[nodiscard]] marmot_error_t execute_bound(const marmot_context_t *ctx, std::span<marmot_tensor_t *> bindings);
+    [[nodiscard]] marmot_error_t execute_bound(
+        const marmot_context_t *ctx, std::span<marmot_tensor_t *> bindings, const FastPlan *fast_plan = nullptr,
+        FastExecProfile *profile = nullptr
+    );
 
   private:
+    friend class FastExec;
     Graph::Impl &impl_;
     ExecutionSession *session_{nullptr};
 
@@ -44,6 +51,9 @@ class Executor {
     execute_quantize(const GraphNode &node, const marmot_context_t *ctx, std::span<marmot_tensor_t *> bindings);
 
     [[nodiscard]] marmot_error_t
+    execute_convert(const GraphNode &node, const marmot_context_t *ctx, std::span<marmot_tensor_t *> bindings);
+
+    [[nodiscard]] marmot_error_t
     execute_dequantize(const GraphNode &node, const marmot_context_t *ctx, std::span<marmot_tensor_t *> bindings);
 
     [[nodiscard]] marmot_error_t
@@ -60,6 +70,12 @@ class Executor {
 
     [[nodiscard]] marmot_error_t
     execute_softmax(const GraphNode &node, const marmot_context_t *ctx, std::span<marmot_tensor_t *> bindings);
+
+    [[nodiscard]] marmot_error_t
+    execute_topk(const GraphNode &node, const marmot_context_t *ctx, std::span<marmot_tensor_t *> bindings);
+
+    [[nodiscard]] marmot_error_t
+    execute_moe_experts(const GraphNode &node, const marmot_context_t *ctx, std::span<marmot_tensor_t *> bindings);
 
     [[nodiscard]] marmot_error_t
     execute_layernorm(const GraphNode &node, const marmot_context_t *ctx, std::span<marmot_tensor_t *> bindings);

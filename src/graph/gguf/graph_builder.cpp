@@ -252,6 +252,14 @@ matmul_output_desc(const marmot_graph_tensor_desc_t &activation_desc, const marm
 [[nodiscard]] std::expected<marmot_value_id_t, marmot_error_t>
 add_constant_value(marmot_graph_t *graph, const marmot_gguf_tensor_t *info);
 
+void set_last_fast_hint(
+    marmot_graph_t *graph, marmot_fast_stage_hint_t stage_hint, marmot_fast_node_role_t role, uint32_t block_id
+) {
+    if (graph != nullptr) {
+        graph->inner.set_last_node_fast_hint(stage_hint, role, block_id);
+    }
+}
+
 [[nodiscard]] std::expected<marmot_value_id_t, marmot_error_t>
 add_constant_value(marmot_graph_t *graph, const marmot_gguf_tensor_t *info) {
     if (graph == nullptr || info == nullptr || info->tensor == nullptr || info->name == nullptr) {
@@ -576,6 +584,256 @@ add_gelu(marmot_graph_t *graph, marmot_value_id_t input_id) {
         return std::unexpected(status);
     }
     return out_value_id;
+}
+
+[[nodiscard]] std::expected<marmot_value_id_t, marmot_error_t>
+add_convert(marmot_graph_t *graph, marmot_value_id_t input_id, marmot_dtype_t output_dtype) {
+    if (graph == nullptr) {
+        return std::unexpected(MARMOT_ERROR_INVALID_ARGUMENT);
+    }
+
+    auto input_desc = graph->inner.get_value_desc(input_id);
+    if (!input_desc) {
+        return std::unexpected(MARMOT_ERROR_INVALID_ARGUMENT);
+    }
+    if (input_desc->dtype == output_dtype) {
+        return input_id;
+    }
+
+    marmot_graph_tensor_desc_t out_desc = *input_desc;
+    out_desc.dtype = output_dtype;
+
+    marmot_op_signature_t sig = {
+        .op_id = MARMOT_OP_CONVERT,
+        .profile_id = MARMOT_PROFILE_INVALID,
+        .input_dtype = input_desc->dtype,
+        .weight_dtype = input_desc->dtype,
+        .output_dtype = output_dtype,
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_id = MARMOT_QSCHEME_NONE,
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode =
+            graph_desc_is_contiguous(*input_desc) ? MARMOT_STRIDE_MODE_CONTIGUOUS : MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_flags = MARMOT_EPILOGUE_NONE,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .variant_flags = MARMOT_FUSION_NONE,
+    };
+
+    marmot_value_id_t out_value_id = MARMOT_VALUE_ID_INVALID;
+    marmot_error_t status = marmot_graph_add_op(graph, "convert", &sig, &input_id, 1, &out_desc, 1, &out_value_id);
+    if (status != MARMOT_SUCCESS) {
+        return std::unexpected(status);
+    }
+    return out_value_id;
+}
+
+[[nodiscard]] std::expected<marmot_value_id_t, marmot_error_t>
+add_softmax(marmot_graph_t *graph, marmot_value_id_t input_id) {
+    if (graph == nullptr) {
+        return std::unexpected(MARMOT_ERROR_INVALID_ARGUMENT);
+    }
+
+    auto input_desc = graph->inner.get_value_desc(input_id);
+    if (!input_desc) {
+        return std::unexpected(MARMOT_ERROR_INVALID_ARGUMENT);
+    }
+
+    marmot_op_signature_t sig = {
+        .op_id = MARMOT_OP_SOFTMAX,
+        .profile_id = MARMOT_PROFILE_INVALID,
+        .input_dtype = input_desc->dtype,
+        .weight_dtype = input_desc->dtype,
+        .output_dtype = input_desc->dtype,
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_id = MARMOT_QSCHEME_NONE,
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_CONTIGUOUS,
+        .epilogue_flags = MARMOT_EPILOGUE_NONE,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .variant_flags = MARMOT_FUSION_NONE,
+    };
+
+    marmot_value_id_t out_value_id = MARMOT_VALUE_ID_INVALID;
+    marmot_error_t status = marmot_graph_add_op(graph, "softmax", &sig, &input_id, 1, &*input_desc, 1, &out_value_id);
+    if (status != MARMOT_SUCCESS) {
+        return std::unexpected(status);
+    }
+    return out_value_id;
+}
+
+struct TopKResult {
+    marmot_value_id_t values_id;
+    marmot_value_id_t indices_id;
+};
+
+[[nodiscard]] std::expected<TopKResult, marmot_error_t>
+add_topk(marmot_graph_t *graph, marmot_value_id_t input_id, size_t k) {
+    if (graph == nullptr) {
+        return std::unexpected(MARMOT_ERROR_INVALID_ARGUMENT);
+    }
+
+    auto input_desc = graph->inner.get_value_desc(input_id);
+    if (!input_desc || input_desc->ndim != 2 || k == 0 || k > input_desc->shape[1]) {
+        return std::unexpected(MARMOT_ERROR_INVALID_ARGUMENT);
+    }
+
+    marmot_graph_tensor_desc_t values_desc{};
+    values_desc.dtype = input_desc->dtype;
+    values_desc.ndim = 2;
+    values_desc.shape[0] = input_desc->shape[0];
+    values_desc.shape[1] = k;
+    if (!marmot::graph::ensure_strides(values_desc)) {
+        return std::unexpected(MARMOT_ERROR_INVALID_ARGUMENT);
+    }
+
+    marmot_graph_tensor_desc_t indices_desc{};
+    indices_desc.dtype = MARMOT_DTYPE_INT32;
+    indices_desc.ndim = 2;
+    indices_desc.shape[0] = input_desc->shape[0];
+    indices_desc.shape[1] = k;
+    if (!marmot::graph::ensure_strides(indices_desc)) {
+        return std::unexpected(MARMOT_ERROR_INVALID_ARGUMENT);
+    }
+
+    marmot_op_signature_t sig = {
+        .op_id = MARMOT_OP_TOPK,
+        .profile_id = MARMOT_PROFILE_INVALID,
+        .input_dtype = input_desc->dtype,
+        .weight_dtype = MARMOT_DTYPE_INT32,
+        .output_dtype = input_desc->dtype,
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_id = MARMOT_QSCHEME_NONE,
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_flags = MARMOT_EPILOGUE_NONE,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .variant_flags = MARMOT_FUSION_NONE,
+    };
+
+    marmot_graph_tensor_desc_t out_descs[2] = {values_desc, indices_desc};
+    marmot_value_id_t out_ids[2] = {MARMOT_VALUE_ID_INVALID, MARMOT_VALUE_ID_INVALID};
+    marmot_error_t status = marmot_graph_add_op(graph, "topk", &sig, &input_id, 1, out_descs, 2, out_ids);
+    if (status != MARMOT_SUCCESS) {
+        return std::unexpected(status);
+    }
+    return TopKResult{.values_id = out_ids[0], .indices_id = out_ids[1]};
+}
+
+[[nodiscard]] std::expected<marmot_value_id_t, marmot_error_t> add_moe_experts(
+    marmot_graph_t *graph, marmot_value_id_t hidden_states_id, marmot_value_id_t gate_exps_id,
+    marmot_value_id_t up_exps_id, marmot_value_id_t down_exps_id, marmot_value_id_t topk_ids_id,
+    marmot_value_id_t topk_weights_id, marmot_qscheme_id_t qscheme_id, marmot_ffn_type_t ffn_type, float weights_scale,
+    marmot_router_weight_policy_t router_weight_policy
+) {
+    if (graph == nullptr) {
+        return std::unexpected(MARMOT_ERROR_INVALID_ARGUMENT);
+    }
+
+    auto hidden_desc = graph->inner.get_value_desc(hidden_states_id);
+    auto gate_desc = graph->inner.get_value_desc(gate_exps_id);
+    if (!hidden_desc || !gate_desc) {
+        return std::unexpected(MARMOT_ERROR_INVALID_ARGUMENT);
+    }
+
+    marmot_op_signature_t sig = {
+        .op_id = MARMOT_OP_MOE_EXPERTS,
+        .profile_id = MARMOT_PROFILE_INVALID,
+        .input_dtype = hidden_desc->dtype,
+        .weight_dtype = gate_desc->dtype,
+        .output_dtype = hidden_desc->dtype,
+        .accum_dtype = MARMOT_DTYPE_FLOAT32,
+        .qscheme_id = qscheme_id,
+        .weight_layout = MARMOT_WEIGHT_LAYOUT_INVALID,
+        .stride_mode = MARMOT_STRIDE_MODE_STRIDED,
+        .epilogue_flags = MARMOT_EPILOGUE_NONE,
+        .activation = MARMOT_DEVICE_UNARY_COUNT,
+        .variant_flags = MARMOT_FUSION_NONE,
+    };
+
+    marmot_value_id_t inputs[6] = {hidden_states_id, gate_exps_id, up_exps_id,
+                                   down_exps_id,     topk_ids_id,  topk_weights_id};
+    marmot_value_id_t out_value_id = MARMOT_VALUE_ID_INVALID;
+    marmot_error_t status = marmot_graph_add_op(graph, "moe_experts", &sig, inputs, 6, &*hidden_desc, 1, &out_value_id);
+    if (status != MARMOT_SUCCESS) {
+        return std::unexpected(status);
+    }
+    graph->inner.set_last_node_moe_params(ffn_type, weights_scale, router_weight_policy);
+    return out_value_id;
+}
+
+[[nodiscard]] std::expected<marmot_value_id_t, marmot_error_t> add_dense_ffn_unfused(
+    marmot_graph_t *graph, marmot_value_id_t input_id, const marmot_gguf_tensor_t *gate_weight,
+    std::optional<marmot_value_id_t> gate_weight_id, const marmot_gguf_tensor_t *up_weight,
+    marmot_value_id_t up_weight_id, const marmot_gguf_tensor_t *down_weight, marmot_value_id_t down_weight_id,
+    marmot_ffn_type_t ffn_type
+) {
+    if (graph == nullptr || up_weight == nullptr || down_weight == nullptr) {
+        return std::unexpected(MARMOT_ERROR_INVALID_ARGUMENT);
+    }
+
+    auto input_desc = graph->inner.get_value_desc(input_id);
+    if (!input_desc) {
+        return std::unexpected(MARMOT_ERROR_INVALID_ARGUMENT);
+    }
+
+    marmot_value_id_t hidden_id = MARMOT_VALUE_ID_INVALID;
+    if (ffn_type == MARMOT_FFN_SWIGLU || ffn_type == MARMOT_FFN_GEGLU) {
+        if (gate_weight == nullptr || !gate_weight_id) {
+            return std::unexpected(MARMOT_ERROR_INVALID_ARGUMENT);
+        }
+
+        auto gate_desc = matmul_output_desc(*input_desc, gate_weight->tensor);
+        if (!gate_desc) {
+            return gate_desc.error();
+        }
+        auto gate_id = add_matmul(graph, input_id, *gate_weight_id, gate_weight->qscheme_id, *gate_desc);
+        if (!gate_id) {
+            return gate_id.error();
+        }
+
+        auto up_desc = matmul_output_desc(*input_desc, up_weight->tensor);
+        if (!up_desc) {
+            return up_desc.error();
+        }
+        auto up_id = add_matmul(graph, input_id, up_weight_id, up_weight->qscheme_id, *up_desc);
+        if (!up_id) {
+            return up_id.error();
+        }
+
+        auto gated_id = add_glu(graph, *gate_id, *up_id, ffn_type);
+        if (!gated_id) {
+            return gated_id.error();
+        }
+        hidden_id = *gated_id;
+    } else if (ffn_type == MARMOT_FFN_GELU) {
+        auto up_desc = matmul_output_desc(*input_desc, up_weight->tensor);
+        if (!up_desc) {
+            return up_desc.error();
+        }
+        auto up_id = add_matmul(graph, input_id, up_weight_id, up_weight->qscheme_id, *up_desc);
+        if (!up_id) {
+            return up_id.error();
+        }
+
+        auto activated_id = add_gelu(graph, *up_id);
+        if (!activated_id) {
+            return activated_id.error();
+        }
+        hidden_id = *activated_id;
+    } else {
+        return std::unexpected(MARMOT_ERROR_INVALID_ARGUMENT);
+    }
+
+    auto hidden_desc = graph->inner.get_value_desc(hidden_id);
+    if (!hidden_desc) {
+        return std::unexpected(MARMOT_ERROR_INVALID_ARGUMENT);
+    }
+
+    auto out_desc = matmul_output_desc(*hidden_desc, down_weight->tensor);
+    if (!out_desc) {
+        return out_desc.error();
+    }
+    return add_matmul(graph, hidden_id, down_weight_id, down_weight->qscheme_id, *out_desc);
 }
 
 [[nodiscard]] std::expected<marmot_graph_tensor_desc_t, marmot_error_t> positions_desc(size_t seq_len) {
@@ -1016,6 +1274,12 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
         }
 
         const marmot_dtype_t activation_dtype = marmot_activation_dtype_for_architecture(meta.architecture, backend);
+        if (meta.is_moe && backend != MARMOT_BACKEND_CPU && backend != MARMOT_BACKEND_METAL) {
+            marmot_set_error(
+                MARMOT_ERROR_NOT_IMPLEMENTED, "MoE graph execution is currently implemented for CPU and Metal only"
+            );
+            return MARMOT_ERROR_NOT_IMPLEMENTED;
+        }
         marmot_dtype_t kv_dtype = packed_opts->kv_dtype;
         if ((packed_opts->flags & MARMOT_PACKED_GRAPH_FLAG_KV_DTYPE_AUTO) != 0) {
             kv_dtype = activation_dtype;
@@ -1196,6 +1460,13 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
             auto ffn_gate_name = std::format("blk.{}.ffn_gate.weight", layer);
             auto ffn_up_name = std::format("blk.{}.ffn_up.weight", layer);
             auto ffn_down_name = std::format("blk.{}.ffn_down.weight", layer);
+            auto ffn_gate_inp_name = std::format("blk.{}.ffn_gate_inp.weight", layer);
+            auto ffn_gate_exps_name = std::format("blk.{}.ffn_gate_exps.weight", layer);
+            auto ffn_up_exps_name = std::format("blk.{}.ffn_up_exps.weight", layer);
+            auto ffn_down_exps_name = std::format("blk.{}.ffn_down_exps.weight", layer);
+            auto ffn_gate_shexp_name = std::format("blk.{}.ffn_gate_shexp.weight", layer);
+            auto ffn_up_shexp_name = std::format("blk.{}.ffn_up_shexp.weight", layer);
+            auto ffn_down_shexp_name = std::format("blk.{}.ffn_down_shexp.weight", layer);
 
             const marmot_gguf_tensor_t *attn_norm = marmot_gguf_find_tensor(file, attn_norm_name.c_str());
             const marmot_gguf_tensor_t *attn_q = marmot_gguf_find_tensor(file, attn_q_name.c_str());
@@ -1212,22 +1483,49 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
                 use_fused_qkv = (attn_qkv != nullptr);
             }
             const marmot_gguf_tensor_t *ffn_norm = marmot_gguf_find_tensor(file, ffn_norm_name.c_str());
+            const bool is_moe = arch_traits->is_moe;
             const marmot_gguf_tensor_t *ffn_gate = nullptr;
-            if (arch_traits->ffn_type == MARMOT_FFN_SWIGLU || arch_traits->ffn_type == MARMOT_FFN_GEGLU) {
-                ffn_gate = marmot_gguf_find_tensor(file, ffn_gate_name.c_str());
-            }
-            const marmot_gguf_tensor_t *ffn_up = marmot_gguf_find_tensor(file, ffn_up_name.c_str());
-            const marmot_gguf_tensor_t *ffn_down = marmot_gguf_find_tensor(file, ffn_down_name.c_str());
+            const marmot_gguf_tensor_t *ffn_up = nullptr;
+            const marmot_gguf_tensor_t *ffn_down = nullptr;
+            const marmot_gguf_tensor_t *ffn_gate_inp = nullptr;
+            const marmot_gguf_tensor_t *ffn_gate_exps = nullptr;
+            const marmot_gguf_tensor_t *ffn_up_exps = nullptr;
+            const marmot_gguf_tensor_t *ffn_down_exps = nullptr;
+            const marmot_gguf_tensor_t *ffn_gate_shexp = nullptr;
+            const marmot_gguf_tensor_t *ffn_up_shexp = nullptr;
+            const marmot_gguf_tensor_t *ffn_down_shexp = nullptr;
+            const bool needs_gate =
+                arch_traits->ffn_type == MARMOT_FFN_SWIGLU || arch_traits->ffn_type == MARMOT_FFN_GEGLU;
+            const bool has_shared_experts = is_moe && meta.n_shared_experts != 0;
 
-            // Check for fused gate+up weight (Phi-3 style)
-            // If ffn_gate is missing but ffn_up has 2x the expected size, it's fused
             bool use_fused_gate_up = false;
-            if (arch_traits->ffn_type == MARMOT_FFN_SWIGLU && ffn_gate == nullptr && ffn_up != nullptr) {
-                // Check if ffn_up shape suggests fused gate+up: [n_embd, 2*ff_length]
-                if (ffn_up->tensor != nullptr && ffn_up->tensor->shape.ndim == 2) {
-                    size_t up_out_dim = ffn_up->tensor->shape.shape[0];
-                    if (up_out_dim == 2 * meta.ff_length) {
-                        use_fused_gate_up = true;
+            if (is_moe) {
+                ffn_gate_inp = marmot_gguf_find_tensor(file, ffn_gate_inp_name.c_str());
+                ffn_gate_exps = marmot_gguf_find_tensor(file, ffn_gate_exps_name.c_str());
+                ffn_up_exps = marmot_gguf_find_tensor(file, ffn_up_exps_name.c_str());
+                ffn_down_exps = marmot_gguf_find_tensor(file, ffn_down_exps_name.c_str());
+                if (has_shared_experts) {
+                    if (needs_gate) {
+                        ffn_gate_shexp = marmot_gguf_find_tensor(file, ffn_gate_shexp_name.c_str());
+                    }
+                    ffn_up_shexp = marmot_gguf_find_tensor(file, ffn_up_shexp_name.c_str());
+                    ffn_down_shexp = marmot_gguf_find_tensor(file, ffn_down_shexp_name.c_str());
+                }
+            } else {
+                if (needs_gate) {
+                    ffn_gate = marmot_gguf_find_tensor(file, ffn_gate_name.c_str());
+                }
+                ffn_up = marmot_gguf_find_tensor(file, ffn_up_name.c_str());
+                ffn_down = marmot_gguf_find_tensor(file, ffn_down_name.c_str());
+
+                // Check for fused gate+up weight (Phi-3 style)
+                // If ffn_gate is missing but ffn_up has 2x the expected size, it's fused
+                if (arch_traits->ffn_type == MARMOT_FFN_SWIGLU && ffn_gate == nullptr && ffn_up != nullptr) {
+                    if (ffn_up->tensor != nullptr && ffn_up->tensor->shape.ndim == 2) {
+                        size_t up_out_dim = ffn_up->tensor->shape.shape[0];
+                        if (up_out_dim == 2 * meta.ff_length) {
+                            use_fused_gate_up = true;
+                        }
                     }
                 }
             }
@@ -1288,22 +1586,68 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
                 marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, msg.c_str());
                 return MARMOT_ERROR_INVALID_ARGUMENT;
             }
-            const bool needs_gate =
-                arch_traits->ffn_type == MARMOT_FFN_SWIGLU || arch_traits->ffn_type == MARMOT_FFN_GEGLU;
-            if (needs_gate && ffn_gate == nullptr && !use_fused_gate_up) {
-                auto msg = std::format("Missing tensor: {}", ffn_gate_name);
-                marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, msg.c_str());
-                return MARMOT_ERROR_INVALID_ARGUMENT;
-            }
-            if (ffn_up == nullptr) {
-                auto msg = std::format("Missing tensor: {}", ffn_up_name);
-                marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, msg.c_str());
-                return MARMOT_ERROR_INVALID_ARGUMENT;
-            }
-            if (ffn_down == nullptr) {
-                auto msg = std::format("Missing tensor: {}", ffn_down_name);
-                marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, msg.c_str());
-                return MARMOT_ERROR_INVALID_ARGUMENT;
+            if (is_moe) {
+                if (meta.n_experts == 0 || meta.n_experts_used == 0 || meta.n_experts_used > meta.n_experts) {
+                    marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "invalid MoE metadata");
+                    return MARMOT_ERROR_INVALID_ARGUMENT;
+                }
+                if (meta.router_weight_policy >= MARMOT_ROUTER_WEIGHT_POLICY_COUNT) {
+                    marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, "invalid MoE router weight policy");
+                    return MARMOT_ERROR_INVALID_ARGUMENT;
+                }
+                if (ffn_gate_inp == nullptr) {
+                    auto msg = std::format("Missing tensor: {}", ffn_gate_inp_name);
+                    marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, msg.c_str());
+                    return MARMOT_ERROR_INVALID_ARGUMENT;
+                }
+                if (ffn_gate_exps == nullptr) {
+                    auto msg = std::format("Missing tensor: {}", ffn_gate_exps_name);
+                    marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, msg.c_str());
+                    return MARMOT_ERROR_INVALID_ARGUMENT;
+                }
+                if (ffn_up_exps == nullptr) {
+                    auto msg = std::format("Missing tensor: {}", ffn_up_exps_name);
+                    marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, msg.c_str());
+                    return MARMOT_ERROR_INVALID_ARGUMENT;
+                }
+                if (ffn_down_exps == nullptr) {
+                    auto msg = std::format("Missing tensor: {}", ffn_down_exps_name);
+                    marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, msg.c_str());
+                    return MARMOT_ERROR_INVALID_ARGUMENT;
+                }
+                if (has_shared_experts) {
+                    if (needs_gate && ffn_gate_shexp == nullptr) {
+                        auto msg = std::format("Missing tensor: {}", ffn_gate_shexp_name);
+                        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, msg.c_str());
+                        return MARMOT_ERROR_INVALID_ARGUMENT;
+                    }
+                    if (ffn_up_shexp == nullptr) {
+                        auto msg = std::format("Missing tensor: {}", ffn_up_shexp_name);
+                        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, msg.c_str());
+                        return MARMOT_ERROR_INVALID_ARGUMENT;
+                    }
+                    if (ffn_down_shexp == nullptr) {
+                        auto msg = std::format("Missing tensor: {}", ffn_down_shexp_name);
+                        marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, msg.c_str());
+                        return MARMOT_ERROR_INVALID_ARGUMENT;
+                    }
+                }
+            } else {
+                if (needs_gate && ffn_gate == nullptr && !use_fused_gate_up) {
+                    auto msg = std::format("Missing tensor: {}", ffn_gate_name);
+                    marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, msg.c_str());
+                    return MARMOT_ERROR_INVALID_ARGUMENT;
+                }
+                if (ffn_up == nullptr) {
+                    auto msg = std::format("Missing tensor: {}", ffn_up_name);
+                    marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, msg.c_str());
+                    return MARMOT_ERROR_INVALID_ARGUMENT;
+                }
+                if (ffn_down == nullptr) {
+                    auto msg = std::format("Missing tensor: {}", ffn_down_name);
+                    marmot_set_error(MARMOT_ERROR_INVALID_ARGUMENT, msg.c_str());
+                    return MARMOT_ERROR_INVALID_ARGUMENT;
+                }
             }
 
             auto attn_norm_id = add_constant_value(graph.get(), attn_norm);
@@ -1396,7 +1740,16 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
                 return ffn_norm_id.error();
             }
             std::optional<marmot_value_id_t> ffn_gate_id;
-            if ((arch_traits->ffn_type == MARMOT_FFN_SWIGLU || arch_traits->ffn_type == MARMOT_FFN_GEGLU) &&
+            std::optional<marmot_value_id_t> ffn_up_id;
+            std::optional<marmot_value_id_t> ffn_down_id;
+            std::optional<marmot_value_id_t> ffn_gate_inp_id;
+            std::optional<marmot_value_id_t> ffn_gate_exps_id;
+            std::optional<marmot_value_id_t> ffn_up_exps_id;
+            std::optional<marmot_value_id_t> ffn_down_exps_id;
+            std::optional<marmot_value_id_t> ffn_gate_shexp_id;
+            std::optional<marmot_value_id_t> ffn_up_shexp_id;
+            std::optional<marmot_value_id_t> ffn_down_shexp_id;
+            if (!is_moe && (arch_traits->ffn_type == MARMOT_FFN_SWIGLU || arch_traits->ffn_type == MARMOT_FFN_GEGLU) &&
                 !use_fused_gate_up) {
                 auto ffn_gate_id_result = add_constant_value(graph.get(), ffn_gate);
                 if (!ffn_gate_id_result) {
@@ -1404,20 +1757,76 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
                 }
                 ffn_gate_id = *ffn_gate_id_result;
             }
-            auto ffn_up_id = add_constant_value(graph.get(), ffn_up);
-            if (!ffn_up_id) {
-                return ffn_up_id.error();
+            if (is_moe) {
+                auto gate_inp_id_result = add_constant_value(graph.get(), ffn_gate_inp);
+                if (!gate_inp_id_result) {
+                    return gate_inp_id_result.error();
+                }
+                ffn_gate_inp_id = *gate_inp_id_result;
+
+                auto gate_exps_id_result = add_constant_value(graph.get(), ffn_gate_exps);
+                if (!gate_exps_id_result) {
+                    return gate_exps_id_result.error();
+                }
+                ffn_gate_exps_id = *gate_exps_id_result;
+
+                auto up_exps_id_result = add_constant_value(graph.get(), ffn_up_exps);
+                if (!up_exps_id_result) {
+                    return up_exps_id_result.error();
+                }
+                ffn_up_exps_id = *up_exps_id_result;
+
+                auto down_exps_id_result = add_constant_value(graph.get(), ffn_down_exps);
+                if (!down_exps_id_result) {
+                    return down_exps_id_result.error();
+                }
+                ffn_down_exps_id = *down_exps_id_result;
+
+                if (has_shared_experts) {
+                    if (needs_gate) {
+                        auto gate_shexp_id_result = add_constant_value(graph.get(), ffn_gate_shexp);
+                        if (!gate_shexp_id_result) {
+                            return gate_shexp_id_result.error();
+                        }
+                        ffn_gate_shexp_id = *gate_shexp_id_result;
+                    }
+
+                    auto up_shexp_id_result = add_constant_value(graph.get(), ffn_up_shexp);
+                    if (!up_shexp_id_result) {
+                        return up_shexp_id_result.error();
+                    }
+                    ffn_up_shexp_id = *up_shexp_id_result;
+
+                    auto down_shexp_id_result = add_constant_value(graph.get(), ffn_down_shexp);
+                    if (!down_shexp_id_result) {
+                        return down_shexp_id_result.error();
+                    }
+                    ffn_down_shexp_id = *down_shexp_id_result;
+                }
+            } else {
+                auto ffn_up_id_result = add_constant_value(graph.get(), ffn_up);
+                if (!ffn_up_id_result) {
+                    return ffn_up_id_result.error();
+                }
+                ffn_up_id = *ffn_up_id_result;
+
+                auto ffn_down_id_result = add_constant_value(graph.get(), ffn_down);
+                if (!ffn_down_id_result) {
+                    return ffn_down_id_result.error();
+                }
+                ffn_down_id = *ffn_down_id_result;
             }
-            auto ffn_down_id = add_constant_value(graph.get(), ffn_down);
-            if (!ffn_down_id) {
-                return ffn_down_id.error();
-            }
+
+            const uint32_t fast_block_id = static_cast<uint32_t>(layer);
 
             auto norm1_out_id = add_rms_norm(graph.get(), current, *attn_norm_id, use_gemma_norm);
             if (!norm1_out_id) {
                 return norm1_out_id.error();
             }
             (void)graph->inner.set_name(*norm1_out_id, std::format("layer.{}.norm1", layer));
+            set_last_fast_hint(
+                graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_NORM, fast_block_id
+            );
 
             auto norm1_desc = graph->inner.get_value_desc(*norm1_out_id);
             if (!norm1_desc) {
@@ -1428,6 +1837,7 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
             std::expected<marmot_value_id_t, marmot_error_t> q_id, k_id, v_id;
             std::expected<marmot_graph_tensor_desc_t, marmot_error_t> q_desc, k_desc, v_desc;
             bool qkv_rope_used = false;
+            bool annotate_attention_fast_path = false;
 
             if (use_fused_qkv) {
                 // Fused QKV: single matmul then split
@@ -1530,18 +1940,28 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
                     if (!q_id) {
                         return q_id.error();
                     }
+                    set_last_fast_hint(
+                        graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_Q_PROJ, fast_block_id
+                    );
 
                     k_id =
                         add_matmul(graph.get(), *norm1_out_id, *attn_k_id, attn_k->qscheme_id, *k_desc, attn_k_bias_id);
                     if (!k_id) {
                         return k_id.error();
                     }
+                    set_last_fast_hint(
+                        graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_K_PROJ, fast_block_id
+                    );
 
                     v_id =
                         add_matmul(graph.get(), *norm1_out_id, *attn_v_id, attn_v->qscheme_id, *v_desc, attn_v_bias_id);
                     if (!v_id) {
                         return v_id.error();
                     }
+                    set_last_fast_hint(
+                        graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_V_PROJ, fast_block_id
+                    );
+                    annotate_attention_fast_path = true;
                 }
             }
             (void)graph->inner.set_name(*q_id, std::format("layer.{}.q_proj", layer));
@@ -1579,9 +1999,20 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
                 if (!q_norm_view) {
                     return q_norm_view.error();
                 }
+                if (annotate_attention_fast_path) {
+                    set_last_fast_hint(
+                        graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_Q_NORM_RESHAPE,
+                        fast_block_id
+                    );
+                }
                 auto q_norm_result = add_rms_norm(graph.get(), *q_norm_view, *attn_q_norm_id, use_gemma_norm);
                 if (!q_norm_result) {
                     return q_norm_result.error();
+                }
+                if (annotate_attention_fast_path) {
+                    set_last_fast_hint(
+                        graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_Q_NORM, fast_block_id
+                    );
                 }
                 q_heads_input = *q_norm_result;
             }
@@ -1599,9 +2030,20 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
                 if (!k_norm_view) {
                     return k_norm_view.error();
                 }
+                if (annotate_attention_fast_path) {
+                    set_last_fast_hint(
+                        graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_K_NORM_RESHAPE,
+                        fast_block_id
+                    );
+                }
                 auto k_norm_result = add_rms_norm(graph.get(), *k_norm_view, *attn_k_norm_id, use_gemma_norm);
                 if (!k_norm_result) {
                     return k_norm_result.error();
+                }
+                if (annotate_attention_fast_path) {
+                    set_last_fast_hint(
+                        graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_K_NORM, fast_block_id
+                    );
                 }
                 k_heads_input = *k_norm_result;
             }
@@ -1631,16 +2073,31 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
                 return q_heads_id.error();
             }
             (void)graph->inner.set_name(*q_heads_id, std::format("layer.{}.q_heads", layer));
+            if (annotate_attention_fast_path) {
+                set_last_fast_hint(
+                    graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_Q_HEADS, fast_block_id
+                );
+            }
             auto k_heads_id = add_reshape(graph.get(), k_heads_input, kv_heads_desc);
             if (!k_heads_id) {
                 return k_heads_id.error();
             }
             (void)graph->inner.set_name(*k_heads_id, std::format("layer.{}.k_heads", layer));
+            if (annotate_attention_fast_path) {
+                set_last_fast_hint(
+                    graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_K_HEADS, fast_block_id
+                );
+            }
             auto v_heads_id = add_reshape(graph.get(), *v_id, kv_heads_desc);
             if (!v_heads_id) {
                 return v_heads_id.error();
             }
             (void)graph->inner.set_name(*v_heads_id, std::format("layer.{}.v_heads", layer));
+            if (annotate_attention_fast_path) {
+                set_last_fast_hint(
+                    graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_V_HEADS, fast_block_id
+                );
+            }
 
             marmot_value_id_t q_rope_input = *q_heads_id;
             marmot_value_id_t k_rope_input = *k_heads_id;
@@ -1650,11 +2107,21 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
                     return q_rope_id.error();
                 }
                 (void)graph->inner.set_name(*q_rope_id, std::format("layer.{}.q_rope", layer));
+                if (annotate_attention_fast_path) {
+                    set_last_fast_hint(
+                        graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_Q_ROPE, fast_block_id
+                    );
+                }
                 auto k_rope_id = add_rope(graph.get(), *k_heads_id, positions_id);
                 if (!k_rope_id) {
                     return k_rope_id.error();
                 }
                 (void)graph->inner.set_name(*k_rope_id, std::format("layer.{}.k_rope", layer));
+                if (annotate_attention_fast_path) {
+                    set_last_fast_hint(
+                        graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_K_ROPE, fast_block_id
+                    );
+                }
                 q_rope_input = *q_rope_id;
                 k_rope_input = *k_rope_id;
             }
@@ -1686,13 +2153,28 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
             if (!q_tokens_id) {
                 return q_tokens_id.error();
             }
+            if (annotate_attention_fast_path) {
+                set_last_fast_hint(
+                    graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_Q_TOKENS, fast_block_id
+                );
+            }
             auto k_tokens_id = add_reshape(graph.get(), k_rope_input, kv_tokens_desc);
             if (!k_tokens_id) {
                 return k_tokens_id.error();
             }
+            if (annotate_attention_fast_path) {
+                set_last_fast_hint(
+                    graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_K_TOKENS, fast_block_id
+                );
+            }
             auto v_tokens_id = add_reshape(graph.get(), *v_heads_id, kv_tokens_desc);
             if (!v_tokens_id) {
                 return v_tokens_id.error();
+            }
+            if (annotate_attention_fast_path) {
+                set_last_fast_hint(
+                    graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_V_TOKENS, fast_block_id
+                );
             }
 
             auto attn_heads_id = add_paged_attention(
@@ -1701,6 +2183,11 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
             );
             if (!attn_heads_id) {
                 return attn_heads_id.error();
+            }
+            if (annotate_attention_fast_path) {
+                set_last_fast_hint(
+                    graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_PAGED, fast_block_id
+                );
             }
 
             attn_desc.dtype = q_desc->dtype;
@@ -1714,6 +2201,11 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
                 return attn_reshape_id.error();
             }
             (void)graph->inner.set_name(*attn_reshape_id, std::format("layer.{}.attn_in", layer));
+            if (annotate_attention_fast_path) {
+                set_last_fast_hint(
+                    graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_OUT_RESHAPE, fast_block_id
+                );
+            }
             attn_id = *attn_reshape_id;
 
             auto attn_out_desc = matmul_output_desc(attn_desc, attn_out->tensor);
@@ -1725,15 +2217,37 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
                 return attn_proj_id.error();
             }
             (void)graph->inner.set_name(*attn_proj_id, std::format("layer.{}.attn_proj", layer));
+            if (annotate_attention_fast_path) {
+                set_last_fast_hint(
+                    graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_OUT_PROJ, fast_block_id
+                );
+            }
 
             auto residual1_id = add_add(graph.get(), current, *attn_proj_id);
             if (!residual1_id) {
                 return residual1_id.error();
             }
+            if (annotate_attention_fast_path) {
+                set_last_fast_hint(
+                    graph.get(), MARMOT_FAST_STAGE_HINT_ATTENTION, MARMOT_FAST_NODE_ROLE_ATTN_RESIDUAL, fast_block_id
+                );
+            }
 
             auto norm2_out_id = add_rms_norm(graph.get(), *residual1_id, *ffn_norm_id, use_gemma_norm);
             if (!norm2_out_id) {
                 return norm2_out_id.error();
+            }
+            const bool dense_fast_supported = !is_moe &&
+                (arch_traits->ffn_type == MARMOT_FFN_GELU ||
+                 ((arch_traits->ffn_type == MARMOT_FFN_SWIGLU || arch_traits->ffn_type == MARMOT_FFN_GEGLU) &&
+                  !use_fused_gate_up));
+            const bool moe_fast_supported = is_moe && !has_shared_experts;
+            const bool annotate_ffn_fast_path = dense_fast_supported || moe_fast_supported;
+            if (annotate_ffn_fast_path) {
+                set_last_fast_hint(
+                    graph.get(), is_moe ? MARMOT_FAST_STAGE_HINT_MOE_FFN : MARMOT_FAST_STAGE_HINT_DENSE_FFN,
+                    MARMOT_FAST_NODE_ROLE_FFN_NORM, fast_block_id
+                );
             }
 
             auto norm2_desc = graph->inner.get_value_desc(*norm2_out_id);
@@ -1741,47 +2255,184 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
                 return MARMOT_ERROR_INVALID_ARGUMENT;
             }
 
-            marmot_value_id_t ffn_hidden_id = MARMOT_VALUE_ID_INVALID;
-            const bool is_gated_ffn =
-                arch_traits->ffn_type == MARMOT_FFN_SWIGLU || arch_traits->ffn_type == MARMOT_FFN_GEGLU;
+            marmot_value_id_t ffn_out_value_id = MARMOT_VALUE_ID_INVALID;
+            if (is_moe) {
+                auto router_desc = matmul_output_desc(*norm2_desc, ffn_gate_inp->tensor);
+                if (!router_desc) {
+                    return router_desc.error();
+                }
+                auto router_logits_id =
+                    add_matmul(graph.get(), *norm2_out_id, *ffn_gate_inp_id, ffn_gate_inp->qscheme_id, *router_desc);
+                if (!router_logits_id) {
+                    return router_logits_id.error();
+                }
+                (void)graph->inner.set_name(*router_logits_id, std::format("layer.{}.router_logits", layer));
+                if (moe_fast_supported) {
+                    set_last_fast_hint(
+                        graph.get(), MARMOT_FAST_STAGE_HINT_MOE_FFN, MARMOT_FAST_NODE_ROLE_FFN_ROUTER, fast_block_id
+                    );
+                }
 
-            if (is_gated_ffn) {
-                if (use_fused_gate_up) {
-                    // Fused gate+up: single matmul then split
-                    auto gate_up_desc = matmul_output_desc(*norm2_desc, ffn_up->tensor);
-                    if (!gate_up_desc) {
-                        return gate_up_desc.error();
+                marmot_value_id_t topk_input_id = *router_logits_id;
+                if (meta.router_weight_policy == MARMOT_ROUTER_WEIGHT_POLICY_RENORMALIZE_SELECTED) {
+                    auto router_probs_id = add_softmax(graph.get(), *router_logits_id);
+                    if (!router_probs_id) {
+                        return router_probs_id.error();
                     }
-                    auto gate_up_id =
-                        add_matmul(graph.get(), *norm2_out_id, *ffn_up_id, ffn_up->qscheme_id, *gate_up_desc);
-                    if (!gate_up_id) {
-                        return gate_up_id.error();
+                    (void)graph->inner.set_name(*router_probs_id, std::format("layer.{}.router_probs", layer));
+                    if (moe_fast_supported) {
+                        set_last_fast_hint(
+                            graph.get(), MARMOT_FAST_STAGE_HINT_MOE_FFN, MARMOT_FAST_NODE_ROLE_FFN_ROUTER_PROBS,
+                            fast_block_id
+                        );
                     }
+                    topk_input_id = *router_probs_id;
+                }
 
-                    // Split into gate and up parts
-                    auto split_result = add_split_gate_up(graph.get(), *gate_up_id, use_gate_up_views);
-                    if (!split_result) {
-                        return split_result.error();
-                    }
+                auto topk_result = add_topk(graph.get(), topk_input_id, meta.n_experts_used);
+                if (!topk_result) {
+                    return topk_result.error();
+                }
+                (void)graph->inner.set_name(topk_result->values_id, std::format("layer.{}.router_topk_values", layer));
+                (void)graph->inner.set_name(topk_result->indices_id, std::format("layer.{}.router_topk_ids", layer));
+                if (moe_fast_supported) {
+                    set_last_fast_hint(
+                        graph.get(), MARMOT_FAST_STAGE_HINT_MOE_FFN, MARMOT_FAST_NODE_ROLE_FFN_TOPK, fast_block_id
+                    );
+                }
 
-                    auto gated_id =
-                        add_glu(graph.get(), split_result->gate_id, split_result->up_id, arch_traits->ffn_type);
-                    if (!gated_id) {
-                        return gated_id.error();
+                marmot_value_id_t router_weights_id = topk_result->values_id;
+                if (meta.router_weight_policy != MARMOT_ROUTER_WEIGHT_POLICY_RENORMALIZE_SELECTED) {
+                    auto softmax_weights_id = add_softmax(graph.get(), topk_result->values_id);
+                    if (!softmax_weights_id) {
+                        return softmax_weights_id.error();
                     }
-                    ffn_hidden_id = *gated_id;
+                    (void)graph->inner.set_name(*softmax_weights_id, std::format("layer.{}.router_weights", layer));
+                    if (moe_fast_supported) {
+                        set_last_fast_hint(
+                            graph.get(), MARMOT_FAST_STAGE_HINT_MOE_FFN, MARMOT_FAST_NODE_ROLE_FFN_ROUTER_WEIGHTS,
+                            fast_block_id
+                        );
+                    }
+                    router_weights_id = *softmax_weights_id;
+                }
+
+                auto moe_out_id = add_moe_experts(
+                    graph.get(), *norm2_out_id, *ffn_gate_exps_id, *ffn_up_exps_id, *ffn_down_exps_id,
+                    topk_result->indices_id, router_weights_id, ffn_gate_exps->qscheme_id, arch_traits->ffn_type,
+                    meta.expert_weights_scale, meta.router_weight_policy
+                );
+                if (!moe_out_id) {
+                    return moe_out_id.error();
+                }
+                (void)graph->inner.set_name(*moe_out_id, std::format("layer.{}.routed_moe_out", layer));
+                if (moe_fast_supported) {
+                    set_last_fast_hint(
+                        graph.get(), MARMOT_FAST_STAGE_HINT_MOE_FFN, MARMOT_FAST_NODE_ROLE_FFN_MOE_EXPERTS,
+                        fast_block_id
+                    );
+                }
+
+                marmot_value_id_t combined_moe_id = *moe_out_id;
+                if (has_shared_experts) {
+                    auto shared_out_id = add_dense_ffn_unfused(
+                        graph.get(), *norm2_out_id, ffn_gate_shexp, ffn_gate_shexp_id, ffn_up_shexp, *ffn_up_shexp_id,
+                        ffn_down_shexp, *ffn_down_shexp_id, arch_traits->ffn_type
+                    );
+                    if (!shared_out_id) {
+                        return shared_out_id.error();
+                    }
+                    (void)graph->inner.set_name(*shared_out_id, std::format("layer.{}.shared_expert_out", layer));
+
+                    auto combined_out_id = add_add(graph.get(), *moe_out_id, *shared_out_id);
+                    if (!combined_out_id) {
+                        return combined_out_id.error();
+                    }
+                    combined_moe_id = *combined_out_id;
+                }
+
+                if (combined_moe_id != *moe_out_id || has_shared_experts) {
+                    (void)graph->inner.set_name(combined_moe_id, std::format("layer.{}.moe_out_compute", layer));
+                }
+
+                if (combined_moe_id != *norm2_out_id && norm2_desc->dtype != activation_dtype) {
+                    auto ffn_out_cast_id = add_convert(graph.get(), combined_moe_id, activation_dtype);
+                    if (!ffn_out_cast_id) {
+                        return ffn_out_cast_id.error();
+                    }
+                    (void)graph->inner.set_name(*ffn_out_cast_id, std::format("layer.{}.moe_out", layer));
+                    combined_moe_id = *ffn_out_cast_id;
                 } else {
-                    // Separate gate and up projections
-                    auto gate_desc = matmul_output_desc(*norm2_desc, ffn_gate->tensor);
-                    if (!gate_desc) {
-                        return gate_desc.error();
-                    }
-                    auto gate_id =
-                        add_matmul(graph.get(), *norm2_out_id, *ffn_gate_id, ffn_gate->qscheme_id, *gate_desc);
-                    if (!gate_id) {
-                        return gate_id.error();
-                    }
+                    (void)graph->inner.set_name(combined_moe_id, std::format("layer.{}.moe_out", layer));
+                }
 
+                ffn_out_value_id = combined_moe_id;
+            } else {
+                marmot_value_id_t ffn_hidden_id = MARMOT_VALUE_ID_INVALID;
+                const bool is_gated_ffn =
+                    arch_traits->ffn_type == MARMOT_FFN_SWIGLU || arch_traits->ffn_type == MARMOT_FFN_GEGLU;
+
+                if (is_gated_ffn) {
+                    if (use_fused_gate_up) {
+                        auto gate_up_desc = matmul_output_desc(*norm2_desc, ffn_up->tensor);
+                        if (!gate_up_desc) {
+                            return gate_up_desc.error();
+                        }
+                        auto gate_up_id =
+                            add_matmul(graph.get(), *norm2_out_id, *ffn_up_id, ffn_up->qscheme_id, *gate_up_desc);
+                        if (!gate_up_id) {
+                            return gate_up_id.error();
+                        }
+
+                        auto split_result = add_split_gate_up(graph.get(), *gate_up_id, use_gate_up_views);
+                        if (!split_result) {
+                            return split_result.error();
+                        }
+
+                        auto gated_id =
+                            add_glu(graph.get(), split_result->gate_id, split_result->up_id, arch_traits->ffn_type);
+                        if (!gated_id) {
+                            return gated_id.error();
+                        }
+                        ffn_hidden_id = *gated_id;
+                    } else {
+                        auto gate_desc = matmul_output_desc(*norm2_desc, ffn_gate->tensor);
+                        if (!gate_desc) {
+                            return gate_desc.error();
+                        }
+                        auto gate_id =
+                            add_matmul(graph.get(), *norm2_out_id, *ffn_gate_id, ffn_gate->qscheme_id, *gate_desc);
+                        if (!gate_id) {
+                            return gate_id.error();
+                        }
+                        set_last_fast_hint(
+                            graph.get(), MARMOT_FAST_STAGE_HINT_DENSE_FFN, MARMOT_FAST_NODE_ROLE_FFN_GATE_PROJ,
+                            fast_block_id
+                        );
+
+                        auto up_desc = matmul_output_desc(*norm2_desc, ffn_up->tensor);
+                        if (!up_desc) {
+                            return up_desc.error();
+                        }
+                        auto up_id = add_matmul(graph.get(), *norm2_out_id, *ffn_up_id, ffn_up->qscheme_id, *up_desc);
+                        if (!up_id) {
+                            return up_id.error();
+                        }
+                        set_last_fast_hint(
+                            graph.get(), MARMOT_FAST_STAGE_HINT_DENSE_FFN, MARMOT_FAST_NODE_ROLE_FFN_UP_PROJ,
+                            fast_block_id
+                        );
+
+                        auto gated_id = add_glu(graph.get(), *gate_id, *up_id, arch_traits->ffn_type);
+                        if (!gated_id) {
+                            return gated_id.error();
+                        }
+                        set_last_fast_hint(
+                            graph.get(), MARMOT_FAST_STAGE_HINT_DENSE_FFN, MARMOT_FAST_NODE_ROLE_FFN_GLU, fast_block_id
+                        );
+                        ffn_hidden_id = *gated_id;
+                    }
+                } else {
                     auto up_desc = matmul_output_desc(*norm2_desc, ffn_up->tensor);
                     if (!up_desc) {
                         return up_desc.error();
@@ -1790,50 +2441,50 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
                     if (!up_id) {
                         return up_id.error();
                     }
+                    set_last_fast_hint(
+                        graph.get(), MARMOT_FAST_STAGE_HINT_DENSE_FFN, MARMOT_FAST_NODE_ROLE_FFN_UP_PROJ, fast_block_id
+                    );
 
-                    auto gated_id = add_glu(graph.get(), *gate_id, *up_id, arch_traits->ffn_type);
-                    if (!gated_id) {
-                        return gated_id.error();
+                    auto gelu_id = add_gelu(graph.get(), *up_id);
+                    if (!gelu_id) {
+                        return gelu_id.error();
                     }
-                    ffn_hidden_id = *gated_id;
-                }
-            } else {
-                // Plain GELU FFN: gelu(up)
-                auto up_desc = matmul_output_desc(*norm2_desc, ffn_up->tensor);
-                if (!up_desc) {
-                    return up_desc.error();
-                }
-                auto up_id = add_matmul(graph.get(), *norm2_out_id, *ffn_up_id, ffn_up->qscheme_id, *up_desc);
-                if (!up_id) {
-                    return up_id.error();
+                    set_last_fast_hint(
+                        graph.get(), MARMOT_FAST_STAGE_HINT_DENSE_FFN, MARMOT_FAST_NODE_ROLE_FFN_GELU, fast_block_id
+                    );
+                    ffn_hidden_id = *gelu_id;
                 }
 
-                auto gelu_id = add_gelu(graph.get(), *up_id);
-                if (!gelu_id) {
-                    return gelu_id.error();
+                auto ffn_hidden_desc = graph->inner.get_value_desc(ffn_hidden_id);
+                if (!ffn_hidden_desc) {
+                    return MARMOT_ERROR_INVALID_ARGUMENT;
                 }
-                ffn_hidden_id = *gelu_id;
+
+                auto ffn_desc = matmul_output_desc(*ffn_hidden_desc, ffn_down->tensor);
+                if (!ffn_desc) {
+                    return ffn_desc.error();
+                }
+                auto ffn_out_id = add_matmul(graph.get(), ffn_hidden_id, *ffn_down_id, ffn_down->qscheme_id, *ffn_desc);
+                if (!ffn_out_id) {
+                    return ffn_out_id.error();
+                }
+                set_last_fast_hint(
+                    graph.get(), MARMOT_FAST_STAGE_HINT_DENSE_FFN, MARMOT_FAST_NODE_ROLE_FFN_DOWN_PROJ, fast_block_id
+                );
+                ffn_out_value_id = *ffn_out_id;
             }
 
-            auto ffn_hidden_desc = graph->inner.get_value_desc(ffn_hidden_id);
-            if (!ffn_hidden_desc) {
-                return MARMOT_ERROR_INVALID_ARGUMENT;
-            }
-
-            auto ffn_desc = matmul_output_desc(*ffn_hidden_desc, ffn_down->tensor);
-            if (!ffn_desc) {
-                return ffn_desc.error();
-            }
-            auto ffn_out_id = add_matmul(graph.get(), ffn_hidden_id, *ffn_down_id, ffn_down->qscheme_id, *ffn_desc);
-            if (!ffn_out_id) {
-                return ffn_out_id.error();
-            }
-
-            auto residual2_id = add_add(graph.get(), *residual1_id, *ffn_out_id);
+            auto residual2_id = add_add(graph.get(), *residual1_id, ffn_out_value_id);
             if (!residual2_id) {
                 return residual2_id.error();
             }
             (void)graph->inner.set_name(*residual2_id, std::format("layer.{}.post_mlp", layer));
+            if (annotate_ffn_fast_path) {
+                set_last_fast_hint(
+                    graph.get(), is_moe ? MARMOT_FAST_STAGE_HINT_MOE_FFN : MARMOT_FAST_STAGE_HINT_DENSE_FFN,
+                    MARMOT_FAST_NODE_ROLE_FFN_RESIDUAL, fast_block_id
+                );
+            }
 
             current = *residual2_id;
         }
@@ -1841,6 +2492,12 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
         auto final_norm_id = add_rms_norm(graph.get(), current, *output_norm_id, use_gemma_norm);
         if (!final_norm_id) {
             return final_norm_id.error();
+        }
+        if (emit_logits_actual) {
+            set_last_fast_hint(
+                graph.get(), MARMOT_FAST_STAGE_HINT_LOGITS_TAIL, MARMOT_FAST_NODE_ROLE_LOGITS_NORM,
+                static_cast<uint32_t>(meta.n_layer)
+            );
         }
 
         if (emit_logits_actual) {
@@ -1861,6 +2518,10 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
             if (!gather_id) {
                 return gather_id.error();
             }
+            set_last_fast_hint(
+                graph.get(), MARMOT_FAST_STAGE_HINT_LOGITS_TAIL, MARMOT_FAST_NODE_ROLE_LOGITS_GATHER,
+                static_cast<uint32_t>(meta.n_layer)
+            );
             marmot_value_id_t logits_input_id = *gather_id;
 
             auto logits_input_desc = graph->inner.get_value_desc(logits_input_id);
@@ -1876,6 +2537,10 @@ add_split_gate_up(marmot_graph_t *graph, marmot_value_id_t input_id, bool use_vi
             if (!logits_id) {
                 return logits_id.error();
             }
+            set_last_fast_hint(
+                graph.get(), MARMOT_FAST_STAGE_HINT_LOGITS_TAIL, MARMOT_FAST_NODE_ROLE_LOGITS_PROJECTION,
+                static_cast<uint32_t>(meta.n_layer)
+            );
         }
 
         status = marmot_graph_finalize(graph.get(), backend);

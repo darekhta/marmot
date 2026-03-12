@@ -1,0 +1,73 @@
+// CPU MoE kernels.
+
+KERNEL_FAMILY(topk_scalar) {
+    NAME_PATTERN: "topk_f32_scalar",
+    OP: topk,
+    PROFILE: SCALAR,
+    INPUT_DTYPE: FLOAT32,
+    OUTPUT_DTYPE: FLOAT32,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: STRIDED,
+    IMPL_FUNCTION: cpu_topk_impl
+}
+
+KERNEL_FAMILY(topk_scalar_f16) {
+    NAME_PATTERN: "topk_f16_scalar",
+    OP: topk,
+    PROFILE: SCALAR,
+    INPUT_DTYPE: FLOAT16,
+    OUTPUT_DTYPE: FLOAT16,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: STRIDED,
+    IMPL_FUNCTION: cpu_topk_impl
+}
+
+KERNEL_FAMILY(moe_experts_scalar) {
+    NAME_PATTERN: "moe_experts_f32_scalar",
+    OP: moe_experts,
+    PROFILE: SCALAR,
+    INPUT_DTYPE: FLOAT32,
+    OUTPUT_DTYPE: FLOAT32,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: STRIDED,
+    IMPL_FUNCTION: cpu_moe_experts_impl
+}
+
+KERNEL_FAMILY(moe_experts_scalar_f16) {
+    NAME_PATTERN: "moe_experts_f16_scalar",
+    OP: moe_experts,
+    PROFILE: SCALAR,
+    INPUT_DTYPE: FLOAT16,
+    OUTPUT_DTYPE: FLOAT16,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: STRIDED,
+    IMPL_FUNCTION: cpu_moe_experts_impl
+}
+
+KERNEL_FAMILY(moe_experts_quantized_scalar) {
+    AXIS(scheme): @all_quant_schemes,
+    NAME_PATTERN: "moe_experts_{scheme:lower}_scalar",
+    OP: moe_experts,
+    PROFILE: SCALAR,
+    INPUT_DTYPE: FLOAT32,
+    OUTPUT_DTYPE: FLOAT32,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: STRIDED,
+    WEIGHT_QUANT: $scheme,
+    QUANT_BLOCK: QUANT_SCHEME($scheme).QUANT_BLOCK,
+    IMPL_FUNCTION: cpu_moe_experts_impl
+}
+
+KERNEL_FAMILY(moe_experts_quantized_scalar_f16) {
+    AXIS(scheme): @all_quant_schemes,
+    NAME_PATTERN: "moe_experts_{scheme:lower}_f16_scalar",
+    OP: moe_experts,
+    PROFILE: SCALAR,
+    INPUT_DTYPE: FLOAT16,
+    OUTPUT_DTYPE: FLOAT16,
+    ACCUM_DTYPE: FLOAT32,
+    STRIDE_MODE: STRIDED,
+    WEIGHT_QUANT: $scheme,
+    QUANT_BLOCK: QUANT_SCHEME($scheme).QUANT_BLOCK,
+    IMPL_FUNCTION: cpu_moe_experts_impl
+}

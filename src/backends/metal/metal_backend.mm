@@ -882,6 +882,7 @@ void metal_context_destroy(metal_context_t *ctx) {
         deferred = next;
     }
     pthread_mutex_destroy(&ctx->allocator_stats.mutex);
+    metal_moe_workspace_pool_destroy(ctx);
 
     if (ctx->residency_map != nil) {
         NSMutableDictionary<NSValue *, NSMutableDictionary<NSNumber *, MarmotMetalResidencyRecord *> *> *residency_map =
@@ -1046,6 +1047,57 @@ id<MTLComputePipelineState> metal_pipeline_get(metal_context_t *ctx, const char 
         ctx->pipeline_last = pipeline;
     }
     return pipeline;
+}
+
+id<MTLComputePipelineState>
+metal_pipeline_get_with_u32_constant(metal_context_t *ctx, const char *function_name, uint32_t index, uint32_t value) {
+    if (ctx == nullptr || function_name == nullptr) {
+        return nil;
+    }
+
+    NSString *baseName = [[NSString alloc] initWithUTF8String:function_name];
+    if (baseName == nil) {
+        return nil;
+    }
+    NSString *cacheKey = [NSString stringWithFormat:@"%@_fc%u=%u", baseName, index, value];
+
+    pthread_mutex_lock(&ctx->pipeline_mutex);
+    id<MTLComputePipelineState> pipeline = ctx->pipeline_cache[cacheKey];
+    if (pipeline != nil) {
+        [pipeline retain];
+        pthread_mutex_unlock(&ctx->pipeline_mutex);
+        [baseName release];
+        return pipeline;
+    }
+
+    MTLFunctionConstantValues *constants = [[MTLFunctionConstantValues alloc] init];
+    [constants setConstantValue:&value type:MTLDataTypeUInt atIndex:index];
+
+    NSError *error = nil;
+    id<MTLFunction> function = [ctx->library newFunctionWithName:baseName constantValues:constants error:&error];
+    [constants release];
+    [baseName release];
+    if (function == nil) {
+        pthread_mutex_unlock(&ctx->pipeline_mutex);
+        os_log_error(metal_log(), "Metal: failed to specialize function %s (%{public}@)", function_name, error);
+        return nil;
+    }
+
+    pipeline = [ctx->device newComputePipelineStateWithFunction:function error:&error];
+    [function release];
+
+    if (pipeline == nil) {
+        pthread_mutex_unlock(&ctx->pipeline_mutex);
+        os_log_error(metal_log(), "Metal: failed to create specialized pipeline %s (%{public}@)", function_name, error);
+        return nil;
+    }
+
+    ctx->pipeline_cache[cacheKey] = pipeline;
+    pthread_mutex_unlock(&ctx->pipeline_mutex);
+
+    id<MTLComputePipelineState> result = [pipeline retain];
+    [pipeline release];
+    return result;
 }
 
 size_t metal_round_up(size_t value, size_t alignment) {

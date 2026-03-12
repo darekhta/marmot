@@ -8,3 +8,11 @@ marmot_error_t marmot_paged_attention(const marmot_context_t *ctx, const marmot_
     return marmot_paged_attention_impl(ctx, desc);
 }
 
+marmot_error_t marmot_topk(const marmot_context_t *ctx, const marmot_topk_desc_t *desc) {
+    return marmot_topk_impl(ctx, desc);
+}
+
+marmot_error_t marmot_moe_experts(const marmot_context_t *ctx, const marmot_moe_experts_desc_t *desc) {
+    return marmot_moe_experts_impl(ctx, desc);
+}
+
